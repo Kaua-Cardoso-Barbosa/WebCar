@@ -1,7 +1,12 @@
+import Header from "../components/Header/Header.jsx";
+
 export default function Home(){
     return (
-        <div>
+        <>
+            <Header />
+            <div>
 
-        </div>
+            </div>
+        </>
     )
 }
