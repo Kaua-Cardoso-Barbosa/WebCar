@@ -1,3 +1,9 @@
+:root {
+  --cor-principal: #2563EB;
+  --cor-logo-web: #0069B2;
+  --cor-logo2-web: #696D72;
+}
+
 a {
   text-decoration: none !important;
 }
