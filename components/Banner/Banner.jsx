@@ -1,7 +1,9 @@
 import css from "./Banner.module.css"
+import { Link } from 'react-router-dom';
+
 export default function Banner() {
     return (
-        <section className="container my-4">
+        <section className="container-fluid my-4">
             <div className="banner rounded-4 overflow-hidden position-relative">
                 <img
                     src="/Banner.png" alt="Banner" className="banner-img"
@@ -21,9 +23,12 @@ export default function Banner() {
                         conectar oportunidades, encontrar as melhores ofertas e fechar negócios com total confiança.
                     </p>
 
-                    <button className="btn btn-primary btn-lg px-4 py-2 fw-semibold">
-                                  Comece agora
-                    </button>
+                    
+                    <Link to="/login">
+                        <button className="btn btn-primary btn-lg px-4 py-2 fw-semibold">
+                            Comece agora
+                        </button>
+                    </Link>
                 </div>
             </div>
         </section>

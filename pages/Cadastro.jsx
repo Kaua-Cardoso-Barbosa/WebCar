@@ -1,10 +1,13 @@
 import "../index.css";
 import Header from "../components/Header/Header";
+import { Link } from 'react-router-dom';
 
 export default function Cadastro() {
     return (
         <>
             <Header />
+
+
 
             <main className="pagina-cadastro">
                 <section className="area-cadastro">
@@ -78,8 +81,10 @@ export default function Cadastro() {
                                 </button>
                             </div>
 
-                            <button type="submit" className="botao-cadastro">
-                                Criar Minha Conta
+                            <button className="botao-cadastro">
+                                <Link to="/login" style={{ textDecoration: 'none', color: 'white' }}>
+                                    Criar Minha Conta
+                                </Link>
                             </button>
 
                             <p className="texto-login">
