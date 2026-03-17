@@ -1,4 +1,5 @@
 import Header from "../components/Header/Header.jsx";
+import Footer from "../components/Footer/Footer.jsx";
 import "./Home.module.css"
 import Banner from "../components/Banner/Banner.jsx";
 
@@ -10,7 +11,6 @@ export default function Home(){
             <Banner />
 
 
-                {/* VEÍCULOS */}
                 <div className="mb-4">
                     <h4 className="fw-bold">Veículos em destaque</h4>
                     <p className="text-muted">
@@ -66,8 +66,6 @@ export default function Home(){
 
                 </div>
 
-
-                {/* SEÇÃO AZUL */}
                 <div className="cta mt-5">
 
                     <div className="row align-items-center">
@@ -124,6 +122,7 @@ export default function Home(){
                     </div>
 
                 </div>
+            <Footer />
         </>
     )
 }

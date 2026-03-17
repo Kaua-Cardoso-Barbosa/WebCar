@@ -22,3 +22,27 @@
     color: var(--cor-logo2-web);
 }
 
+.mobile {
+    display: none;
+}
+
+.juntar{
+    display: flex;
+}
+
+.corrigir{
+    margin-top: 10px;
+    margin-left: 80px;
+}
+
+@media (max-width: 321px){
+    nav .sumir{
+        display: none !important;
+    }
+
+    .mobile {
+        display: block;
+    }
+
+}
+
