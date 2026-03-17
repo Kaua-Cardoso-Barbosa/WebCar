@@ -1,0 +1,103 @@
+.hero{
+    background-image: url("https://images.unsplash.com/photo-1503376780353-7e6692767b70");
+    background-size: cover;
+    background-position: center;
+    height:260px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    color:white;
+    padding:40px;
+}
+
+.hero-content{
+    max-width:500px;
+}
+
+.azul{
+    background-color: #2563eb;
+    color: white;
+    font-weight: bold;
+    width: 90%;
+    height: 470px;
+    object-fit: cover;
+    display: block;
+    justify-self: center;
+    border-radius: 10px;
+    text-align: center;
+    justify-content: center;
+    text-justify: distribute-center-last;
+}
+
+.imagem{
+    position: absolute;
+    margin-left: 350px;
+    margin-top: 250px;
+}
+
+.fundobranquinho{
+    background-color: #3971EC;
+    padding: 10px 20px;
+    border: 1px solid #ffffff6e;
+    border-radius: 19px;
+}
+
+.botao{
+    font-weight: bold;
+    color: #2563eb;
+    background-color: white;
+    border: none;
+    padding: 20px;
+    font-size: 15px;
+    border-radius: 10px;
+    width: 200px;
+}
+
+.letrafina{
+    font-weight: normal;
+}
+
+.hero h1{
+    font-weight:700;
+}
+
+.hero span{
+    color:#3b82f6;
+}
+
+.hero p{
+    font-size:14px;
+    margin:15px 0;
+}
+
+.car-card{
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.car-card img{
+    height:160px;
+    object-fit:cover;
+}
+
+.price{
+    color:#2563eb;
+    font-weight:600;
+}
+
+.cta{
+    background:#3b82f6;
+    color:white;
+    padding:40px;
+    border-radius:15px;
+}
+
+.stat-card{
+    background:rgba(255,255,255,0.15);
+    padding:20px;
+    border-radius:10px;
+}
+
+.stat-card h4{
+    font-weight:700;
+}
