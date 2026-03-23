@@ -1,4 +1,4 @@
-import css from "./css/cadastro.module.css";
+
 import Header from "../components/Header/Header";
 
 export default function Cadastro() {

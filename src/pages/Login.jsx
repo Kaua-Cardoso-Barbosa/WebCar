@@ -55,7 +55,7 @@ export default function Login() {
                             </div>
                         </div>
 
-                        <Link to="/loginsucesso">
+                        <Link to="/PaginaDeSucesso">
                             <div className="d-grid gap-2 col-12 mx-auto">
                                 <button className="btn btn-primary" type="button">Entre</button>
                             </div>
