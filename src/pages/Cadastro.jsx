@@ -66,9 +66,7 @@ export default function Cadastro() {
 
                             <div className={"p-5 text-center mb-3" + css.uploadArea}>
                                 <div className="mb-3">
-                                    <span className="material-symbols-outlined fs-1 text-secondary">
-                                        upload
-                                    </span>
+                                    <img src="/Nuvem.png"/>
                                 </div>
 
                                 <button
