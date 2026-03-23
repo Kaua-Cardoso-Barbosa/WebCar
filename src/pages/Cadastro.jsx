@@ -1,6 +1,7 @@
 import "./Cadastro.module.css"
 import css from "./Cadastro.module.css"
 import Header from "../components/Header/Header";
+import { Link } from "react-router-dom";
 
 export default function Cadastro() {
     return (
@@ -77,9 +78,12 @@ export default function Cadastro() {
                                 </button>
                             </div>
 
-                            <button type="submit" className={css.botaoCadastro}>
-                                Criar Minha Conta
-                            </button>
+                            <div>
+                                <button type="submit" className={css.botaoCadastro}>
+                                    <Link to={"/Login"} style={{color: 'white'}}>Cadastrar</Link>
+                                </button>
+                            </div>
+
 
                             <p className={css.textoLogin}>
                                 Já tem uma conta? <a href="/login">Entre aqui</a>
