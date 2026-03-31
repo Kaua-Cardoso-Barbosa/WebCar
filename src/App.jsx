@@ -23,6 +23,7 @@ export default function App() {
           <Route path="/trocarSenha" element={<TrocarSenha />} />
           <Route path="/verificarEmailConta" element={<VerificarEmailConta />} />
 
+
           <Route
               path="/restrita"
               element={
