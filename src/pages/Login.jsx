@@ -6,7 +6,6 @@ import { useState } from "react";
 import Sucesso from "../components/Sucesso/Sucesso.jsx";
 
 export default function Login() {
-
     const navigate = useNavigate();
 
     const [senha, setSenha] = useState("");
@@ -44,18 +43,22 @@ export default function Login() {
                 return;
             }
 
-            // ✅ sucesso
+            if (data.usuario) {
+                localStorage.setItem("usuario_id", data.usuario.id);
+                localStorage.setItem("usuario_nome", data.usuario.nome);
+                localStorage.setItem("usuario_email", data.usuario.email);
+                localStorage.setItem("usuario_tipo", data.usuario.tipo);
+            }
+
             setMostrarPopup(true);
 
-            // redireciona depois de 2s
             setTimeout(() => {
-                navigate("/home");
+                navigate("/restrita");
             }, 2000);
 
         } catch (error) {
             setErro("Erro ao conectar com o servidor");
         }
-        setMostrarPopup(true);
     }
 
     function fecharPopup() {
@@ -112,12 +115,14 @@ export default function Login() {
                         </div>
 
                         {erro && (
-                            <p style={{
-                                color: "#ff4d4f",
-                                marginTop: "10px",
-                                textAlign: "center",
-                                fontWeight: "500"
-                            }}>
+                            <p
+                                style={{
+                                    color: "#ff4d4f",
+                                    marginTop: "10px",
+                                    textAlign: "center",
+                                    fontWeight: "500"
+                                }}
+                            >
                                 {erro}
                             </p>
                         )}

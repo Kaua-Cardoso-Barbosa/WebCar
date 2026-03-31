@@ -7,22 +7,31 @@ import RecuperarSenhaEmail from "./pages/RecuperarSenhaEmail.jsx";
 import VerificarEmailSenha from "./pages/VerificarEmailSenha.jsx";
 import TrocarSenha from "./pages/TrocarSenha.jsx";
 import VerificarEmailConta from "./pages/VerificarEmailConta.jsx";
-
-
+import Restrita from "./pages/Restrita.jsx";
+import RotaRestrita from "./components/RotaRestrita.jsx";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/cadastro" element={<Cadastro />} />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/sucesso" element={<SucessoPag />} />
           <Route path="/recuperarSenhaEmail" element={<RecuperarSenhaEmail />} />
           <Route path="/verificarEmailSenha" element={<VerificarEmailSenha />} />
           <Route path="/trocarSenha" element={<TrocarSenha />} />
           <Route path="/verificarEmailConta" element={<VerificarEmailConta />} />
-      </Routes>
-    </BrowserRouter>
+
+          <Route
+              path="/restrita"
+              element={
+                <RotaRestrita>
+                  <Restrita />
+                </RotaRestrita>
+              }
+          />
+        </Routes>
+      </BrowserRouter>
   );
 }
