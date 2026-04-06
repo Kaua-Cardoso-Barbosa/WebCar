@@ -20,7 +20,7 @@ export default function Home() {
                     </p>
                 </div>
 
-                {/* 🔥 CARDS DE VEÍCULOS */}
+
                 <div style={{ marginBottom: "70px" }} className="row g-4 justify-content-center">
 
                     <div className="col-12 col-sm-6 col-md-3">
@@ -42,7 +42,6 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* 🔵 SEÇÃO AZUL */}
             <section className={css.azul}>
                 <img className={css.imagem} src="/Container.png" />
 
@@ -66,7 +65,6 @@ export default function Home() {
                             </button>
                         </div>
 
-                        {/* 🔥 CARDS AZUIS */}
                         <div className="col-md-6 pt-5">
 
                             <div className="row g-3">

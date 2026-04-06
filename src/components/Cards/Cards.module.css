@@ -1,7 +1,29 @@
+
 .Cardtam{
     width: 900px;
 }
 
 .gp-10{
     gap: 10px;
+}
+
+@media (min-width: 765px) and (max-width: 1000px) {
+    .espacomenor{
+        gap: 40px;
+    }
+}
+
+@media (min-width: 765px) and (max-width: 1000px) {
+    .espacogrande{
+        gap: 13px;
+        flex-flow: wrap;
+    }
+}
+
+.gap130{
+    gap: 130px;
+}
+
+.gap28{
+    gap: 28px;
 }

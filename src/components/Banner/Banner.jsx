@@ -1,3 +1,4 @@
+
 import css from "./Banner.module.css"
 
 export default function Banner() {
@@ -17,7 +18,7 @@ export default function Banner() {
                         Compre Com <span className="text-primary">Segurança</span>
                     </h1>
 
-                    <p className="fs-5 mb-4 banner-text">
+                    <p className={"fs-5 mb-4 banner-text " + (css.tiratexto )} >
                         A plataforma ideal para vendedores e compradores. Com a WebCar você tem a praticidade de
                         conectar oportunidades, encontrar as melhores ofertas e fechar negócios com total confiança.
                     </p>
