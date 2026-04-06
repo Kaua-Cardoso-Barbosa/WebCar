@@ -22,7 +22,7 @@ export default function Cadastro() {
 
         setErro("");
 
-        // ✅ VALIDAÇÕES FRONT (rápidas)
+
         if (!nome || !email || !cpf || !senha || !confirmarSenha) {
             setErro("Preencha todos os campos");
             return;
@@ -39,7 +39,7 @@ export default function Cadastro() {
         formData.append("email", email);
         formData.append("cpf", cpf);
         formData.append("senha", senha);
-        formData.append("confirma", confirmarSenha); // 🔥 IMPORTANTE (sua API usa isso)
+        formData.append("confirma", confirmarSenha);
         formData.append("tipo", "2");
 
         if (imagem) {
@@ -59,7 +59,6 @@ export default function Cadastro() {
                 return;
             }
 
-            // ✅ sucesso
             localStorage.setItem("emailVerificacao", email);
 
             navigate("/VerificarEmailConta", {

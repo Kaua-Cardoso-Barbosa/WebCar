@@ -24,7 +24,7 @@ export default function Login() {
         setErro("");
 
         try {
-            const response = await fetch("http://10.92.3.145:5000/login", {
+            const response = await fetch("http://10.92.3.143:5000/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
