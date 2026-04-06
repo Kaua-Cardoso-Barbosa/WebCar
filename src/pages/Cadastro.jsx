@@ -159,12 +159,12 @@ export default function Cadastro() {
                             <div className={"p-5 text-center mb-3 " + css.uploadArea}>
                                 <div className="mb-3">
                                     <img src="/Nuvem.png" alt="upload" />
+                                    <input
+                                        className={css.inputImg}
+                                        type="file"
+                                        onChange={(e) => setImagem(e.target.files[0])}
+                                    />
                                 </div>
-
-                                <input
-                                    type="file"
-                                    onChange={(e) => setImagem(e.target.files[0])}
-                                />
                             </div>
 
                             <div>
