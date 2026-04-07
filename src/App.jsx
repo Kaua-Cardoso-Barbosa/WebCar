@@ -11,6 +11,7 @@ import Restrita from "./pages/Restrita.jsx";
 import RestritaAdm from "./pages/RestritaAdm.jsx";
 import RestritaVendedor from "./pages/RestritaVendedor.jsx";
 import Not from "./pages/Not.jsx"
+import Catalogo from "./pages/Catalogo.jsx";
 
 export default function App() {
     return (
@@ -23,6 +24,8 @@ export default function App() {
                 <Route path="/verificarEmailSenha" element={<VerificarEmailSenha />} />
                 <Route path="/trocarSenha" element={<TrocarSenha />} />
                 <Route path="/verificarEmailConta" element={<VerificarEmailConta />} />
+                <Route path="/catalogo" element={<Catalogo />} />
+
                 <Route path="*" element={<Not />} />
 
                 <Route
