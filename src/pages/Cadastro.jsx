@@ -1,9 +1,8 @@
 import "./Cadastro.module.css";
 import css from "./Cadastro.module.css";
 import Header from "../components/Header/Header";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Footer from "../components/Footer/Footer.jsx";
 
 export default function Cadastro() {
     const navigate = useNavigate();
@@ -15,14 +14,31 @@ export default function Cadastro() {
     const [senha, setSenha] = useState("");
     const [confirmarSenha, setConfirmarSenha] = useState("");
     const [imagem, setImagem] = useState(null);
+    const [preview, setPreview] = useState(null);
 
     const [erro, setErro] = useState("");
+
+    function handleImagem(e) {
+        const arquivo = e.target.files[0];
+
+        if (arquivo) {
+            setImagem(arquivo);
+            setPreview(URL.createObjectURL(arquivo));
+        }
+    }
+
+    useEffect(() => {
+        return () => {
+            if (preview) {
+                URL.revokeObjectURL(preview);
+            }
+        };
+    }, [preview]);
 
     async function handleSubmit(e) {
         e.preventDefault();
 
         setErro("");
-
 
         if (!nome || !email || !cpf || !senha || !confirmarSenha) {
             setErro("Preencha todos os campos");
@@ -48,7 +64,7 @@ export default function Cadastro() {
         }
 
         try {
-            const response = await fetch("http://10.92.3.145:5000/adicionar_usuario", {
+            const response = await fetch("http://127.0.0.1:5000/adicionar_usuario", {
                 method: "POST",
                 body: formData
             });
@@ -156,14 +172,23 @@ export default function Cadastro() {
                                 </div>
                             </div>
 
-                            <div className={"p-5 text-center mb-3 " + css.uploadArea}>
-                                <div className="mb-3">
-                                    <img src="/Nuvem.png" alt="upload" />
+                            <div className={css.uploadArea}>
+                                <div className={css.containerPreview}>
+                                    {!preview && <img src="/Nuvem.png" alt="upload" />}
+
                                     <input
-                                        className={css.inputImg}
                                         type="file"
-                                        onChange={(e) => setImagem(e.target.files[0])}
+                                        className={css.inputImg}
+                                        onChange={handleImagem}
                                     />
+
+                                    {preview && (
+                                        <img
+                                            src={preview}
+                                            alt="preview"
+                                            className={css.previewImagem}
+                                        />
+                                    )}
                                 </div>
                             </div>
 
@@ -187,7 +212,6 @@ export default function Cadastro() {
                     </div>
                 </section>
             </main>
-            <Footer />
         </>
     );
 }
