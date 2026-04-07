@@ -6,7 +6,6 @@ export default function Header() {
 
     const location = useLocation();
 
-
     useEffect(() => {
         const offcanvasElement = document.getElementById("offcanvasNavbar");
 
@@ -16,6 +15,15 @@ export default function Header() {
                 offcanvas.hide();
             }
         }
+
+        document.body.style.overflow = "";
+        document.body.style.paddingRight = "";
+
+        const backdrop = document.querySelector(".offcanvas-backdrop");
+        if (backdrop) {
+            backdrop.remove();
+        }
+
     }, [location]);
 
     return (
@@ -28,7 +36,6 @@ export default function Header() {
                             <img src="/Logo.png" alt="Logo" width="60" height="40"/>
                             <p className={"mt-2 " + css.azul}>Web<span className={css.cinza}>Car</span></p>
                         </Link>
-
 
                         <div className={"container-fluid " + css.mobile}>
                             <button
@@ -69,23 +76,14 @@ export default function Header() {
                                             <a className="nav-link">Sobre nós</a>
                                         </li>
 
-
                                         <li className="nav-item">
-                                            <Link
-                                                className="nav-link"
-                                                to="/Login"
-                                                data-bs-dismiss="offcanvas"
-                                            >
+                                            <Link className="nav-link" to="/Login">
                                                 Entrar
                                             </Link>
                                         </li>
 
                                         <li className="nav-item">
-                                            <Link
-                                                className={"btn btn-primary " + css.corFundo}
-                                                to="/Cadastro"
-                                                data-bs-dismiss="offcanvas"
-                                            >
+                                            <Link className={"btn btn-primary " + css.corFundo} to="/Cadastro">
                                                 Cadastrar
                                             </Link>
                                         </li>
@@ -106,7 +104,6 @@ export default function Header() {
                         </div>
                     </div>
 
-                    
                     <form className={"d-flex mx-4 flex-grow-1 " + css.sumir}>
                         <input
                             className="form-control"

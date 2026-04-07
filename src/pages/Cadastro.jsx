@@ -3,6 +3,7 @@ import css from "./Cadastro.module.css";
 import Header from "../components/Header/Header";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Footer from "../components/Footer/Footer.jsx";
 
 export default function Cadastro() {
     const navigate = useNavigate();
@@ -186,6 +187,7 @@ export default function Cadastro() {
                     </div>
                 </section>
             </main>
+            <Footer />
         </>
     );
 }
