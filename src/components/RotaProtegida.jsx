@@ -12,5 +12,13 @@ export default function RotaProtegida(props) {
         return <Navigate to="/login" />;
     }
 
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        return <Navigate to="/login" replace />;
+    }
+
+
+
     return props.componente;
 }

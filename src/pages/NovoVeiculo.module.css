@@ -52,12 +52,20 @@
     gap: 10px;
 }
 
-input {
+input,
+select {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
     border-radius: 8px;
     border: 1px solid #d1d5db;
+    background-color: white;
+    box-sizing: border-box;
+    outline: none;
+}
+
+select {
+    cursor: pointer;
 }
 
 .actions {
@@ -71,6 +79,7 @@ input {
     border: none;
     padding: 10px 16px;
     border-radius: 8px;
+    cursor: pointer;
 }
 
 .salvar {
@@ -79,11 +88,14 @@ input {
     border: none;
     padding: 10px 16px;
     border-radius: 8px;
+    cursor: pointer;
 }
 
 .erro {
     color: red;
     font-size: 12px;
+    display: block;
+    margin-top: 6px;
 }
 
 .erroInput {
@@ -133,8 +145,8 @@ input {
     display: block;
 }
 
-@media (max-width: 400px){
-    .sumir{
+@media (max-width: 400px) {
+    .sumir {
         display: none;
     }
 }

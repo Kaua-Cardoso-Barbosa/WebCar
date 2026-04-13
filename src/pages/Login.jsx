@@ -48,13 +48,14 @@ export default function Login() {
                 localStorage.setItem("usuario_nome", data.usuario.nome);
                 localStorage.setItem("usuario_email", data.usuario.email);
                 localStorage.setItem("usuario_tipo", data.usuario.tipo);
+                localStorage.setItem("token", data.token);
             }
 
             setMostrarPopup(true);
 
             setTimeout(() => {
                 if (data.usuario.tipo === 0) {
-                    navigate("/restrita-adm");
+                    navigate("/dashboardadm");
                 } else if (data.usuario.tipo === 1) {
                     navigate("/restrita-vendedor");
                 } else {
