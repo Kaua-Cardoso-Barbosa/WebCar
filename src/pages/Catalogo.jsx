@@ -15,7 +15,8 @@ export default function Catalogo(){
                     <Filtro />
                 </div>
                 <div>
-                    <Card />
+                    <Card modelo={"BMW M4"} valor={"R$ 40.000"} />
+                    <Card modelo={"Ferrari"} valor={"R$ 4.000.000"} />
                 </div>
             </div>
 
