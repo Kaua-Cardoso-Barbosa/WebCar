@@ -1,5 +1,4 @@
 import SidebarMenu from "../components/SidebarMenu/SidebarMenu";
-import Dashboard from "../pages/Dashboard";
 import css from "./RestritaAdm.module.css";
 
 export default function RestritaAdm() {
@@ -8,7 +7,7 @@ export default function RestritaAdm() {
 
     async function fazerLogout() {
         try {
-            await fetch("http://127.0.0.1:5000/logout", {
+            await fetch("http://10.92.3.167:5000/logout", {
                 method: "POST",
                 credentials: "include"
             });

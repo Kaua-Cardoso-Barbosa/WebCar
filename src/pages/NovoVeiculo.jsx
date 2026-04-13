@@ -1,12 +1,34 @@
 import SidebarMenu from "../components/SidebarMenu/SidebarMenu";
 import css from "./NovoVeiculo.module.css";
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import Header from "../components/Header/Header.jsx";
 import Footer from "../components/Footer/Footer.jsx";
 
 export default function NovoVeiculo() {
     const [renavam, setRenavam] = useState("");
     const [erroRenavam, setErroRenavam] = useState("");
+    const [imagem, setImagem] = useState(null);
+    const [preview, setPreview] = useState(null);
+
+
+    function handleImagem(e) {
+        const arquivo = e.target.files[0];
+
+        if (arquivo) {
+            setImagem(arquivo);
+            setPreview(URL.createObjectURL(arquivo));
+        }
+    }
+
+    useEffect(() => {
+        return () => {
+            if (preview) {
+                URL.revokeObjectURL(preview);
+            }
+        };
+    }, [preview]);
+
+
 
     function validarRenavam(valor) {
         const renavamLimpo = valor.replace(/\D/g, "").padStart(11, "0");
@@ -54,12 +76,23 @@ export default function NovoVeiculo() {
                 </p>
 
                 {/* FOTO */}
-                <div className={css.box}>
-                    <h3>Fotos do Veículo</h3>
+                <div className={css.uploadArea}>
+                    <div className={css.containerPreview}>
+                        {!preview && <img src="/Nuvem.png" alt="upload" />}
 
-                    <div className={css.upload}>
-                        <span>☁</span>
-                        <button type="button">Selecionar Fotos</button>
+                        <input
+                            type="file"
+                            className={css.inputImg}
+                            onChange={handleImagem}
+                        />
+
+                        {preview && (
+                            <img
+                                src={preview}
+                                alt="preview"
+                                className={css.previewImagem}
+                            />
+                        )}
                     </div>
                 </div>
 

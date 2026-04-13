@@ -25,7 +25,7 @@ export default function RecuperarSenhaEmail() {
         }
 
         try {
-            const response = await fetch("http://127.0.0.1:5000/esqueci_senha", {
+            const response = await fetch("http://10.92.3.167:5000/esqueci_senha", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

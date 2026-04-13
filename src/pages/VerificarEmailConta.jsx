@@ -33,7 +33,7 @@ export default function VerificarEmailConta() {
         }
 
         try {
-            const response = await fetch("http://127.0.0.1:5000/verificar_email", {
+            const response = await fetch("http://10.92.3.167:5000/verificar_email", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
