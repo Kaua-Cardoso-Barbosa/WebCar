@@ -62,8 +62,12 @@ export default function NovoVeiculo() {
 
         if (!numeros) return "";
 
-        const numero = (parseInt(numeros, 10) / 100).toFixed(2);
-        return numero.replace(".", ",");
+        const numero = Number(numeros) / 100;
+
+        return numero.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        });
     }
 
     function formatarPlaca(valor) {
