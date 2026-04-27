@@ -22,11 +22,13 @@ export default function Catalogo() {
                         "Content-Type": "application/json"
                     },
                     credentials: "include",
-                    body: JSON.stringify(carros)
+                    body: JSON.stringify({})
                 });
 
                 if (!response.ok) {
-                    setErro("Erro na API");
+                    const erroApi = await response.json();
+                    console.log("ERRO BACKEND:", erroApi);
+                    setErro(erroApi.mensagem || "Erro na API");
                     return;
                 }
 
@@ -59,13 +61,13 @@ export default function Catalogo() {
                         {carros.map((carro) => (
                             <div className="col-md-4 mb-3" key={carro.id}>
                                 <Card
-                                    modelo={carro.modelo}
-                                    valor={carro.valor}
-                                    combustivel={carro.combustivel}
-                                    ano={carro.ano}
-                                    nome={carro.nome}
-                                    km={carro.km}
-                                    cambio={carro.cambio}
+                                    modelo={carro.MODELO}
+                                    valor={carro.PRECO_VENDA}
+                                    combustivel={carro.COMBUSTIVEL}
+                                    ano={carro.ANO_MODELO}
+                                    nome={carro.MARCA}
+                                    km={carro.KM}
+                                    cambio={carro.CAMBIO}
                                 />
                             </div>
                         ))}

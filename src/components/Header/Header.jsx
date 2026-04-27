@@ -1,10 +1,23 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import css from "./Header.module.css";
 
 export default function Header() {
-
     const location = useLocation();
+    const navigate = useNavigate();
+
+    // agora usamos usuario_tipo e não token
+    const tipoUsuario = localStorage.getItem("usuario_tipo");
+    const estaLogado = !!tipoUsuario;
+
+    const handleLogout = () => {
+        localStorage.removeItem("usuario_id");
+        localStorage.removeItem("usuario_nome");
+        localStorage.removeItem("usuario_email");
+        localStorage.removeItem("usuario_tipo");
+
+        navigate("/login");
+    };
 
     useEffect(() => {
         const offcanvasElement = document.getElementById("offcanvasNavbar");
@@ -32,9 +45,19 @@ export default function Header() {
                 <div className="container-fluid d-flex align-items-center">
 
                     <div className={css.juntar}>
-                        <Link className="navbar-brand d-flex align-items-center gap-2" to={"/"}>
-                            <img src="/Logo.png" alt="Logo" width="60" height="40"/>
-                            <p className={"mt-2 " + css.azul}>Web<span className={css.cinza}>Car</span></p>
+                        <Link
+                            className="navbar-brand d-flex align-items-center gap-2"
+                            to="/"
+                        >
+                            <img
+                                src="/Logo.png"
+                                alt="Logo"
+                                width="60"
+                                height="40"
+                            />
+                            <p className={"mt-2 " + css.azul}>
+                                Web<span className={css.cinza}>Car</span>
+                            </p>
                         </Link>
 
                         <div className={"container-fluid " + css.mobile}>
@@ -53,9 +76,19 @@ export default function Header() {
                                 id="offcanvasNavbar"
                             >
                                 <div className="offcanvas-header">
-                                    <Link className="navbar-brand d-flex align-items-center gap-2" to={"/"}>
-                                        <img src="/Logo.png" alt="Logo" width="60" height="40"/>
-                                        <p className={"mt-2 " + css.azul}>Web<span className={css.cinza}>Car</span></p>
+                                    <Link
+                                        className="navbar-brand d-flex align-items-center gap-2"
+                                        to="/"
+                                    >
+                                        <img
+                                            src="/Logo.png"
+                                            alt="Logo"
+                                            width="60"
+                                            height="40"
+                                        />
+                                        <p className={"mt-2 " + css.azul}>
+                                            Web<span className={css.cinza}>Car</span>
+                                        </p>
                                     </Link>
 
                                     <button
@@ -76,17 +109,42 @@ export default function Header() {
                                             <a className="nav-link">Sobre nós</a>
                                         </li>
 
-                                        <li className="nav-item">
-                                            <Link className="nav-link" to="/Login">
-                                                Entrar
-                                            </Link>
-                                        </li>
+                                        {!estaLogado ? (
+                                            <>
+                                                <li className="nav-item">
+                                                    <Link
+                                                        className="nav-link"
+                                                        to="/login"
+                                                    >
+                                                        Entrar
+                                                    </Link>
+                                                </li>
 
-                                        <li className="nav-item">
-                                            <Link className={"btn btn-primary " + css.corFundo} to="/Cadastro">
-                                                Cadastrar
-                                            </Link>
-                                        </li>
+                                                <li className="nav-item">
+                                                    <Link
+                                                        className={
+                                                            "btn btn-primary " +
+                                                            css.corFundo
+                                                        }
+                                                        to="/cadastro"
+                                                    >
+                                                        Cadastrar
+                                                    </Link>
+                                                </li>
+                                            </>
+                                        ) : (
+                                            <li className="nav-item">
+                                                <button
+                                                    className={
+                                                        "btn btn-primary " +
+                                                        css.corFundo
+                                                    }
+                                                    onClick={handleLogout}
+                                                >
+                                                    Logout
+                                                </button>
+                                            </li>
+                                        )}
                                     </ul>
 
                                     <form className="d-flex mt-3">
@@ -95,7 +153,10 @@ export default function Header() {
                                             type="search"
                                             placeholder="Buscar veículos..."
                                         />
-                                        <button className="btn btn-outline-success">
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-success"
+                                        >
                                             Pesquisar
                                         </button>
                                     </form>
@@ -114,16 +175,35 @@ export default function Header() {
 
                     <div className={css.sumir}>
                         <div className="d-flex align-items-center gap-3">
+
                             <a className="nav-link">Comprar</a>
                             <a className="nav-link">Sobre nós</a>
 
-                            <Link className="nav-link" to="/Login">
-                                Entrar
-                            </Link>
+                            {!estaLogado ? (
+                                <>
+                                    <Link className="nav-link" to="/login">
+                                        Entrar
+                                    </Link>
 
-                            <Link className={"btn btn-primary " + css.corFundo} to="/Cadastro">
-                                Cadastrar
-                            </Link>
+                                    <Link
+                                        className={
+                                            "btn btn-primary " + css.corFundo
+                                        }
+                                        to="/cadastro"
+                                    >
+                                        Cadastrar
+                                    </Link>
+                                </>
+                            ) : (
+                                <button
+                                    className={
+                                        "btn btn-primary " + css.corFundo
+                                    }
+                                    onClick={handleLogout}
+                                >
+                                    Logout
+                                </button>
+                            )}
                         </div>
                     </div>
 

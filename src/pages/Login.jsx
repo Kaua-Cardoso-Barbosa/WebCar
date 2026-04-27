@@ -45,24 +45,27 @@ export default function Login() {
             }
 
             if (data.usuario) {
-                localStorage.setItem("usuario_id", data.usuario.id);
+                localStorage.setItem("usuario_id", data.usuario.id_usuario);
                 localStorage.setItem("usuario_nome", data.usuario.nome);
                 localStorage.setItem("usuario_email", data.usuario.email);
                 localStorage.setItem("usuario_tipo", data.usuario.tipo);
-                localStorage.setItem("token", data.token);
             }
 
             setMostrarPopup(true);
 
             setTimeout(() => {
-                if (data.usuario.tipo === 0) {
+                const tipo = Number(data.usuario.tipo);
+
+                if (tipo === 0) {
                     navigate("/dashboard");
-                } else if (data.usuario.tipo === 1) {
+                } else if (tipo === 1) {
                     navigate("/restrita-vendedor");
+                } else if (tipo === 2) {
+                    navigate("/catalogo");
                 } else {
-                    navigate("/restrita");
+                    navigate("/login");
                 }
-            }, 2000);
+            }, 8000);
 
         } catch (error) {
             setErro("Erro ao conectar com o servidor");
