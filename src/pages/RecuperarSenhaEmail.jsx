@@ -4,6 +4,7 @@ import Footer from "../components/Footer/Footer.jsx";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sucesso from "../components/Sucesso/Sucesso.jsx";
+import { API_URL } from "../App";
 
 export default function RecuperarSenhaEmail() {
 
@@ -16,7 +17,6 @@ export default function RecuperarSenhaEmail() {
 
     async function avancar(e) {
         e.preventDefault();
-
         setErro("");
 
         if (!email) {
@@ -25,14 +25,13 @@ export default function RecuperarSenhaEmail() {
         }
 
         try {
-            const response = await fetch("http://10.92.3.167:5000/esqueci_senha", {
+            const response = await fetch(`${API_URL}/esqueci_senha`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({ email })
             });
-
             const data = await response.json();
 
             if (!response.ok) {

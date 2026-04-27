@@ -1,9 +1,10 @@
 import css from './Login.module.css';
 import Header from "../components/Header/Header.jsx";
 import Footer from "../components/Footer/Footer.jsx";
-import { useState } from "react";
+import { useState} from "react";
 import { useNavigate } from "react-router-dom";
 import Sucesso from "../components/Sucesso/Sucesso.jsx";
+import { API_URL } from "../App";
 
 export default function VerificarEmailSenha() {
 
@@ -16,7 +17,6 @@ export default function VerificarEmailSenha() {
 
     async function avancar(e) {
         e.preventDefault();
-
         setErro("");
 
         const email = localStorage.getItem("emailVerificacao");
@@ -32,7 +32,7 @@ export default function VerificarEmailSenha() {
         }
 
         try {
-            const response = await fetch("http://10.92.3.167:5000/verificar_codigo", {
+            const response = await fetch(`${API_URL}/verificar_codigo`, { // 👈 corrigido
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -50,9 +50,7 @@ export default function VerificarEmailSenha() {
                 return;
             }
 
-
             localStorage.setItem("codigoVerificacao", codigo);
-
 
             setMensagemSucesso("Código válido!");
             setMostrarPopup(true);
@@ -97,7 +95,6 @@ export default function VerificarEmailSenha() {
                             </button>
                         </div>
 
-
                         {erro && (
                             <p style={{
                                 color: "#ff4d4f",
@@ -111,7 +108,6 @@ export default function VerificarEmailSenha() {
                     </form>
                 </div>
             </div>
-
 
             {mostrarPopup && (
                 <Sucesso

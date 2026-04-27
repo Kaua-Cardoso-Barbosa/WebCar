@@ -4,6 +4,10 @@ import Footer from "../components/Footer/Footer.jsx";
 import Card from "../components/Cards/Card.jsx";
 import Filtro from "../components/Filtro/Filtro.jsx";
 import { useState, useEffect } from "react";
+import { API_URL } from "../App";
+
+
+
 export default function Catalogo() {
 
     const [carros, setCarros] = useState([]);
@@ -12,7 +16,7 @@ export default function Catalogo() {
     useEffect(() => {
         async function buscarDados() {
             try {
-                const response = await fetch("http://10.92.3.173:5000/buscar_veiculo", {
+                const response = await fetch(`${API_URL}/buscar_veiculo`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"

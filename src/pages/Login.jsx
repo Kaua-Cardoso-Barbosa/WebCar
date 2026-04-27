@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Footer from "../components/Footer/Footer.jsx";
 import { useState } from "react";
 import Sucesso from "../components/Sucesso/Sucesso.jsx";
+import { API_URL } from "../App";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function Login() {
         setErro("");
 
         try {
-            const response = await fetch("http://10.92.3.167:5000/login", {
+            const response = await fetch(`${API_URL}/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -55,7 +56,7 @@ export default function Login() {
 
             setTimeout(() => {
                 if (data.usuario.tipo === 0) {
-                    navigate("/dashboardadm");
+                    navigate("/dashboard");
                 } else if (data.usuario.tipo === 1) {
                     navigate("/restrita-vendedor");
                 } else {

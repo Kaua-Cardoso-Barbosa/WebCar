@@ -3,8 +3,11 @@ import css from "./Cadastro.module.css";
 import Header from "../components/Header/Header";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../App";
+
 
 export default function Cadastro() {
+
     const navigate = useNavigate();
 
     const [nome, setNome] = useState("");
@@ -64,7 +67,7 @@ export default function Cadastro() {
         }
 
         try {
-            const response = await fetch("http://10.92.3.167:5000/adicionar_usuario", {
+            const response = await fetch(`${API_URL}/adicionar_usuario`, {
                 method: "POST",
                 body: formData
             });

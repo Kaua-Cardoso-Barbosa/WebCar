@@ -1,9 +1,10 @@
 import css from './Login.module.css';
 import Header from "../components/Header/Header.jsx";
 import Footer from "../components/Footer/Footer.jsx";
-import { useState } from "react";
+import { useState} from "react";
 import { useNavigate } from "react-router-dom";
 import Sucesso from "../components/Sucesso/Sucesso.jsx";
+import { API_URL } from "../App";
 
 export default function VerificarEmailConta() {
 
@@ -16,7 +17,6 @@ export default function VerificarEmailConta() {
 
     async function avancar(e) {
         e.preventDefault();
-
         setErro("");
 
         const email = localStorage.getItem("emailVerificacao");
@@ -33,14 +33,14 @@ export default function VerificarEmailConta() {
         }
 
         try {
-            const response = await fetch("http://10.92.3.167:5000/verificar_email", {
+            const response = await fetch(`${API_URL}/verificar_email`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    email: email,
-                    codigo: codigo
+                    email,
+                    codigo
                 })
             });
 
@@ -51,13 +51,10 @@ export default function VerificarEmailConta() {
                 return;
             }
 
-
             setMensagemSucesso("Cadastro confirmado com sucesso!");
             setMostrarPopup(true);
 
-
             localStorage.removeItem("emailVerificacao");
-
 
             setTimeout(() => {
                 navigate("/login");

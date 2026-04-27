@@ -1,5 +1,7 @@
 import css from "./Restrita.module.css";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../App";
+
 
 export default function Restrita() {
     const navigate = useNavigate();
@@ -8,7 +10,7 @@ export default function Restrita() {
 
     async function fazerLogout() {
         try {
-            await fetch("http://10.92.3.167:5000/logout", {
+            await fetch(`${API_URL}/logout`, {
                 method: "POST",
                 credentials: "include"
             });
@@ -16,11 +18,7 @@ export default function Restrita() {
             console.log("Erro ao fazer logout");
         }
 
-        localStorage.removeItem("usuario_id");
-        localStorage.removeItem("usuario_nome");
-        localStorage.removeItem("usuario_email");
-        localStorage.removeItem("usuario_tipo");
-
+        localStorage.clear();
         navigate("/login");
     }
 

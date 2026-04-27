@@ -187,7 +187,7 @@ export default function NovoVeiculo() {
                 formData.append("imagem", imagem);
             }
 
-            const response = await fetch("http://10.92.3.167:5000/cadastrar_veiculo", {
+            const response = await fetch(`${API_URL}/cadastrar_veiculo`, {
                 method: "POST",
                 credentials: "include",
                 body: formData
