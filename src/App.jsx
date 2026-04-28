@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-// 👇 SUA API GLOBAL (fica aqui)
-export const API_URL = "http://localhost:5000";
+                                // API GLOBAL👇
+export const API_URL = "http://127.0.0.1:5000";
 
-// 👇 seus imports de páginas
+
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Cadastro from "./pages/Cadastro.jsx";
