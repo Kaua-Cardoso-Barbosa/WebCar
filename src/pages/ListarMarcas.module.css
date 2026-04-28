@@ -1,0 +1,171 @@
+.layout {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f5f7fa;
+}
+
+.main {
+    flex: 1;
+    padding: 40px;
+}
+
+.topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.topo h1 {
+    font-size: 28px;
+    color: #1f2937;
+}
+
+.btnAdicionar {
+    background-color: #3867eb;
+    color: white;
+    border: none;
+    padding: 13px 18px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card {
+    background-color: white;
+    border-radius: 14px;
+    padding: 25px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+}
+
+.tabela {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabela th {
+    text-align: left;
+    padding: 14px;
+    color: #334155;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tabela td {
+    padding: 14px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #475569;
+}
+
+.btnEditar,
+.btnExcluir {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 17px;
+    margin-right: 12px;
+}
+
+.btnEditar {
+    color: #2563eb;
+}
+
+.btnExcluir {
+    color: #dc2626;
+}
+
+.sucesso {
+    background-color: #dcfce7;
+    color: #166534;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    font-weight: 600;
+}
+
+.erro {
+    background-color: #fee2e2;
+    color: #991b1b;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    font-weight: 600;
+}
+
+.vazio {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.fundoModal {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.modal {
+    width: 420px;
+    background-color: white;
+    border-radius: 14px;
+    padding: 28px;
+}
+
+.modal h2 {
+    color: #1f2937;
+    margin-bottom: 20px;
+}
+
+.modal form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal label {
+    font-weight: 700;
+    color: #334155;
+}
+
+.modal input {
+    padding: 13px;
+    border-radius: 9px;
+    border: 1px solid #d1d5db;
+    outline: none;
+}
+
+.modal input:focus {
+    border-color: #3867eb;
+}
+
+.botoesModal {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.cancelar {
+    background-color: #e5e7eb;
+    color: #374151;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.salvar {
+    background-color: #3867eb;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}

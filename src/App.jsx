@@ -1,8 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-                                // API GLOBAL👇
+// 👇 SUA API GLOBAL (fica aqui)
 export const API_URL = "http://localhost:5000";
-
 
 // 👇 seus imports de páginas
 import EditarServico from "./pages/EditarServico.jsx";
@@ -32,6 +31,7 @@ import EditarManutencao from "./pages/EditarManutencao.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import CadastrarMarca from "./pages/CadastrarMarca.jsx";
 import AtualizarValores from "./pages/AtualizarValores.jsx";
+import ListarMarcas from "./pages/ListarMarcas.jsx";
 
 export default function App() {
     return (
@@ -49,16 +49,18 @@ export default function App() {
                 <Route path="/VisualizarAdm" element={<VisualizarAdm />} />
                 <Route path="/Agendar" element={<AgendarSuaVisita />} />
                 <Route path="/catalogo" element={<Catalogo />} />
+                <Route path="/garagem" element={<Garagem />} />
                 <Route path="/Cadastroveiculo" element={<NovoVeiculo />} />
                 <Route path="/EdicaoVeiculo" element={<EditarVeiculo />} />
                 <Route path="/cadastrarservicos" element={<CadastrarServico />} />
                 <Route path="/adicionarmanutencao" element={<AdicionarManutencao />} />
                 <Route path="/editarmanutencao" element={<EditarManutencao />} />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/servicos" element={<Servicos />} />
                 <Route path="/cadastrarmarca" element={<CadastrarMarca />} />
                 <Route path="/atualizarvalores" element={<AtualizarValores />} />
                 <Route path="/editarservico/:id_servico" element={<EditarServico />} />
-
+                <Route path="/listarmarcas" element={<ListarMarcas />} />
                 <Route path="*" element={<Not />} />
 
                 <Route
@@ -72,20 +74,12 @@ export default function App() {
                 />
 
                 <Route
-                    path="/dashboard"
+                    path="/restrita-adm"
                     element={
-                        <RotaProtegida tiposPermitidos={[0]}>
-                            <Dashboard />
-                        </RotaProtegida>
-                    }
-                />
-
-                <Route
-                    path="/garagem"
-                    element={
-                        <RotaProtegida tiposPermitidos={[0]}>
-                            <Garagem />
-                        </RotaProtegida>
+                        <RotaProtegida
+                            componente={<RestritaAdm />}
+                            tipoPermitido="0"
+                        />
                     }
                 />
 
