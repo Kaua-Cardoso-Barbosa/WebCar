@@ -2,42 +2,45 @@ import SidebarMenu from "../components/SidebarMenu/SidebarMenu";
 import css from "./Garagem.module.css";
 import Header from "../components/Header/Header.jsx";
 import Footer from "../components/Footer/Footer.jsx";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { API_URL } from "../App";
 
 export default function Garagem() {
     const navigate = useNavigate();
+
     const [veiculos, setVeiculos] = useState([]);
     const [erro, setErro] = useState("");
+    const [modalAberto, setModalAberto] = useState(false);
+    const [veiculoParaDeletar, setVeiculoParaDeletar] = useState(null);
 
     useEffect(() => {
-        async function buscarVeiculos() {
-            try {
-                const response = await fetch(`${API_URL}/buscar_veiculo`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({})
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    setErro(data.mensagem || "Erro ao buscar veículos.");
-                    return;
-                }
-
-                setVeiculos(data.veiculos || data);
-            } catch (error) {
-                setErro("Erro ao conectar com o servidor.");
-            }
-        }
-
         buscarVeiculos();
     }, []);
+
+    async function buscarVeiculos() {
+        try {
+            const response = await fetch(`${API_URL}/buscar_veiculo`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "include",
+                body: JSON.stringify({})
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setErro(data.mensagem || "Erro ao buscar veículos.");
+                return;
+            }
+
+            setVeiculos(data.veiculos || data);
+        } catch (error) {
+            setErro("Erro ao conectar com o servidor.");
+        }
+    }
 
     const valorGaragem = veiculos.reduce((total, carro) => {
         return total + Number(carro.PRECO_VENDA || 0);
@@ -48,6 +51,47 @@ export default function Garagem() {
             style: "currency",
             currency: "BRL"
         });
+    }
+
+    function abrirModalDelete(carro) {
+        setVeiculoParaDeletar(carro);
+        setModalAberto(true);
+    }
+
+    function fecharModalDelete() {
+        setVeiculoParaDeletar(null);
+        setModalAberto(false);
+    }
+
+    async function confirmarDelete() {
+        if (!veiculoParaDeletar) return;
+
+        try {
+            const response = await fetch(
+                `${API_URL}/deletar_veiculo/${veiculoParaDeletar.ID_VEICULO}`,
+                {
+                    method: "DELETE",
+                    credentials: "include"
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setErro(data.mensagem || "Erro ao deletar veículo.");
+                fecharModalDelete();
+                return;
+            }
+
+            setVeiculos((atuais) =>
+                atuais.filter((carro) => carro.ID_VEICULO !== veiculoParaDeletar.ID_VEICULO)
+            );
+
+            fecharModalDelete();
+        } catch (error) {
+            setErro("Erro ao conectar com o servidor.");
+            fecharModalDelete();
+        }
     }
 
     return (
@@ -94,30 +138,33 @@ export default function Garagem() {
                         </div>
                     </section>
 
-                    {erro && <p>{erro}</p>}
+                    {erro && <p className={css.erro}>{erro}</p>}
 
                     <section className={css.tabelaBox}>
                         <table className={css.tabela}>
                             <thead>
-                                <tr>
-                                    <th>MODELO</th>
-                                    <th>ANO</th>
-                                    <th>KM</th>
-                                    <th>PREÇO</th>
-                                    <th>AÇÕES</th>
-                                </tr>
+                            <tr>
+                                <th>MODELO</th>
+                                <th>ANO</th>
+                                <th>KM</th>
+                                <th>PREÇO</th>
+                                <th>AÇÕES</th>
+                            </tr>
                             </thead>
 
                             <tbody>
                             {veiculos.map((carro, index) => (
-                                <tr
-                                    key={carro.ID_VEICULO || carro.RENAVAM || index}
-                                    onClick={() => navigate("/VisualizarAdm", { state: { carro } })}
-                                    style={{ cursor: "pointer" }}
-                                >
-                                    <td>
+                                <tr key={carro.ID_VEICULO || carro.RENAVAM || index}>
+                                    <td
+                                        onClick={() => navigate("/VisualizarAdm", { state: { carro } })}
+                                        style={{ cursor: "pointer" }}
+                                    >
                                         <div className={css.modeloCell}>
-                                            <img src="/Car.png" alt={carro.MODELO} />
+                                            <img
+                                                src={carro.IMAGEM}
+                                                onError={(e) => (e.target.src = "/sem-imagem.png")}
+                                                alt={carro.MODELO}
+                                            />
                                             <span>{carro.MARCA} {carro.MODELO}</span>
                                         </div>
                                     </td>
@@ -133,11 +180,25 @@ export default function Garagem() {
                                     </td>
 
                                     <td className={css.acoes}>
-                                        🔧 ✎ 🗑
+                                        <button
+                                            type="button"
+                                            className={css.btnAcao}
+                                            onClick={() => navigate("/EdicaoVeiculo", { state: { carro } })}
+                                        >
+                                            ✎
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className={css.btnAcaoDelete}
+                                            onClick={() => abrirModalDelete(carro)}
+                                        >
+                                            🗑
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
-                        </tbody>
+                            </tbody>
                         </table>
 
                         <div className={css.paginacao}>
@@ -148,6 +209,40 @@ export default function Garagem() {
                     </section>
                 </main>
             </div>
+
+            {modalAberto && (
+                <div className={css.modalFundo}>
+                    <div className={css.modal}>
+                        <h3>Deletar veículo?</h3>
+
+                        <p>
+                            Tem certeza que deseja deletar{" "}
+                            <strong>
+                                {veiculoParaDeletar?.MARCA} {veiculoParaDeletar?.MODELO}
+                            </strong>
+                            ?
+                        </p>
+
+                        <div className={css.modalBotoes}>
+                            <button
+                                type="button"
+                                className={css.cancelarModal}
+                                onClick={fecharModalDelete}
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                type="button"
+                                className={css.confirmarModal}
+                                onClick={confirmarDelete}
+                            >
+                                Deletar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <Footer />
         </>

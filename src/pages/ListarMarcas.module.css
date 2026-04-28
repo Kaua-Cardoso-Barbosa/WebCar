@@ -1,108 +1,142 @@
 .layout {
     display: flex;
-    min-height: 100vh;
-    background-color: #f5f7fa;
+    min-height: calc(100vh - 80px);
+    background: #f5f7fb;
 }
 
 .main {
     flex: 1;
-    padding: 40px;
+    padding: 24px;
+    color: #111827;
 }
 
 .topo {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 18px;
 }
 
 .topo h1 {
-    font-size: 28px;
-    color: #1f2937;
+    font-size: 30px;
+    font-weight: 800;
+    margin: 0;
+    color: #111827;
 }
 
-.btnAdicionar {
-    background-color: #3867eb;
+.botaoAzul {
+    background: #2563eb;
     color: white;
-    border: none;
-    padding: 13px 18px;
-    border-radius: 10px;
+    text-decoration: none;
+    padding: 13px 22px;
+    border-radius: 7px;
     font-weight: 700;
+    border: none;
     cursor: pointer;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+}
+
+.botaoAzul:hover {
+    background: #1d4ed8;
+}
+
+.busca {
+    width: 100%;
+    background: #eef3fa;
+    border-radius: 8px;
+    padding: 14px 16px;
     display: flex;
     align-items: center;
     gap: 10px;
+    margin-bottom: 16px;
 }
 
-.card {
-    background-color: white;
-    border-radius: 14px;
-    padding: 25px;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+.busca span {
+    font-size: 22px;
+    color: #64748b;
 }
 
-.tabela {
+.busca input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-size: 15px;
+    color: #111827;
+}
+
+.busca input::placeholder {
+    color: #718096;
+}
+
+.tabelaCard {
+    background: white;
+    border: 1px solid #dfe5ef;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.tabelaCard table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.tabela th {
+.tabelaCard th {
     text-align: left;
-    padding: 14px;
-    color: #334155;
+    padding: 18px 22px;
+    font-size: 13px;
+    color: #64748b;
+    letter-spacing: 0.5px;
     border-bottom: 1px solid #e5e7eb;
 }
 
-.tabela td {
-    padding: 14px;
-    border-bottom: 1px solid #e5e7eb;
-    color: #475569;
+.tabelaCard td {
+    padding: 22px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    border-bottom: 1px solid #edf1f7;
+    vertical-align: middle;
 }
 
-.btnEditar,
-.btnExcluir {
+.logoMarca {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    padding: 6px;
+}
+
+.acoes {
+    display: flex;
+    gap: 14px;
+}
+
+.icone {
     border: none;
     background: transparent;
     cursor: pointer;
-    font-size: 17px;
-    margin-right: 12px;
+    font-size: 18px;
+    color: #64748b;
 }
 
-.btnEditar {
-    color: #2563eb;
-}
-
-.btnExcluir {
-    color: #dc2626;
-}
-
-.sucesso {
-    background-color: #dcfce7;
-    color: #166534;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 18px;
-    font-weight: 600;
-}
-
-.erro {
-    background-color: #fee2e2;
-    color: #991b1b;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 18px;
-    font-weight: 600;
+.icone:hover {
+    color: #111827;
 }
 
 .vazio {
-    color: #64748b;
-    font-weight: 600;
+    text-align: center;
+    color: #64748b !important;
+    padding: 35px !important;
 }
 
-.fundoModal {
+.modalFundo {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.45);
+    background: rgba(15, 23, 42, 0.45);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -110,62 +144,119 @@
 }
 
 .modal {
-    width: 420px;
-    background-color: white;
-    border-radius: 14px;
+    width: 100%;
+    max-width: 520px;
+    background: white;
+    border-radius: 12px;
     padding: 28px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
 }
 
 .modal h2 {
-    color: #1f2937;
-    margin-bottom: 20px;
+    margin: 0 0 22px;
+    font-size: 24px;
+    color: #111827;
 }
 
-.modal form {
+.modal p {
+    color: #475569;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.campo {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    margin-bottom: 18px;
 }
 
-.modal label {
+.campo label {
     font-weight: 700;
-    color: #334155;
+    margin-bottom: 8px;
+    color: #111827;
 }
 
-.modal input {
-    padding: 13px;
-    border-radius: 9px;
+.campo input {
     border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 13px 14px;
+    font-size: 15px;
     outline: none;
 }
 
-.modal input:focus {
-    border-color: #3867eb;
+.campo input:focus {
+    border-color: #2563eb;
 }
 
-.botoesModal {
+.previewBox {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.previewImagem {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    padding: 8px;
+}
+
+.modalBotoes {
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
-    margin-top: 18px;
+    gap: 14px;
+    margin-top: 24px;
 }
 
 .cancelar {
-    background-color: #e5e7eb;
-    color: #374151;
     border: none;
-    padding: 12px 18px;
+    background: #f1f5f9;
+    color: #111827;
+    padding: 12px 22px;
     border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
 }
 
 .salvar {
-    background-color: #3867eb;
-    color: white;
     border: none;
-    padding: 12px 18px;
+    background: #2563eb;
+    color: white;
+    padding: 12px 22px;
     border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
+}
+
+.excluir {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-weight: 700;
+    z-index: 1000;
+}
+
+.toastSucesso {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.toastErro {
+    background: #fee2e2;
+    color: #991b1b;
 }

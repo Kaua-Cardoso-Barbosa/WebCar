@@ -26,6 +26,7 @@ export default function NovoVeiculo() {
     const [valorVenda, setValorVenda] = useState("");
     const [imagens, setImagens] = useState([]);
 
+    const [erroRenavam, setErroRenavam] = useState("");
     const [mensagem, setMensagem] = useState("");
     const [tipoMensagem, setTipoMensagem] = useState("");
     const [carregando, setCarregando] = useState(false);
@@ -35,9 +36,7 @@ export default function NovoVeiculo() {
             try {
                 const response = await fetch(`${API_URL}/buscar_marca`, {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     credentials: "include",
                     body: JSON.stringify({})
                 });
@@ -46,11 +45,9 @@ export default function NovoVeiculo() {
 
                 if (response.ok) {
                     setMarcas(data.marcas || []);
-                } else {
-                    console.log("Erro ao buscar marcas:", data);
                 }
             } catch (error) {
-                console.log("Erro ao conectar ao buscar marcas:", error);
+                console.log("Erro ao buscar marcas:", error);
             }
         }
 
@@ -69,7 +66,6 @@ export default function NovoVeiculo() {
 
     function formatarMoeda(valor) {
         const numeros = valor.replace(/\D/g, "");
-
         if (!numeros) return "";
 
         const numero = Number(numeros) / 100;
@@ -86,27 +82,75 @@ export default function NovoVeiculo() {
 
     function formatarPlaca(valor) {
         const limpa = valor.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7);
-
         if (limpa.length <= 3) return limpa;
-
         return `${limpa.slice(0, 3)}-${limpa.slice(3)}`;
+    }
+
+    function validarRenavam(valor) {
+        const renavamLimpo = valor.replace(/\D/g, "");
+
+        if (renavamLimpo.length !== 11) return false;
+
+        const base = renavamLimpo.substring(0, 10);
+        const digitoInformado = Number(renavamLimpo[10]);
+
+        let soma = 0;
+        let peso = 2;
+
+        for (let i = 9; i >= 0; i--) {
+            soma += Number(base[i]) * peso;
+            peso++;
+
+            if (peso > 9) {
+                peso = 2;
+            }
+        }
+
+        let digitoCalculado = 11 - (soma % 11);
+
+        if (digitoCalculado >= 10) {
+            digitoCalculado = 0;
+        }
+
+        return digitoCalculado === digitoInformado;
+    }
+
+    function handleRenavam(e) {
+        const valor = apenasNumeros(e.target.value).slice(0, 11);
+        setRenavam(valor);
+
+        if (valor.length > 0 && valor.length < 11) {
+            setErroRenavam("RENAVAM deve ter 11 números");
+        } else if (valor.length === 11 && !validarRenavam(valor)) {
+            setErroRenavam("RENAVAM inválido");
+        } else {
+            setErroRenavam("");
+        }
     }
 
     function handleImagens(e) {
         const arquivos = Array.from(e.target.files);
 
-        const novasImagens = arquivos.map((arquivo) => ({
+        const novas = arquivos.map((arquivo) => ({
+            id: crypto.randomUUID(),
             arquivo,
             preview: URL.createObjectURL(arquivo)
         }));
 
-        setImagens((atuais) => [...atuais, ...novasImagens]);
+        setImagens((atuais) => [...atuais, ...novas]);
+
+        e.target.value = "";
     }
 
-    function removerImagem(index) {
+    function removerImagem(id) {
         setImagens((atuais) => {
-            URL.revokeObjectURL(atuais[index].preview);
-            return atuais.filter((_, i) => i !== index);
+            const removida = atuais.find((img) => img.id === id);
+
+            if (removida) {
+                URL.revokeObjectURL(removida.preview);
+            }
+
+            return atuais.filter((img) => img.id !== id);
         });
     }
 
@@ -131,8 +175,8 @@ export default function NovoVeiculo() {
             return;
         }
 
-        if (renavam.length !== 11) {
-            setMensagem("RENAVAM deve ter 11 números.");
+        if (!validarRenavam(renavam)) {
+            setMensagem("Corrija o RENAVAM antes de salvar.");
             setTipoMensagem("erro");
             return;
         }
@@ -198,10 +242,14 @@ export default function NovoVeiculo() {
                 <SidebarMenu />
 
                 <main className={css.main}>
-                    <h1 className={css.titulo}>Adicionar Novo Veículo</h1>
-                    <p className={css.subtitulo}>
-                        Insira os dados técnicos e comerciais para disponibilizar o veículo no estoque.
-                    </p>
+                    <div className={css.topo}>
+                        <div>
+                            <h1 className={css.titulo}>Adicionar Novo Veículo</h1>
+                            <p className={css.subtitulo}>
+                                Insira os dados técnicos e comerciais para disponibilizar o veículo no estoque.
+                            </p>
+                        </div>
+                    </div>
 
                     {mensagem && (
                         <p className={tipoMensagem === "sucesso" ? css.sucesso : css.erroMensagem}>
@@ -209,40 +257,47 @@ export default function NovoVeiculo() {
                         </p>
                     )}
 
-                    <div className={css.uploadArea}>
-                        <input
-                            type="file"
-                            className={css.inputImg}
-                            onChange={handleImagens}
-                            accept="image/*"
-                            multiple
-                        />
+                    <section className={css.uploadArea}>
+                        <h3>Fotos do Veículo</h3>
 
-                        <div className={css.galeria}>
-                            {imagens.length === 0 && (
-                                <div className={css.uploadTexto}>
-                                    <img src="/Nuvem.png" alt="upload" />
-                                    <p>Clique para adicionar imagens</p>
-                                </div>
-                            )}
+                        <label className={css.uploadBox}>
+                            <input
+                                type="file"
+                                onChange={handleImagens}
+                                accept="image/*"
+                                multiple
+                            />
 
-                            {imagens.map((img, index) => (
-                                <div
-                                    className={index === 0 ? css.previewGrande : css.previewPequeno}
-                                    key={index}
-                                >
-                                    <img src={img.preview} alt="preview" />
+                            <img src="/Nuvem.png" alt="upload" />
+                            <p>Clique para adicionar imagens</p>
+                            <small>Você pode adicionar várias fotos e remover individualmente</small>
+                        </label>
 
-                                    <button type="button" onClick={() => removerImagem(index)}>
-                                        ×
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                        {imagens.length > 0 && (
+                            <div className={css.listaImagens}>
+                                {imagens.map((img, index) => (
+                                    <div
+                                        key={img.id}
+                                        className={index === 0 ? css.imagemPrincipal : css.imagemMini}
+                                    >
+                                        <img src={img.preview} alt="preview" />
+
+                                        <button
+                                            type="button"
+                                            onClick={() => removerImagem(img.id)}
+                                        >
+                                            ×
+                                        </button>
+
+                                        {index === 0 && <span>Principal</span>}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </section>
 
                     <div className={css.grid}>
-                        <div className={css.box}>
+                        <section className={css.box}>
                             <h3>Informações Básicas</h3>
 
                             <select value={marca} onChange={(e) => setMarca(e.target.value)}>
@@ -265,14 +320,18 @@ export default function NovoVeiculo() {
                                 <input
                                     placeholder="Ano Fabricação"
                                     value={anoFabricacao}
-                                    onChange={(e) => setAnoFabricacao(apenasNumeros(e.target.value).slice(0, 4))}
+                                    onChange={(e) =>
+                                        setAnoFabricacao(apenasNumeros(e.target.value).slice(0, 4))
+                                    }
                                     maxLength={4}
                                 />
 
                                 <input
                                     placeholder="Ano Modelo"
                                     value={anoModelo}
-                                    onChange={(e) => setAnoModelo(apenasNumeros(e.target.value).slice(0, 4))}
+                                    onChange={(e) =>
+                                        setAnoModelo(apenasNumeros(e.target.value).slice(0, 4))
+                                    }
                                     maxLength={4}
                                 />
                             </div>
@@ -282,9 +341,9 @@ export default function NovoVeiculo() {
                                 <option value="0">Pago</option>
                                 <option value="1">Não Pago</option>
                             </select>
-                        </div>
+                        </section>
 
-                        <div className={css.box}>
+                        <section className={css.box}>
                             <h3>Detalhes Técnicos</h3>
 
                             <div className={css.row}>
@@ -331,13 +390,16 @@ export default function NovoVeiculo() {
                             <input
                                 placeholder="Renavam"
                                 value={renavam}
-                                onChange={(e) => setRenavam(apenasNumeros(e.target.value).slice(0, 11))}
+                                onChange={handleRenavam}
                                 maxLength={11}
+                                className={erroRenavam ? css.erroInput : ""}
                             />
-                        </div>
+
+                            {erroRenavam && <span className={css.erro}>{erroRenavam}</span>}
+                        </section>
                     </div>
 
-                    <div className={css.box}>
+                    <section className={css.box}>
                         <h3>Precificação</h3>
 
                         <div className={css.row}>
@@ -353,7 +415,7 @@ export default function NovoVeiculo() {
                                 onChange={(e) => setValorVenda(formatarMoeda(e.target.value))}
                             />
                         </div>
-                    </div>
+                    </section>
 
                     <div className={css.actions}>
                         <button

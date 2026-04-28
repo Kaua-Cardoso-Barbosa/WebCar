@@ -48,20 +48,27 @@ export default function App() {
                 <Route path="/Visualizar" element={<Visualizar />} />
                 <Route path="/VisualizarAdm" element={<VisualizarAdm />} />
                 <Route path="/Agendar" element={<AgendarSuaVisita />} />
-                <Route path="/catalogo" element={<Catalogo />} />
                 <Route path="/garagem" element={<Garagem />} />
                 <Route path="/Cadastroveiculo" element={<NovoVeiculo />} />
                 <Route path="/EdicaoVeiculo" element={<EditarVeiculo />} />
                 <Route path="/cadastrarservicos" element={<CadastrarServico />} />
                 <Route path="/adicionarmanutencao" element={<AdicionarManutencao />} />
                 <Route path="/editarmanutencao" element={<EditarManutencao />} />
-                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/servicos" element={<Servicos />} />
                 <Route path="/cadastrarmarca" element={<CadastrarMarca />} />
                 <Route path="/atualizarvalores" element={<AtualizarValores />} />
                 <Route path="/editarservico/:id_servico" element={<EditarServico />} />
                 <Route path="/listarmarcas" element={<ListarMarcas />} />
                 <Route path="*" element={<Not />} />
+
+                <Route
+                    path="/catalogo"
+                    element={
+                        <RotaProtegida tiposPermitidos={[2]}>
+                            <Catalogo />
+                        </RotaProtegida>
+                    }
+                />
 
                 <Route
                     path="/restrita"
@@ -73,13 +80,13 @@ export default function App() {
                     }
                 />
 
+
                 <Route
-                    path="/restrita-adm"
+                    path="/dashboard"
                     element={
-                        <RotaProtegida
-                            componente={<RestritaAdm />}
-                            tipoPermitido="0"
-                        />
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <Dashboard />
+                        </RotaProtegida>
                     }
                 />
 

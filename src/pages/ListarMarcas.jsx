@@ -7,46 +7,76 @@ import css from "./ListarMarcas.module.css";
 
 export default function ListarMarcas() {
     const [marcas, setMarcas] = useState([]);
+    const [busca, setBusca] = useState("");
+    const [carregando, setCarregando] = useState(true);
+
     const [modalAberta, setModalAberta] = useState(false);
     const [editando, setEditando] = useState(false);
     const [idMarca, setIdMarca] = useState(null);
 
+    const [modalExcluir, setModalExcluir] = useState(false);
+    const [marcaExcluir, setMarcaExcluir] = useState(null);
+
     const [nome, setNome] = useState("");
     const [imagem, setImagem] = useState(null);
-    const [mensagem, setMensagem] = useState("");
-    const [tipoMensagem, setTipoMensagem] = useState("");
+    const [previewImagem, setPreviewImagem] = useState("");
 
-    useEffect(() => {
-        buscarMarcas();
-    }, []);
+    const [toast, setToast] = useState("");
+    const [tipoToast, setTipoToast] = useState("");
 
-    async function buscarMarcas() {
+    function mostrarToast(texto, tipo) {
+        setToast(texto);
+        setTipoToast(tipo);
+
+        setTimeout(() => {
+            setToast("");
+            setTipoToast("");
+        }, 3000);
+    }
+
+    async function buscarMarcas(nomeBusca = "") {
         try {
+            setCarregando(true);
+
             const res = await fetch(`${API_URL}/buscar_marca`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
-                body: JSON.stringify({})
+                body: JSON.stringify({ nome: nomeBusca })
             });
 
             const data = await res.json();
 
             if (res.ok) {
-                setMarcas(data.marcas);
+                setMarcas(data.marcas || []);
             } else {
                 setMarcas([]);
             }
         } catch {
-            setMensagem("Erro ao buscar marcas.");
-            setTipoMensagem("erro");
+            mostrarToast("Erro ao buscar marcas.", "erro");
+        } finally {
+            setCarregando(false);
         }
     }
+
+    useEffect(() => {
+        buscarMarcas();
+    }, []);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            buscarMarcas(busca);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [busca]);
 
     function abrirModalAdicionar() {
         setEditando(false);
         setIdMarca(null);
         setNome("");
         setImagem(null);
+        setPreviewImagem("");
         setModalAberta(true);
     }
 
@@ -55,15 +85,25 @@ export default function ListarMarcas() {
         setIdMarca(marca.id_marca);
         setNome(marca.nome);
         setImagem(null);
+        setPreviewImagem(`${marca.imagem}?v=${Date.now()}`);
         setModalAberta(true);
+    }
+
+    function selecionarImagem(e) {
+        const arquivo = e.target.files[0];
+
+        setImagem(arquivo);
+
+        if (arquivo) {
+            setPreviewImagem(URL.createObjectURL(arquivo));
+        }
     }
 
     async function salvarMarca(e) {
         e.preventDefault();
 
         if (!nome.trim()) {
-            setMensagem("Digite o nome da marca.");
-            setTipoMensagem("erro");
+            mostrarToast("Digite o nome da marca.", "erro");
             return;
         }
 
@@ -90,28 +130,33 @@ export default function ListarMarcas() {
             const data = await res.json();
 
             if (!res.ok) {
-                setMensagem(data.mensagem);
-                setTipoMensagem("erro");
+                mostrarToast(data.mensagem || "Erro ao salvar marca.", "erro");
                 return;
             }
 
-            setMensagem(data.mensagem);
-            setTipoMensagem("sucesso");
+            mostrarToast(data.mensagem || "Marca salva com sucesso!", "sucesso");
             setModalAberta(false);
-            buscarMarcas();
+            buscarMarcas(busca);
         } catch {
-            setMensagem("Erro ao salvar marca.");
-            setTipoMensagem("erro");
+            mostrarToast("Erro ao salvar marca.", "erro");
         }
     }
 
-    async function excluirMarca(id) {
-        const confirmar = window.confirm("Deseja excluir esta marca?");
+    function abrirModalExcluir(marca) {
+        setMarcaExcluir(marca);
+        setModalExcluir(true);
+    }
 
-        if (!confirmar) return;
+    function fecharModalExcluir() {
+        setMarcaExcluir(null);
+        setModalExcluir(false);
+    }
+
+    async function excluirMarca() {
+        if (!marcaExcluir) return;
 
         try {
-            const res = await fetch(`${API_URL}/deletar_marca/${id}`, {
+            const res = await fetch(`${API_URL}/deletar_marca/${marcaExcluir.id_marca}`, {
                 method: "DELETE",
                 credentials: "include"
             });
@@ -119,17 +164,15 @@ export default function ListarMarcas() {
             const data = await res.json();
 
             if (!res.ok) {
-                setMensagem(data.mensagem);
-                setTipoMensagem("erro");
+                mostrarToast(data.mensagem || "Erro ao excluir marca.", "erro");
                 return;
             }
 
-            setMensagem(data.mensagem);
-            setTipoMensagem("sucesso");
-            buscarMarcas();
+            mostrarToast(data.mensagem || "Marca excluída com sucesso!", "sucesso");
+            fecharModalExcluir();
+            buscarMarcas(busca);
         } catch {
-            setMensagem("Erro ao excluir marca.");
-            setTipoMensagem("erro");
+            mostrarToast("Erro ao excluir marca.", "erro");
         }
     }
 
@@ -142,85 +185,126 @@ export default function ListarMarcas() {
 
                 <main className={css.main}>
                     <div className={css.topo}>
-                        <h1>Marcas Cadastradas</h1>
+                        <h1>Marcas</h1>
 
-                        <button className={css.btnAdicionar} onClick={abrirModalAdicionar}>
-                            + Adicionar Marca
+                        <button className={css.botaoAzul} onClick={abrirModalAdicionar}>
+                            ⊕ Nova Marca
                         </button>
                     </div>
 
-                    {mensagem && (
-                        <p className={tipoMensagem === "sucesso" ? css.sucesso : css.erro}>
-                            {mensagem}
-                        </p>
-                    )}
+                    <div className={css.busca}>
+                        <span>⌕</span>
+                        <input
+                            type="text"
+                            placeholder="Procure uma marca..."
+                            value={busca}
+                            onChange={(e) => setBusca(e.target.value)}
+                        />
+                    </div>
 
-                    <div className={css.card}>
-                        {marcas.length === 0 ? (
-                            <p className={css.vazio}>Nenhuma marca cadastrada.</p>
-                        ) : (
-                            <table className={css.tabela}>
-                                <thead>
+                    <section className={css.tabelaCard}>
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>ÍCONE</th>
+                                <th>MARCA</th>
+                                <th>AÇÕES</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            {carregando ? (
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Marca</th>
-                                    <th>Ações</th>
+                                    <td colSpan="3" className={css.vazio}>
+                                        Carregando marcas...
+                                    </td>
                                 </tr>
-                                </thead>
-
-                                <tbody>
-                                {marcas.map((marca) => (
+                            ) : marcas.length > 0 ? (
+                                marcas.map((marca) => (
                                     <tr key={marca.id_marca}>
-                                        <td>{marca.id_marca}</td>
-                                        <td>{marca.nome}</td>
                                         <td>
-                                            <button
-                                                className={css.btnEditar}
-                                                onClick={() => abrirModalEditar(marca)}
-                                            >
-                                                ✏️
-                                            </button>
+                                            <img
+                                                src={`${marca.imagem}?v=${Date.now()}`}
+                                                alt={marca.nome}
+                                                className={css.logoMarca}
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = "none";
+                                                }}
+                                            />
+                                        </td>
 
-                                            <button
-                                                className={css.btnExcluir}
-                                                onClick={() => excluirMarca(marca.id_marca)}
-                                            >
-                                                🗑️
-                                            </button>
+                                        <td>{marca.nome}</td>
+
+                                        <td>
+                                            <div className={css.acoes}>
+                                                <button
+                                                    type="button"
+                                                    className={css.icone}
+                                                    onClick={() => abrirModalEditar(marca)}
+                                                >
+                                                    ✎
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    className={css.icone}
+                                                    onClick={() => abrirModalExcluir(marca)}
+                                                >
+                                                    🗑
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="3" className={css.vazio}>
+                                        Nenhuma marca encontrada.
+                                    </td>
+                                </tr>
+                            )}
+                            </tbody>
+                        </table>
+                    </section>
                 </main>
             </div>
 
             {modalAberta && (
-                <div className={css.fundoModal}>
+                <div className={css.modalFundo}>
                     <div className={css.modal}>
                         <h2>{editando ? "Editar Marca" : "Adicionar Marca"}</h2>
 
                         <form onSubmit={salvarMarca}>
-                            <label>Nome da marca</label>
+                            <div className={css.campo}>
+                                <label>Nome da marca</label>
+                                <input
+                                    type="text"
+                                    placeholder="Ex: Toyota"
+                                    value={nome}
+                                    onChange={(e) => setNome(e.target.value)}
+                                />
+                            </div>
 
-                            <input
-                                type="text"
-                                placeholder="Ex: Toyota"
-                                value={nome}
-                                onChange={(e) => setNome(e.target.value)}
-                            />
+                            <div className={css.campo}>
+                                <label>Imagem da marca</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={selecionarImagem}
+                                />
+                            </div>
 
-                            <label>Imagem da marca</label>
+                            {previewImagem && (
+                                <div className={css.previewBox}>
+                                    <img
+                                        src={previewImagem}
+                                        alt="Prévia da marca"
+                                        className={css.previewImagem}
+                                    />
+                                </div>
+                            )}
 
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => setImagem(e.target.files[0])}
-                            />
-
-                            <div className={css.botoesModal}>
+                            <div className={css.modalBotoes}>
                                 <button
                                     type="button"
                                     className={css.cancelar}
@@ -235,6 +319,35 @@ export default function ListarMarcas() {
                             </div>
                         </form>
                     </div>
+                </div>
+            )}
+
+            {modalExcluir && (
+                <div className={css.modalFundo}>
+                    <div className={css.modal}>
+                        <h2>Confirmar exclusão</h2>
+
+                        <p>
+                            Tem certeza que deseja excluir a marca{" "}
+                            <strong>{marcaExcluir?.nome}</strong>?
+                        </p>
+
+                        <div className={css.modalBotoes}>
+                            <button type="button" className={css.cancelar} onClick={fecharModalExcluir}>
+                                Cancelar
+                            </button>
+
+                            <button type="button" className={css.excluir} onClick={excluirMarca}>
+                                Excluir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {toast && (
+                <div className={`${css.toast} ${tipoToast === "sucesso" ? css.toastSucesso : css.toastErro}`}>
+                    {toast}
                 </div>
             )}
 
