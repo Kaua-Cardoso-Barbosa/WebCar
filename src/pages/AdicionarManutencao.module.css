@@ -1,83 +1,168 @@
-/* Fundo da tela */
 .container {
-    height: 100vh;
+    min-height: calc(100vh - 80px);
     background-color: #f3f4f6;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 32px;
 }
 
-/* Card central */
 .card {
-    width: 420px;
+    width: 100%;
+    max-width: 760px;
     background: #ffffff;
-    border-radius: 12px;
-    padding: 25px;
+    border-radius: 14px;
+    padding: 32px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* Título */
-.card h2 {
+.topo h2 {
     margin: 0;
-    font-size: 22px;
-    color: #1f2937;
+    font-size: 26px;
+    font-weight: 800;
+    color: #111827;
 }
 
-/* Subtítulo */
-.subtitulo {
-    font-size: 14px;
-    color: #6b7280;
-    margin-top: 5px;
-    margin-bottom: 20px;
+.topo p {
+    margin-top: 8px;
+    color: #64748b;
 }
 
-/* Formulário */
 .form {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 16px;
 }
 
-/* Grupo de input */
-.inputgroup {
+.linha {
+    display: grid;
+    grid-template-columns: 1fr 120px;
+    gap: 14px;
+}
+
+.inputgroup,
+.inputgroupMenor {
     display: flex;
     flex-direction: column;
 }
 
-.input-group label {
+.inputgroup label,
+.inputgroupMenor label {
     font-size: 13px;
-    margin-bottom: 5px;
-    color: #374151;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #111827;
 }
 
-/* Inputs */
-.input-group input {
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #d1d5db;
-    background: #f9fafb;
-    font-size: 14px;
+.input {
+    width: 100%;
+    height: 46px;
+    border-radius: 7px;
+    color: #111827;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0 12px;
     outline: none;
-    transition: 0.2s;
 }
 
-.input-group input:focus {
+.input:focus {
     border-color: #2563eb;
     background: #ffffff;
 }
 
-/* Botão */
+.btnSecundario {
+    padding: 13px;
+    border: 1px solid #2563eb;
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.listaItens {
+    margin-top: 6px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.listaItens h3 {
+    margin: 0;
+    padding: 16px;
+    background: #f8fafc;
+    font-size: 17px;
+    font-weight: 800;
+    color: #111827;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.vazio {
+    margin: 0;
+    padding: 18px;
+    color: #64748b;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 16px;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.item:last-child {
+    border-bottom: none;
+}
+
+.item div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.item span {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.itemDireita {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.itemDireita button {
+    border: none;
+    background: #fee2e2;
+    color: #991b1b;
+    border-radius: 7px;
+    padding: 8px 10px;
+    cursor: pointer;
+}
+
+.total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #eff6ff;
+    color: #1d4ed8;
+    padding: 16px;
+    border-radius: 10px;
+    font-weight: 800;
+}
+
 .btn {
-    margin-top: 10px;
+    margin-top: 8px;
     padding: 14px;
     border: none;
-    border-radius: 10px;
-    background: linear-gradient(90deg, #2563eb, #3b82f6);
+    border-radius: 8px;
+    background: #2563eb;
     color: white;
     font-size: 15px;
-    font-weight: bold;
+    font-weight: 800;
     cursor: pointer;
-    transition: 0.3s;
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -85,14 +170,38 @@
 }
 
 .btn:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
+    background: #1d4ed8;
 }
 
-.seeelect{
-    height: 46px;
-    border-radius: 5px;
-    color: #94A3B8;
-    background-color: #F8FAFC;
-    border: #E2E8F0;
+.btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.cancelar {
+    padding: 13px;
+    border: none;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #111827;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.erro {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin: 18px 0;
+    font-weight: 600;
+}
+
+.sucesso {
+    background: #dcfce7;
+    color: #166534;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin: 18px 0;
+    font-weight: 600;
 }
