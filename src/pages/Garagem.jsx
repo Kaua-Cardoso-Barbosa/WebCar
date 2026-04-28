@@ -60,11 +60,6 @@ export default function Garagem() {
                 <main className={css.garagem}>
                     <div className={css.topo}>
                         <h1 className={css.titulo}>Garagem</h1>
-
-                        <Link to="/Cadastroveiculo" className={css.botaoNovo}>
-                            <span className={css.mais}>⊕</span>
-                            Novo Veículo
-                        </Link>
                     </div>
 
                     <section className={css.cards}>

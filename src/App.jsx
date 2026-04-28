@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 export const API_URL = "http://localhost:5000";
 
 
+// 👇 seus imports de páginas
+import EditarServico from "./pages/EditarServico.jsx";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Cadastro from "./pages/Cadastro.jsx";
@@ -29,6 +31,7 @@ import CadastrarServico from "./pages/CadastrarServico.jsx";
 import EditarManutencao from "./pages/EditarManutencao.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import CadastrarMarca from "./pages/CadastrarMarca.jsx";
+import AtualizarValores from "./pages/AtualizarValores.jsx";
 
 export default function App() {
     return (
@@ -55,6 +58,8 @@ export default function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/servicos" element={<Servicos />} />
                 <Route path="/cadastrarmarca" element={<CadastrarMarca />} />
+                <Route path="/atualizarvalores" element={<AtualizarValores />} />
+                <Route path="/editarservico/:id_servico" element={<EditarServico />} />
 
                 <Route path="*" element={<Not />} />
 
