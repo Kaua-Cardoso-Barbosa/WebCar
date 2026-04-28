@@ -1,7 +1,6 @@
 import css from "./Dashboard.module.css";
 import SidebarMenu from "../components/SidebarMenu/SidebarMenu.jsx";
 import Header from "../components/Header/Header.jsx";
-import { Link } from "react-router-dom";
 
 export default function Dashboard() {
     return (
@@ -58,23 +57,23 @@ export default function Dashboard() {
                     <section className={css.tableSection}>
                         <table>
                             <thead>
-                                <tr>
-                                    <th>TIPO</th>
-                                    <th>DESCRIÇÃO</th>
-                                    <th>VALOR</th>
-                                    <th>AÇÕES</th>
-                                </tr>
+                            <tr>
+                                <th>TIPO</th>
+                                <th>DESCRIÇÃO</th>
+                                <th>VALOR</th>
+                                <th>AÇÕES</th>
+                            </tr>
                             </thead>
 
                             <tbody>
-                                <tr>
-                                    <td>Despesa</td>
-                                    <td>Gasto com Pneus</td>
-                                    <td>R$:100,00</td>
-                                    <td>
-                                        <button className={css.actionBtn}>✎</button>
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td>Despesa</td>
+                                <td>Gasto com Pneus</td>
+                                <td>R$:100,00</td>
+                                <td>
+                                    <button className={css.actionBtn}>✎</button>
+                                </td>
+                            </tr>
                             </tbody>
                         </table>
                     </section>

@@ -63,33 +63,6 @@ export default function NovoVeiculo() {
         };
     }, [imagens]);
 
-
-
-    function validarRenavam(valor) {
-        const renavamLimpo = valor.replace(/\D/g, "");
-
-        if (renavamLimpo.length !== 11) return false;
-
-        let soma = 0;
-        let peso = 3;
-
-        for (let i = 0; i < 10; i++) {
-            soma += parseInt(renavamLimpo[i]) * peso;
-            peso--;
-
-            if (peso < 2) {
-                peso = 9;
-            }
-        }
-
-        let resto = soma % 11;
-        let digito = 11 - resto;
-
-        if (digito >= 10) digito = 0;
-
-        return digito === parseInt(renavamLimpo[10]);
-    }
-
     function apenasNumeros(valor) {
         return valor.replace(/\D/g, "");
     }
@@ -158,8 +131,8 @@ export default function NovoVeiculo() {
             return;
         }
 
-        if (!validarRenavam(renavam)) {
-            setMensagem("RENAVAM inválido.");
+        if (renavam.length !== 11) {
+            setMensagem("RENAVAM deve ter 11 números.");
             setTipoMensagem("erro");
             return;
         }

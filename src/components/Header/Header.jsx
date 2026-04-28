@@ -1,15 +1,14 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import css from "./Header.module.css";
 
-export default function Header({ busca = "", setBusca = null, onMenuClick = null }) {
+export default function Header({ busca = "", setBusca = null }) {
     const location = useLocation();
     const navigate = useNavigate();
 
+    // agora usamos usuario_tipo e não token
     const tipoUsuario = localStorage.getItem("usuario_tipo");
     const estaLogado = !!tipoUsuario;
-
-    const estaNaDashboard = location.pathname === "/dashboard";
 
     const handleLogout = () => {
         localStorage.removeItem("usuario_id");
@@ -23,7 +22,7 @@ export default function Header({ busca = "", setBusca = null, onMenuClick = null
     useEffect(() => {
         const offcanvasElement = document.getElementById("offcanvasNavbar");
 
-        if (offcanvasElement && window.bootstrap) {
+        if (offcanvasElement) {
             const offcanvas = window.bootstrap.Offcanvas.getInstance(offcanvasElement);
             if (offcanvas) {
                 offcanvas.hide();
@@ -37,6 +36,7 @@ export default function Header({ busca = "", setBusca = null, onMenuClick = null
         if (backdrop) {
             backdrop.remove();
         }
+
     }, [location]);
 
     return (
@@ -45,27 +45,21 @@ export default function Header({ busca = "", setBusca = null, onMenuClick = null
                 <div className="container-fluid d-flex align-items-center">
 
                     <div className={css.juntar}>
-                        {onMenuClick && (
-                            <button
-                                type="button"
-                                className={css.botaoMenuAdmin}
-                                onClick={onMenuClick}
-                            >
-                                ☰
-                            </button>
-                        )}
-
                         <Link
                             className="navbar-brand d-flex align-items-center gap-2"
                             to="/"
                         >
-                            <img src="/Logo.png" alt="Logo" width="60" height="40" />
+                            <img
+                                src="/Logo.png"
+                                alt="Logo"
+                                width="60"
+                                height="40"
+                            />
                             <p className={"mt-2 " + css.azul}>
                                 Web<span className={css.cinza}>Car</span>
                             </p>
                         </Link>
 
-                        {/* MOBILE */}
                         <div className={"container-fluid " + css.mobile}>
                             <button
                                 className={"navbar-toggler " + css.corrigir}
@@ -86,7 +80,12 @@ export default function Header({ busca = "", setBusca = null, onMenuClick = null
                                         className="navbar-brand d-flex align-items-center gap-2"
                                         to="/"
                                     >
-                                        <img src="/Logo.png" alt="Logo" width="60" height="40" />
+                                        <img
+                                            src="/Logo.png"
+                                            alt="Logo"
+                                            width="60"
+                                            height="40"
+                                        />
                                         <p className={"mt-2 " + css.azul}>
                                             Web<span className={css.cinza}>Car</span>
                                         </p>
@@ -101,6 +100,7 @@ export default function Header({ busca = "", setBusca = null, onMenuClick = null
 
                                 <div className="offcanvas-body">
                                     <ul className="navbar-nav flex-grow-1">
+
                                         <li className="nav-item">
                                             <a className="nav-link">Comprar</a>
                                         </li>
@@ -112,14 +112,20 @@ export default function Header({ busca = "", setBusca = null, onMenuClick = null
                                         {!estaLogado ? (
                                             <>
                                                 <li className="nav-item">
-                                                    <Link className="nav-link" to="/login">
+                                                    <Link
+                                                        className="nav-link"
+                                                        to="/login"
+                                                    >
                                                         Entrar
                                                     </Link>
                                                 </li>
 
                                                 <li className="nav-item">
                                                     <Link
-                                                        className={"btn btn-primary " + css.corFundo}
+                                                        className={
+                                                            "btn btn-primary " +
+                                                            css.corFundo
+                                                        }
                                                         to="/cadastro"
                                                     >
                                                         Cadastrar
@@ -129,7 +135,10 @@ export default function Header({ busca = "", setBusca = null, onMenuClick = null
                                         ) : (
                                             <li className="nav-item">
                                                 <button
-                                                    className={"btn btn-primary " + css.corFundo}
+                                                    className={
+                                                        "btn btn-primary " +
+                                                        css.corFundo
+                                                    }
                                                     onClick={handleLogout}
                                                 >
                                                     Logout
@@ -138,44 +147,37 @@ export default function Header({ busca = "", setBusca = null, onMenuClick = null
                                         )}
                                     </ul>
 
-                                    {/* BUSCA MOBILE (SOME NA DASHBOARD) */}
-                                    {!estaNaDashboard && (
-                                        <form className="d-flex mt-3">
-                                            <input
-                                                className="form-control"
-                                                type="search"
-                                                placeholder="Buscar veículos..."
-                                                value={busca}
-                                                onChange={(e) => setBusca && setBusca(e.target.value)}
-                                            />
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-success"
-                                            >
-                                                Pesquisar
-                                            </button>
-                                        </form>
-                                    )}
+                                    <form className="d-flex mt-3">
+                                        <input
+                                            className="form-control"
+                                            type="search"
+                                            placeholder="Buscar veículos..."
+                                            value={busca}
+                                            onChange={(e) => setBusca && setBusca(e.target.value)}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-success"
+                                        >
+                                            Pesquisar
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* BUSCA DESKTOP (SOME NA DASHBOARD) */}
-                    {!estaNaDashboard && (
-                        <form className={"d-flex mx-4 flex-grow-1 " + css.sumir}>
-                            <input
-                                className="form-control"
-                                type="search"
-                                placeholder="Buscar veículos..."
-                                value={busca}
-                                onChange={(e) => setBusca && setBusca(e.target.value)}
-                            />
-                        </form>
-                    )}
+                    <form className={"d-flex mx-4 flex-grow-1 " + css.sumir}>
+                        <input
+                            className="form-control"
+                            type="search"
+                            placeholder="Buscar veículos..."
+                        />
+                    </form>
 
                     <div className={css.sumir}>
                         <div className="d-flex align-items-center gap-3">
+
                             <a className="nav-link">Comprar</a>
                             <a className="nav-link">Sobre nós</a>
 
@@ -186,7 +188,9 @@ export default function Header({ busca = "", setBusca = null, onMenuClick = null
                                     </Link>
 
                                     <Link
-                                        className={"btn btn-primary " + css.corFundo}
+                                        className={
+                                            "btn btn-primary " + css.corFundo
+                                        }
                                         to="/cadastro"
                                     >
                                         Cadastrar
@@ -194,7 +198,9 @@ export default function Header({ busca = "", setBusca = null, onMenuClick = null
                                 </>
                             ) : (
                                 <button
-                                    className={"btn btn-primary " + css.corFundo}
+                                    className={
+                                        "btn btn-primary " + css.corFundo
+                                    }
                                     onClick={handleLogout}
                                 >
                                     Logout

@@ -57,58 +57,48 @@ export default function Garagem() {
             <div className={css.layout}>
                 <SidebarMenu />
 
-                <main className={`${css.garagem} container-fluid`}>
-                    <div className={`${css.topo} d-flex flex-column flex-md-row justify-content-between align-items-center gap-3`}>
+                <main className={css.garagem}>
+                    <div className={css.topo}>
                         <h1 className={css.titulo}>Garagem</h1>
                     </div>
 
-                    <section className="row g-4 justify-content-center">
-                        <div className="col-12 col-md-6 col-lg-4">
-                            <div className={css.card}>
-                                <div className={`${css.iconeBox} ${css.azul}`}>
-                                    <span>▣</span>
-                                </div>
-
-                                <div>
-                                    <p className={css.cardLabel}>Estoque total</p>
-                                    <h2 className={css.cardValor}>{veiculos.length}</h2>
-                                </div>
+                    <section className={css.cards}>
+                        <div className={css.card}>
+                            <div className={`${css.iconeBox} ${css.azul}`}>
+                                <span>▣</span>
+                            </div>
+                            <div>
+                                <p className={css.cardLabel}>Estoque total</p>
+                                <h2 className={css.cardValor}>{veiculos.length}</h2>
                             </div>
                         </div>
 
-                        <div className="col-12 col-md-6 col-lg-4">
-                            <div className={css.card}>
-                                <div className={`${css.iconeBox} ${css.verde}`}>
-                                    <span>$</span>
-                                </div>
-
-                                <div>
-                                    <p className={css.cardLabel}>Valor da garagem</p>
-                                    <h2 className={css.cardValor}>{formatarPreco(valorGaragem)}</h2>
-                                </div>
+                        <div className={css.card}>
+                            <div className={`${css.iconeBox} ${css.verde}`}>
+                                <span>$</span>
+                            </div>
+                            <div>
+                                <p className={css.cardLabel}>Valor da garagem</p>
+                                <h2 className={css.cardValor}>{formatarPreco(valorGaragem)}</h2>
                             </div>
                         </div>
 
-                        <div className="col-12 col-md-6 col-lg-4">
-                            <div className={css.card}>
-                                <div className={`${css.iconeBox} ${css.laranja}`}>
-                                    <span>◫</span>
-                                </div>
-
-                                <div>
-                                    <p className={css.cardLabel}>Veículos ativos</p>
-                                    <h2 className={css.cardValor}>{veiculos.length}</h2>
-                                </div>
+                        <div className={css.card}>
+                            <div className={`${css.iconeBox} ${css.laranja}`}>
+                                <span>◫</span>
+                            </div>
+                            <div>
+                                <p className={css.cardLabel}>Veículos ativos</p>
+                                <h2 className={css.cardValor}>{veiculos.length}</h2>
                             </div>
                         </div>
                     </section>
 
-                    {erro && <p className={css.erro}>{erro}</p>}
+                    {erro && <p>{erro}</p>}
 
                     <section className={css.tabelaBox}>
-                        <div className="table-responsive">
-                            <table className={`table align-middle ${css.tabela}`}>
-                                <thead>
+                        <table className={css.tabela}>
+                            <thead>
                                 <tr>
                                     <th>MODELO</th>
                                     <th>ANO</th>
@@ -116,46 +106,43 @@ export default function Garagem() {
                                     <th>PREÇO</th>
                                     <th>AÇÕES</th>
                                 </tr>
-                                </thead>
+                            </thead>
 
-                                <tbody>
-                                {veiculos.map((carro, index) => (
-                                    <tr
-                                        key={carro.ID_VEICULO || carro.RENAVAM || index}
-                                        onClick={() => navigate("/VisualizarAdm", { state: { carro } })}
-                                        style={{ cursor: "pointer" }}
-                                    >
-                                        <td>
-                                            <div className={css.modeloCell}>
-                                                <img src="/Car.png" alt={carro.MODELO} />
-                                                <span>{carro.MARCA} {carro.MODELO}</span>
-                                            </div>
-                                        </td>
+                            <tbody>
+                            {veiculos.map((carro, index) => (
+                                <tr
+                                    key={carro.ID_VEICULO || carro.RENAVAM || index}
+                                    onClick={() => navigate("/VisualizarAdm", { state: { carro } })}
+                                    style={{ cursor: "pointer" }}
+                                >
+                                    <td>
+                                        <div className={css.modeloCell}>
+                                            <img src="/Car.png" alt={carro.MODELO} />
+                                            <span>{carro.MARCA} {carro.MODELO}</span>
+                                        </div>
+                                    </td>
 
-                                        <td>{carro.ANO_MODELO}</td>
+                                    <td>{carro.ANO_MODELO}</td>
 
-                                        <td>
-                                            {Number(carro.KM || 0).toLocaleString("pt-BR")} km
-                                        </td>
+                                    <td>
+                                        {Number(carro.KM || 0).toLocaleString("pt-BR")} km
+                                    </td>
 
-                                        <td className={css.preco}>
-                                            {formatarPreco(carro.PRECO_VENDA)}
-                                        </td>
+                                    <td className={css.preco}>
+                                        {formatarPreco(carro.PRECO_VENDA)}
+                                    </td>
 
-                                        <td className={css.acoes}>
-                                            🔧 ✎ 🗑
-                                        </td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    <td className={css.acoes}>
+                                        🔧 ✎ 🗑
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                        </table>
 
                         <div className={css.paginacao}>
                             <button className={css.paginaSeta}>‹</button>
                             <button className={`${css.pagina} ${css.ativa}`}>1</button>
-                            <button className={css.pagina}>2</button>
-                            <button className={css.pagina}>3</button>
                             <button className={css.paginaSeta}>›</button>
                         </div>
                     </section>

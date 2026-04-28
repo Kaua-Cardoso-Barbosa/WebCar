@@ -55,19 +55,6 @@ export default function AdicionarManutencao() {
         }
     }
 
-    function formatarMoeda(valor) {
-        const numeros = valor.replace(/\D/g, "");
-
-        if (!numeros) return "";
-
-        const numero = Number(numeros) / 100;
-
-        return numero.toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL"
-        });
-    }
-
     return (
         <>
             <Header />
