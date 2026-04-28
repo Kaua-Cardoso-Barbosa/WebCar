@@ -1,0 +1,86 @@
+.filtro {
+    background: #fff;
+    width: 100%;
+}
+
+.topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+}
+
+.topo h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.topo button {
+    border: none;
+    background: transparent;
+    color: #2563eb;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.grupo {
+    margin-bottom: 28px;
+}
+
+.grupo h4 {
+    font-size: 13px;
+    color: #667085;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.check {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 10px;
+    color: #111827;
+    cursor: pointer;
+}
+
+.check input {
+    width: 17px;
+    height: 17px;
+    cursor: pointer;
+}
+
+.range {
+    width: 100%;
+    cursor: pointer;
+}
+
+.precoLinha {
+    display: flex;
+    justify-content: space-between;
+    color: #667085;
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+.grupo select,
+.ano input {
+    width: 100%;
+    border: 1px solid #dbe3ef;
+    border-radius: 8px;
+    padding: 11px 12px;
+    outline: none;
+    color: #111827;
+}
+
+.ano {
+    display: flex;
+    gap: 8px;
+}
+.valorPreco {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2563eb;
+    margin-bottom: 8px;
+}

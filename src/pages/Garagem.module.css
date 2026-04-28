@@ -197,3 +197,11 @@
     font-size: 14px;
     color: #7c8aa5;
 }
+
+.botaoNovo {
+    text-decoration: none;
+}
+.linkCarro {
+    text-decoration: none;
+    color: inherit;
+}

@@ -65,11 +65,13 @@ export default function Login() {
                 } else {
                     navigate("/login");
                 }
-            }, 8000);
+            }, 1000);
 
-        } catch (error) {
+        } 
+        catch (error) {
+            console.log("ERRO REAL:", error);
             setErro("Erro ao conectar com o servidor");
-        }
+}
     }
 
     function fecharPopup() {

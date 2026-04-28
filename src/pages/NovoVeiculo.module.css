@@ -150,3 +150,72 @@ select {
         display: none;
     }
 }
+.galeria {
+    width: 100%;
+    min-height: 230px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 14px;
+}
+
+.uploadTexto {
+    width: 100%;
+    height: 200px;
+    border: 2px dashed #d1d5db;
+    border-radius: 18px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: #667085;
+}
+
+.previewGrande {
+    width: 360px;
+    height: 220px;
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.previewPequeno {
+    width: 120px;
+    height: 100px;
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.previewGrande img,
+.previewPequeno img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.previewGrande button,
+.previewPequeno button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    border: none;
+    background: rgba(0,0,0,0.65);
+    color: white;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.sucesso {
+    color: green;
+    font-weight: 600;
+}
+
+.erroMensagem {
+    color: red;
+    font-weight: 600;
+}

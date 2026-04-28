@@ -6,12 +6,12 @@ import Filtro from "../components/Filtro/Filtro.jsx";
 import { useState, useEffect } from "react";
 import { API_URL } from "../App";
 
-
-
 export default function Catalogo() {
 
     const [carros, setCarros] = useState([]);
+    const [carrosFiltrados, setCarrosFiltrados] = useState([]);
     const [erro, setErro] = useState("");
+    const [busca, setBusca] = useState("");
 
     useEffect(() => {
         async function buscarDados() {
@@ -33,7 +33,12 @@ export default function Catalogo() {
                 }
 
                 const data = await response.json();
-                setCarros(data.veiculos || data);
+                console.log("VEICULOS DO BACK:", data);
+
+                const lista = data.veiculos || data;
+
+                setCarros(lista);
+                setCarrosFiltrados(lista);
 
             } catch (error) {
                 setErro("Erro ao conectar com o servidor");
@@ -46,35 +51,51 @@ export default function Catalogo() {
 
     return (
         <>
-            <Header />
+            <Header busca={busca} setBusca={setBusca} />
 
-            <div style={{ display: "flex" }}>
-                <div className="col-lg-3">
-                    <Filtro />
-                </div>
+            <main className={css.catalogo}>
 
-                <div className="col-lg-9">
+                {/* SIDEBAR FILTRO */}
+                <aside className={css.sidebar}>
+                    <Filtro
+                        carros={carros}
+                        setCarrosFiltrados={setCarrosFiltrados}
+                    />
+                </aside>
+
+                {/* CONTEÚDO */}
+                <section className={css.conteudo}>
+
+                    <h1>Catálogo</h1>
+                    <p className={css.subtitulo}>
+                        Pesquise e agende uma visita para o seu preferido!
+                    </p>
 
                     {erro && <p>{erro}</p>}
 
-                    <div className="row">
-                        {carros.map((carro) => (
-                            <div className="col-md-4 mb-3" key={carro.id}>
-                                <Card
-                                    modelo={carro.MODELO}
-                                    valor={carro.PRECO_VENDA}
-                                    combustivel={carro.COMBUSTIVEL}
-                                    ano={carro.ANO_MODELO}
-                                    nome={carro.MARCA}
-                                    km={carro.KM}
-                                    cambio={carro.CAMBIO}
-                                />
-                            </div>
+                    <div className={css.grid}>
+                        {carrosFiltrados
+                            .filter((carro) =>
+                                `${carro.MARCA} ${carro.MODELO} ${carro.COR}`
+                                    .toLowerCase()
+                                    .includes(busca.toLowerCase())
+                            )
+                            .map((carro) => (
+                            <Card
+                                key={carro.ID_VEICULO || carro.id}
+                                modelo={carro.MODELO}
+                                valor={carro.PRECO_VENDA}
+                                combustivel={carro.COMBUSTIVEL}
+                                ano={carro.ANO_MODELO}
+                                nome={carro.MARCA}
+                                km={carro.KM}
+                                cambio={carro.CAMBIO}
+                            />
                         ))}
                     </div>
 
-                </div>
-            </div>
+                </section>
+            </main>
 
             <Footer />
         </>

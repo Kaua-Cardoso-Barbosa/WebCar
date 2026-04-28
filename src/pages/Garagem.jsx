@@ -2,156 +2,158 @@ import SidebarMenu from "../components/SidebarMenu/SidebarMenu";
 import css from "./Garagem.module.css";
 import Header from "../components/Header/Header.jsx";
 import Footer from "../components/Footer/Footer.jsx";
-import {Link} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { API_URL } from "../App";
 
 export default function Garagem() {
+    const navigate = useNavigate();
+    const [veiculos, setVeiculos] = useState([]);
+    const [erro, setErro] = useState("");
+
+    useEffect(() => {
+        async function buscarVeiculos() {
+            try {
+                const response = await fetch(`${API_URL}/buscar_veiculo`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({})
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    setErro(data.mensagem || "Erro ao buscar veículos.");
+                    return;
+                }
+
+                setVeiculos(data.veiculos || data);
+            } catch (error) {
+                setErro("Erro ao conectar com o servidor.");
+            }
+        }
+
+        buscarVeiculos();
+    }, []);
+
+    const valorGaragem = veiculos.reduce((total, carro) => {
+        return total + Number(carro.PRECO_VENDA || 0);
+    }, 0);
+
+    function formatarPreco(valor) {
+        return Number(valor || 0).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        });
+    }
+
     return (
         <>
             <Header />
-        <div className={css.layout}>
-            <SidebarMenu />
 
-            <main className={css.garagem}>
-                <div className={css.topo}>
-                    <h1 className={css.titulo}>Garagem</h1>
+            <div className={css.layout}>
+                <SidebarMenu />
 
-                    <button className={css.botaoNovo}>
-                        <span className={css.mais}>⊕</span>
-                        Novo Veículo
-                    </button>
-                </div>
+                <main className={css.garagem}>
+                    <div className={css.topo}>
+                        <h1 className={css.titulo}>Garagem</h1>
 
-                <section className={css.cards}>
-                    <div className={css.card}>
-                        <div className={`${css.iconeBox} ${css.azul}`}>
-                            <span>▣</span>
-                        </div>
-                        <div>
-                            <p className={css.cardLabel}>Estoque total</p>
-                            <h2 className={css.cardValor}>142</h2>
-                        </div>
+                        <Link to="/Cadastroveiculo" className={css.botaoNovo}>
+                            <span className={css.mais}>⊕</span>
+                            Novo Veículo
+                        </Link>
                     </div>
 
-                    <div className={css.card}>
-                        <div className={`${css.iconeBox} ${css.verde}`}>
-                            <span>$</span>
+                    <section className={css.cards}>
+                        <div className={css.card}>
+                            <div className={`${css.iconeBox} ${css.azul}`}>
+                                <span>▣</span>
+                            </div>
+                            <div>
+                                <p className={css.cardLabel}>Estoque total</p>
+                                <h2 className={css.cardValor}>{veiculos.length}</h2>
+                            </div>
                         </div>
-                        <div>
-                            <p className={css.cardLabel}>Valor da garagem</p>
-                            <h2 className={css.cardValor}>$244.845,00</h2>
+
+                        <div className={css.card}>
+                            <div className={`${css.iconeBox} ${css.verde}`}>
+                                <span>$</span>
+                            </div>
+                            <div>
+                                <p className={css.cardLabel}>Valor da garagem</p>
+                                <h2 className={css.cardValor}>{formatarPreco(valorGaragem)}</h2>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className={css.card}>
-                        <div className={`${css.iconeBox} ${css.laranja}`}>
-                            <span>◫</span>
+                        <div className={css.card}>
+                            <div className={`${css.iconeBox} ${css.laranja}`}>
+                                <span>◫</span>
+                            </div>
+                            <div>
+                                <p className={css.cardLabel}>Veículos ativos</p>
+                                <h2 className={css.cardValor}>{veiculos.length}</h2>
+                            </div>
                         </div>
-                        <div>
-                            <p className={css.cardLabel}>Vendedores ativos</p>
-                            <h2 className={css.cardValor}>28</h2>
-                        </div>
-                    </div>
-                </section>
+                    </section>
 
-                <section className={css.tabelaBox}>
-                    <table className={css.tabela}>
-                        <thead>
-                        <tr>
-                            <th>MODELO</th>
-                            <th>ANO</th>
-                            <th>KM</th>
-                            <th>PREÇO</th>
-                            <th>AÇÕES</th>
-                        </tr>
-                        </thead>
+                    {erro && <p>{erro}</p>}
 
-                        <tbody>
-                        <tr>
-                            <td>
-                                <div className={css.modeloCell}>
-                                    <img
-                                        src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=200"
-                                        alt="Toyota Corolla"
-                                    />
-                                    <span>Toyota Corolla</span>
-                                </div>
-                            </td>
-                            <td>2022</td>
-                            <td>15,000 km</td>
-                            <td className={css.preco}>$25000,00</td>
-                            <td className={css.acoes}>🔧 ✎ 🗑</td>
-                        </tr>
+                    <section className={css.tabelaBox}>
+                        <table className={css.tabela}>
+                            <thead>
+                                <tr>
+                                    <th>MODELO</th>
+                                    <th>ANO</th>
+                                    <th>KM</th>
+                                    <th>PREÇO</th>
+                                    <th>AÇÕES</th>
+                                </tr>
+                            </thead>
 
-                        <tr>
-                            <td>
-                                <div className={css.modeloCell}>
-                                    <img
-                                        src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=200"
-                                        alt="Honda Civic"
-                                    />
-                                    <span>Honda Civic</span>
-                                </div>
-                            </td>
-                            <td>2021</td>
-                            <td>22,000 km</td>
-                            <td className={css.preco}>$24500,00</td>
-                            <td className={css.acoes}> <Link to="/">
-                                🔧
-                            </Link> </td>
-                            <td className={css.acoes}> <Link to="/">
-                                ✎
-                            </Link> </td>
-                            <td className={css.acoes}> <Link to="/">
-                                🗑
-                            </Link> </td>
-                        </tr>
+                            <tbody>
+                            {veiculos.map((carro, index) => (
+                                <tr
+                                    key={carro.ID_VEICULO || carro.RENAVAM || index}
+                                    onClick={() => navigate("/VisualizarAdm", { state: { carro } })}
+                                    style={{ cursor: "pointer" }}
+                                >
+                                    <td>
+                                        <div className={css.modeloCell}>
+                                            <img src="/Car.png" alt={carro.MODELO} />
+                                            <span>{carro.MARCA} {carro.MODELO}</span>
+                                        </div>
+                                    </td>
 
-                        <tr>
-                            <td>
-                                <div className={css.modeloCell}>
-                                    <img
-                                        src="https://images.unsplash.com/photo-1553440569-bcc63803a83d?w=200"
-                                        alt="Ford F-150"
-                                    />
-                                    <span>Ford F-150</span>
-                                </div>
-                            </td>
-                            <td>2023</td>
-                            <td>5,000 km</td>
-                            <td className={css.preco}>$45000,00</td>
-                            <td className={css.acoes}>🔧 ✎ 🗑</td>
-                        </tr>
+                                    <td>{carro.ANO_MODELO}</td>
 
-                        <tr>
-                            <td>
-                                <div className={css.modeloCell}>
-                                    <img
-                                        src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=200"
-                                        alt="Chevrolet Onix"
-                                    />
-                                    <span>Chevrolet Onix</span>
-                                </div>
-                            </td>
-                            <td>2020</td>
-                            <td>45,000 km</td>
-                            <td className={css.preco}>$12500,00</td>
-                            <td className={css.acoes}>🔧 ✎ 🗑</td>
-                        </tr>
+                                    <td>
+                                        {Number(carro.KM || 0).toLocaleString("pt-BR")} km
+                                    </td>
+
+                                    <td className={css.preco}>
+                                        {formatarPreco(carro.PRECO_VENDA)}
+                                    </td>
+
+                                    <td className={css.acoes}>
+                                        🔧 ✎ 🗑
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
-                    </table>
+                        </table>
 
-                    <div className={css.paginacao}>
-                        <button className={css.paginaSeta}>‹</button>
-                        <button className={`${css.pagina} ${css.ativa}`}>1</button>
-                        <button className={css.pagina}>2</button>
-                        <button className={css.pagina}>3</button>
-                        <button className={css.paginaSeta}>›</button>
-                    </div>
-                </section>
+                        <div className={css.paginacao}>
+                            <button className={css.paginaSeta}>‹</button>
+                            <button className={`${css.pagina} ${css.ativa}`}>1</button>
+                            <button className={css.paginaSeta}>›</button>
+                        </div>
+                    </section>
+                </main>
+            </div>
 
-
-            </main>
-        </div>
             <Footer />
         </>
     );

@@ -1,45 +1,52 @@
 import styles from "./SidebarMenu.module.css";
-import {Link} from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export default function SidebarMenu() {
+    const location = useLocation();
+
     return (
         <aside className={styles.sidebar}>
             <nav className={styles.menu}>
-                <button className={`${styles.item} ${styles.active}`}>
+                <Link
+                    to="/dashboard"
+                    className={`${styles.item} ${location.pathname === "/dashboard" ? styles.active : ""}`}
+                >
                     <DashboardIcon />
                     <span>Dashboard</span>
-                </button>
+                </Link>
 
-                <button className={styles.item}>
+                <Link
+                    to="/garagem"
+                    className={`${styles.item} ${location.pathname === "/garagem" ? styles.active : ""}`}
+                >
                     <GarageIcon />
-                    <Link to="/garagem">Garagem</Link>
-                </button>
+                    <span>Garagem</span>
+                </Link>
 
-                <button className={styles.item}>
+                <Link to="/" className={styles.item}>
                     <SalesIcon />
                     <span>Vendas</span>
-                </button>
+                </Link>
 
-                <button className={styles.item}>
+                <Link to="/" className={styles.item}>
                     <UserIcon />
-                    <span>Usuario</span>
-                </button>
+                    <span>Usuarios</span>
+                </Link>
             </nav>
+
+            <Link to="/Cadastroveiculo" className={styles.botaoAdicionar}>
+                <span>＋</span>
+                Adicione veículos
+            </Link>
         </aside>
     );
 }
 
+/* DAQUI PRA BAIXO DEIXA OS ÍCONES QUE VOCÊ JÁ TINHA */
+
 function DashboardIcon() {
     return (
-        <svg
-            className={styles.icon}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
+        <svg className={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="3" y="3" width="7" height="7" />
             <rect x="14" y="3" width="7" height="7" />
             <rect x="3" y="14" width="7" height="7" />
@@ -50,15 +57,7 @@ function DashboardIcon() {
 
 function GarageIcon() {
     return (
-        <svg
-            className={styles.icon}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
+        <svg className={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M4 7h16" />
             <path d="M6 7v12h12V7" />
             <path d="M9 11h6" />
@@ -70,11 +69,7 @@ function GarageIcon() {
 
 function SalesIcon() {
     return (
-        <svg
-            className={styles.icon}
-            viewBox="0 0 24 24"
-            fill="currentColor"
-        >
+        <svg className={styles.icon} viewBox="0 0 24 24" fill="currentColor">
             <rect x="4" y="11" width="3" height="9" rx="1" />
             <rect x="10.5" y="6" width="3" height="14" rx="1" />
             <rect x="17" y="2" width="3" height="18" rx="1" />
@@ -84,15 +79,7 @@ function SalesIcon() {
 
 function UserIcon() {
     return (
-        <svg
-            className={styles.icon}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
+        <svg className={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
             <circle cx="9.5" cy="7" r="3" />
             <path d="M20 21v-2a4 4 0 0 0-3-3.87" />

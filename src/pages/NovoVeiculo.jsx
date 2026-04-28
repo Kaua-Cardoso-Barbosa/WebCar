@@ -1,5 +1,6 @@
 import SidebarMenu from "../components/SidebarMenu/SidebarMenu";
 import css from "./NovoVeiculo.module.css";
+import { API_URL } from "../App";
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +10,7 @@ import Footer from "../components/Footer/Footer.jsx";
 export default function NovoVeiculo() {
     const navigate = useNavigate();
 
+    const [marcas, setMarcas] = useState([]);
     const [marca, setMarca] = useState("");
     const [modelo, setModelo] = useState("");
     const [anoFabricacao, setAnoFabricacao] = useState("");
@@ -22,39 +24,47 @@ export default function NovoVeiculo() {
     const [renavam, setRenavam] = useState("");
     const [valorCusto, setValorCusto] = useState("");
     const [valorVenda, setValorVenda] = useState("");
-
-    const [erroRenavam, setErroRenavam] = useState("");
-    const [imagem, setImagem] = useState(null);
-    const [preview, setPreview] = useState(null);
-
-    function handleImagem(e) {
-        const arquivo = e.target.files[0];
-
-        if (arquivo) {
-            setImagem(arquivo);
-            setPreview(URL.createObjectURL(arquivo));
-        }
-    }
-
-    useEffect(() => {
-        return () => {
-            if (preview) {
-                URL.revokeObjectURL(preview);
-            }
-        };
-    }, [preview]);
-
+    const [imagens, setImagens] = useState([]);
 
     const [mensagem, setMensagem] = useState("");
     const [tipoMensagem, setTipoMensagem] = useState("");
     const [carregando, setCarregando] = useState(false);
 
+    useEffect(() => {
+        async function buscarMarcas() {
+            try {
+                const response = await fetch(`${API_URL}/buscar_marca`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({})
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    setMarcas(data.marcas || []);
+                } else {
+                    console.log("Erro ao buscar marcas:", data);
+                }
+            } catch (error) {
+                console.log("Erro ao conectar ao buscar marcas:", error);
+            }
+        }
+
+        buscarMarcas();
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            imagens.forEach((img) => URL.revokeObjectURL(img.preview));
+        };
+    }, [imagens]);
+
     function apenasNumeros(valor) {
         return valor.replace(/\D/g, "");
-    }
-
-    function apenasLetras(valor) {
-        return valor.replace(/[^a-zA-ZÀ-ÿ\s]/g, "");
     }
 
     function formatarMoeda(valor) {
@@ -70,6 +80,10 @@ export default function NovoVeiculo() {
         });
     }
 
+    function limparMoeda(valor) {
+        return valor.replace(/\D/g, "");
+    }
+
     function formatarPlaca(valor) {
         const limpa = valor.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7);
 
@@ -78,79 +92,35 @@ export default function NovoVeiculo() {
         return `${limpa.slice(0, 3)}-${limpa.slice(3)}`;
     }
 
-    function validarRenavam(valor) {
-        const renavamLimpo = valor.replace(/\D/g, "");
+    function handleImagens(e) {
+        const arquivos = Array.from(e.target.files);
 
-        if (renavamLimpo.length !== 11) return false;
+        const novasImagens = arquivos.map((arquivo) => ({
+            arquivo,
+            preview: URL.createObjectURL(arquivo)
+        }));
 
-        const base = renavamLimpo.slice(0, 10);
-        const digitoInformado = parseInt(renavamLimpo[10], 10);
-
-        let soma = 0;
-        let peso = 3;
-
-        for (let i = 0; i < 10; i++) {
-            soma += parseInt(base[i], 10) * peso;
-            peso--;
-
-            if (peso < 2) {
-                peso = 9;
-            }
-        }
-
-        let digitoCalculado = 11 - (soma % 11);
-
-        if (digitoCalculado >= 10) {
-            digitoCalculado = 0;
-        }
-
-        return digitoCalculado === digitoInformado;
+        setImagens((atuais) => [...atuais, ...novasImagens]);
     }
 
-    function handleImagem(e) {
-        const arquivo = e.target.files[0];
-
-        if (arquivo) {
-            setImagem(arquivo);
-            setPreview(URL.createObjectURL(arquivo));
-        }
-    }
-
-    useEffect(() => {
-        return () => {
-            if (preview) {
-                URL.revokeObjectURL(preview);
-            }
-        };
-    }, [preview]);
-
-    function handleRenavam(e) {
-        const valor = apenasNumeros(e.target.value).slice(0, 11);
-
-        setRenavam(valor);
-
-        if (valor.length === 11) {
-            if (!validarRenavam(valor)) {
-                setErroRenavam("RENAVAM inválido");
-            } else {
-                setErroRenavam("");
-            }
-        } else {
-            setErroRenavam("");
-        }
+    function removerImagem(index) {
+        setImagens((atuais) => {
+            URL.revokeObjectURL(atuais[index].preview);
+            return atuais.filter((_, i) => i !== index);
+        });
     }
 
     async function salvarVeiculo() {
         if (
-            !marca.trim() ||
+            !marca ||
             !modelo.trim() ||
             !anoFabricacao.trim() ||
             !anoModelo.trim() ||
-            !documento.trim() ||
+            !documento ||
             !km.trim() ||
-            !combustivel.trim() ||
-            !cambio.trim() ||
-            !cor.trim() ||
+            !combustivel ||
+            !cambio ||
+            !cor ||
             !placa.trim() ||
             !renavam.trim() ||
             !valorCusto.trim() ||
@@ -161,8 +131,8 @@ export default function NovoVeiculo() {
             return;
         }
 
-        if (erroRenavam) {
-            setMensagem("Corrija o RENAVAM antes de salvar.");
+        if (renavam.length !== 11) {
+            setMensagem("RENAVAM deve ter 11 números.");
             setTipoMensagem("erro");
             return;
         }
@@ -173,25 +143,25 @@ export default function NovoVeiculo() {
             setTipoMensagem("");
 
             const formData = new FormData();
-            formData.append("marca", marca);
+            formData.append("id_marca", marca);
             formData.append("modelo", modelo);
             formData.append("ano_fabricacao", anoFabricacao);
             formData.append("ano_modelo", anoModelo);
-            formData.append("documento", documento);
-            formData.append("km", km);
-            formData.append("combustivel", combustivel);
-            formData.append("cambio", cambio);
-            formData.append("cor", cor);
             formData.append("placa", placa);
+            formData.append("km", km);
+            formData.append("cor", cor);
+            formData.append("cambio", cambio);
+            formData.append("combustivel", combustivel);
             formData.append("renavam", renavam);
-            formData.append("valor_custo", valorCusto.replace(",", "."));
-            formData.append("valor_venda", valorVenda.replace(",", "."));
+            formData.append("preco_custo", limparMoeda(valorCusto));
+            formData.append("preco_venda", limparMoeda(valorVenda));
+            formData.append("documentacao", documento);
 
-            if (imagem) {
-                formData.append("imagem", imagem);
-            }
+            imagens.forEach((img) => {
+                formData.append("imagem", img.arquivo);
+            });
 
-            const response = await fetch(`${API_URL}/cadastrar_veiculo`, {
+            const response = await fetch(`${API_URL}/adicionar_veiculo`, {
                 method: "POST",
                 credentials: "include",
                 body: formData
@@ -208,8 +178,11 @@ export default function NovoVeiculo() {
             setMensagem(data.mensagem || "Veículo cadastrado com sucesso.");
             setTipoMensagem("sucesso");
 
-            navigate("/garagem");
+            setTimeout(() => {
+                navigate("/garagem");
+            }, 800);
         } catch (error) {
+            console.log(error);
             setMensagem("Erro ao conectar com o servidor.");
             setTipoMensagem("erro");
         } finally {
@@ -237,23 +210,34 @@ export default function NovoVeiculo() {
                     )}
 
                     <div className={css.uploadArea}>
-                        <div className={css.containerPreview}>
-                            {!preview && <img src="/Nuvem.png" alt="upload" className={css.sumir} />}
+                        <input
+                            type="file"
+                            className={css.inputImg}
+                            onChange={handleImagens}
+                            accept="image/*"
+                            multiple
+                        />
 
-                            <input
-                                type="file"
-                                className={css.inputImg}
-                                onChange={handleImagem}
-                                accept="image/*"
-                            />
-
-                            {preview && (
-                                <img
-                                    src={preview}
-                                    alt="preview"
-                                    className={css.previewImagem}
-                                />
+                        <div className={css.galeria}>
+                            {imagens.length === 0 && (
+                                <div className={css.uploadTexto}>
+                                    <img src="/Nuvem.png" alt="upload" />
+                                    <p>Clique para adicionar imagens</p>
+                                </div>
                             )}
+
+                            {imagens.map((img, index) => (
+                                <div
+                                    className={index === 0 ? css.previewGrande : css.previewPequeno}
+                                    key={index}
+                                >
+                                    <img src={img.preview} alt="preview" />
+
+                                    <button type="button" onClick={() => removerImagem(index)}>
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
@@ -261,11 +245,15 @@ export default function NovoVeiculo() {
                         <div className={css.box}>
                             <h3>Informações Básicas</h3>
 
-                            <input
-                                placeholder="Marca"
-                                value={marca}
-                                onChange={(e) => setMarca(apenasLetras(e.target.value))}
-                            />
+                            <select value={marca} onChange={(e) => setMarca(e.target.value)}>
+                                <option value="">Selecione uma marca</option>
+
+                                {marcas.map((item) => (
+                                    <option key={item.id_marca} value={item.id_marca}>
+                                        {item.nome}
+                                    </option>
+                                ))}
+                            </select>
 
                             <input
                                 placeholder="Modelo"
@@ -289,13 +277,10 @@ export default function NovoVeiculo() {
                                 />
                             </div>
 
-                            <select
-                                value={documento}
-                                onChange={(e) => setDocumento(e.target.value)}
-                            >
+                            <select value={documento} onChange={(e) => setDocumento(e.target.value)}>
                                 <option value="">Documento</option>
-                                <option value="Pago">Pago</option>
-                                <option value="Não Pago">Não Pago</option>
+                                <option value="0">Pago</option>
+                                <option value="1">Não Pago</option>
                             </select>
                         </div>
 
@@ -309,32 +294,23 @@ export default function NovoVeiculo() {
                                     onChange={(e) => setKm(apenasNumeros(e.target.value))}
                                 />
 
-                                <select
-                                    value={combustivel}
-                                    onChange={(e) => setCombustivel(e.target.value)}
-                                >
+                                <select value={combustivel} onChange={(e) => setCombustivel(e.target.value)}>
                                     <option value="">Combustível</option>
-                                    <option value="Flex">Flex</option>
-                                    <option value="Gasolina">Gasolina</option>
-                                    <option value="Etanol">Etanol</option>
-                                    <option value="Diesel">Diesel</option>
+                                    <option value="0">Flex</option>
+                                    <option value="1">Gasolina</option>
+                                    <option value="2">Etanol</option>
+                                    <option value="3">Diesel</option>
                                 </select>
                             </div>
 
                             <div className={css.row}>
-                                <select
-                                    value={cambio}
-                                    onChange={(e) => setCambio(e.target.value)}
-                                >
+                                <select value={cambio} onChange={(e) => setCambio(e.target.value)}>
                                     <option value="">Câmbio</option>
-                                    <option value="Manual">Manual</option>
-                                    <option value="Automático">Automático</option>
+                                    <option value="0">Manual</option>
+                                    <option value="1">Automático</option>
                                 </select>
 
-                                <select
-                                    value={cor}
-                                    onChange={(e) => setCor(e.target.value)}
-                                >
+                                <select value={cor} onChange={(e) => setCor(e.target.value)}>
                                     <option value="">Cor</option>
                                     <option value="Preto">Preto</option>
                                     <option value="Branco">Branco</option>
@@ -355,14 +331,9 @@ export default function NovoVeiculo() {
                             <input
                                 placeholder="Renavam"
                                 value={renavam}
-                                onChange={handleRenavam}
+                                onChange={(e) => setRenavam(apenasNumeros(e.target.value).slice(0, 11))}
                                 maxLength={11}
-                                className={erroRenavam ? css.erroInput : ""}
                             />
-
-                            {erroRenavam && (
-                                <span className={css.erro}>{erroRenavam}</span>
-                            )}
                         </div>
                     </div>
 
@@ -388,6 +359,7 @@ export default function NovoVeiculo() {
                         <button
                             type="button"
                             className={css.cancelar}
+                            onClick={() => navigate("/garagem")}
                         >
                             Cancelar
                         </button>

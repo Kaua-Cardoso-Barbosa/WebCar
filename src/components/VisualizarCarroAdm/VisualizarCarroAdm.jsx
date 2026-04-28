@@ -1,23 +1,62 @@
 import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import css from "./VisualizarCarroAdm.module.css"
+import css from "./VisualizarCarroAdm.module.css";
 
 export default function VisualizarCarroAdm() {
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const carro = location.state?.carro;
+
     const imagens = [
         "/Car.png",
         "/Car.png",
         "/Car.png",
-        "/Car.png",
-        "/Car.png",
-        "/Car.png",
-        "/Car.png",
+        "/Car.png"
     ];
 
     const [imagemPrincipal, setImagemPrincipal] = useState(imagens[0]);
 
+    if (!carro) {
+        return (
+            <div className="container py-5">
+                <h3>Veículo não encontrado.</h3>
+                <button className="btn btn-primary mt-3" onClick={() => navigate("/garagem")}>
+                    Voltar para garagem
+                </button>
+            </div>
+        );
+    }
+
+    function formatarPreco(valor) {
+        return Number(valor || 0).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        });
+    }
+
+    function textoCambio(valor) {
+        if (String(valor) === "0") return "Manual";
+        if (String(valor) === "1") return "Automático";
+        return valor || "Não informado";
+    }
+
+    function textoCombustivel(valor) {
+        if (String(valor) === "0") return "Flex";
+        if (String(valor) === "1") return "Gasolina";
+        if (String(valor) === "2") return "Etanol";
+        if (String(valor) === "3") return "Diesel";
+        return valor || "Não informado";
+    }
+
     return (
         <div className="container py-4">
+            <button className="btn btn-light mb-3" onClick={() => navigate("/garagem")}>
+                ← Voltar
+            </button>
+
             <div className="row g-4">
                 <div className="col-lg-8">
                     <div className="card border-0 shadow-sm p-3">
@@ -26,7 +65,7 @@ export default function VisualizarCarroAdm() {
                                 src={imagemPrincipal}
                                 className="w-100 h-100 rounded"
                                 style={{ objectFit: "cover" }}
-                                onError={(e) => (e.target.style.display = "none")}
+                                alt={carro.MODELO}
                             />
                         </div>
 
@@ -44,6 +83,7 @@ export default function VisualizarCarroAdm() {
                                         cursor: "pointer",
                                         border: imagemPrincipal === img ? "2px solid #0d6efd" : "2px solid transparent",
                                     }}
+                                    alt={`Imagem ${index + 1}`}
                                 />
                             ))}
                         </div>
@@ -51,10 +91,10 @@ export default function VisualizarCarroAdm() {
 
                     <div className="row g-3 mt-3">
                         {[
-                            { icon: "speedometer2", title: "QUILOMETRAGEM", value: "12,400 mi" },
-                            { icon: "gear", title: "PILOTO", value: "Manual" },
-                            { icon: "fuel-pump", title: "COMBUSTÍVEL", value: "Gasolina" },
-                            { icon: "palette", title: "COR", value: "Verde" },
+                            { icon: "speedometer2", title: "QUILOMETRAGEM", value: `${Number(carro.KM || 0).toLocaleString("pt-BR")} km` },
+                            { icon: "gear", title: "CÂMBIO", value: textoCambio(carro.CAMBIO) },
+                            { icon: "fuel-pump", title: "COMBUSTÍVEL", value: textoCombustivel(carro.COMBUSTIVEL) },
+                            { icon: "palette", title: "COR", value: carro.COR || "Não informado" },
                         ].map((item, index) => (
                             <div className="col-6 col-md-3" key={index}>
                                 <div className="card text-center border-0 shadow-sm p-3 h-100">
@@ -69,30 +109,24 @@ export default function VisualizarCarroAdm() {
 
                 <div className="col-lg-4">
                     <div className="card border-0 shadow-sm p-4">
+                        <small className="text-muted">Veículo</small>
+                        <h3 className="fw-bold mb-3">
+                            {carro.MARCA} {carro.MODELO}
+                        </h3>
+
                         <small className="text-muted">Preço</small>
-                        <h2 className="fw-bold">R$24,950</h2>
+                        <h2 className="fw-bold">{formatarPreco(carro.PRECO_VENDA)}</h2>
 
-                        <div style={{display:"contents"}}>
-                            <div style={{display:"contents"}}>
-                                <label style={{fontWeight:"500"}}>Cliente</label>
-                                <select className={(css.selectCliente) + " " + (css.seeelect)}>
-                                    <option>Ryan Rivieira de Souza</option>
-                                    <option>Maria Silva</option>
-                                </select>
-                            </div>
+                        <hr />
 
-                            <div style={{display:"contents"}}>
-                                <label style={{fontWeight:"500"}}>Forma de Pagamento</label>
-                                <select className={(css.selectCliente) + " " + (css.seeelect)}>
-                                    <option>PIX</option>
-                                    <option>Cartão</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <button className="btn btn-primary w-100 mt-3 d-flex align-items-center justify-content-center gap-2">
-                            <i className="bi bi-calendar"></i>
-                            Agendar Visita
+                        <p><strong>Ano:</strong> {carro.ANO_MODELO}</p>
+                        <p><strong>Placa:</strong> {carro.PLACA}</p>
+                        <p><strong>Renavam:</strong> {carro.RENAVAM}</p>
+                        <button
+                            className="btn btn-primary w-100 mt-3"
+                            onClick={() => navigate("/EdicaoVeiculo", { state: { carro } })}
+                        >
+                            Editar veículo
                         </button>
                     </div>
                 </div>
@@ -103,19 +137,11 @@ export default function VisualizarCarroAdm() {
                     <div className="card border-0 shadow-sm p-4">
                         <h5 className="fw-bold mb-3">Detalhes</h5>
                         <p className="text-muted mb-0">
-                            Gurgel X-12, perfeitas condições, com histórico limpo e apenas um proprietário anterior. Equipado com os mais recentes recursos de segurança, um motor econômico e um interior premium, ele oferece o equilíbrio perfeito entre confiabilidade e estilo moderno.
+                            {carro.MARCA} {carro.MODELO}, ano {carro.ANO_MODELO}, cor {carro.COR}, com {Number(carro.KM || 0).toLocaleString("pt-BR")} km.
                         </p>
                     </div>
                 </div>
             </div>
-
-            <style>{`
-        @media (max-width: 576px) {
-          h2 {
-            font-size: 1.5rem;
-          }
-        }
-      `}</style>
         </div>
     );
 }

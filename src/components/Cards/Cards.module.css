@@ -1,33 +1,59 @@
-.Cardtam{
-    width: 900px;
+.card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    transition: 0.2s;
 }
 
-.gp-10{
-    gap: 10px;
+.card:hover {
+    transform: translateY(-5px);
 }
 
-@media (min-width: 765px) and (max-width: 1000px) {
-    .espacomenor{
-        gap: 40px;
-    }
+.imagem {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
 }
 
-@media (min-width: 765px) and (max-width: 1000px) {
-    .espacogrande{
-        gap: 13px;
-        flex-flow: wrap;
-    }
+.topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
 }
 
-.gap130{
-    gap: 130px;
+.topo h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
 }
 
-.gap28{
-    gap: 22px;
+.preco {
+    color: #2563EB;
+    font-weight: bold;
 }
 
-.cardestilo{
-    box-shadow: 5px 6px 20px 3px #d0d0d0;
-    border-radius: 10px;
+.info {
+    padding: 0 16px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.rodape {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 16px 16px;
+}
+
+.rodape div {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #374151;
+}
+
+.rodape img {
+    width: 16px;
 }

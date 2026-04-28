@@ -1,8 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import css from "./Header.module.css";
 
-export default function Header() {
+export default function Header({ busca = "", setBusca = null }) {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -149,9 +149,11 @@ export default function Header() {
 
                                     <form className="d-flex mt-3">
                                         <input
-                                            className="form-control me-2"
+                                            className="form-control"
                                             type="search"
                                             placeholder="Buscar veículos..."
+                                            value={busca}
+                                            onChange={(e) => setBusca && setBusca(e.target.value)}
                                         />
                                         <button
                                             type="button"
