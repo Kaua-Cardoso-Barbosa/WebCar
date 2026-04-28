@@ -1,24 +1,16 @@
 import { Navigate } from "react-router-dom";
 
-export default function RotaProtegida(props) {
+export default function RotaProtegida({ children, tiposPermitidos }) {
     const usuarioId = localStorage.getItem("usuario_id");
-    const tipoUsuario = localStorage.getItem("usuario_tipo");
+    const usuarioTipo = Number(localStorage.getItem("usuario_tipo"));
 
     if (!usuarioId) {
         return <Navigate to="/login" />;
     }
 
-    if (tipoUsuario !== props.tipoPermitido) {
+    if (!tiposPermitidos.includes(usuarioTipo)) {
         return <Navigate to="/login" />;
     }
 
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-        return <Navigate to="/login" replace />;
-    }
-
-
-
-    return props.componente;
+    return children;
 }

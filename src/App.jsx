@@ -48,13 +48,11 @@ export default function App() {
                 <Route path="/VisualizarAdm" element={<VisualizarAdm />} />
                 <Route path="/Agendar" element={<AgendarSuaVisita />} />
                 <Route path="/catalogo" element={<Catalogo />} />
-                <Route path="/garagem" element={<Garagem />} />
                 <Route path="/Cadastroveiculo" element={<NovoVeiculo />} />
                 <Route path="/EdicaoVeiculo" element={<EditarVeiculo />} />
                 <Route path="/cadastrarservicos" element={<CadastrarServico />} />
                 <Route path="/adicionarmanutencao" element={<AdicionarManutencao />} />
                 <Route path="/editarmanutencao" element={<EditarManutencao />} />
-                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/servicos" element={<Servicos />} />
                 <Route path="/cadastrarmarca" element={<CadastrarMarca />} />
                 <Route path="/atualizarvalores" element={<AtualizarValores />} />
@@ -73,12 +71,20 @@ export default function App() {
                 />
 
                 <Route
-                    path="/restrita-adm"
+                    path="/dashboard"
                     element={
-                        <RotaProtegida
-                            componente={<RestritaAdm />}
-                            tipoPermitido="0"
-                        />
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <Dashboard />
+                        </RotaProtegida>
+                    }
+                />
+
+                <Route
+                    path="/garagem"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <Garagem />
+                        </RotaProtegida>
                     }
                 />
 

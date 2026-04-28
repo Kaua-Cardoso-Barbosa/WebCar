@@ -49,6 +49,10 @@ export default function Login() {
                 localStorage.setItem("usuario_nome", data.usuario.nome);
                 localStorage.setItem("usuario_email", data.usuario.email);
                 localStorage.setItem("usuario_tipo", data.usuario.tipo);
+
+                if (data.token) {
+                    localStorage.setItem("token", data.token);
+                }
             }
 
             setMostrarPopup(true);

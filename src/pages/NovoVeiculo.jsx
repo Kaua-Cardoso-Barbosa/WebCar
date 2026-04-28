@@ -29,6 +29,7 @@ export default function NovoVeiculo() {
     const [mensagem, setMensagem] = useState("");
     const [tipoMensagem, setTipoMensagem] = useState("");
     const [carregando, setCarregando] = useState(false);
+    const [erroRenavam, setErroRenavam] = useState("");
 
     useEffect(() => {
         async function buscarMarcas() {
@@ -65,6 +66,33 @@ export default function NovoVeiculo() {
 
     function apenasNumeros(valor) {
         return valor.replace(/\D/g, "");
+    }
+    function validarRenavam(valor) {
+        const renavamLimpo = valor.replace(/\D/g, "");
+
+        if (renavamLimpo.length !== 11) return false;
+
+        const base = renavamLimpo.slice(0, 10);
+        const digitoInformado = parseInt(renavamLimpo[10], 10);
+
+        let soma = 0;
+        let peso = 3;
+
+        for (let i = 0; i < 10; i++) {
+            soma += parseInt(base[i], 10) * peso;
+            peso--;
+
+            if (peso < 2) {
+                peso = 9;
+            }
+        }
+
+        let resto = soma % 11;
+        let digitoCalculado = 11 - resto;
+
+        if (digitoCalculado >= 10) digitoCalculado = 0;
+
+        return digitoCalculado === digitoInformado;
     }
 
     function formatarMoeda(valor) {
@@ -131,8 +159,8 @@ export default function NovoVeiculo() {
             return;
         }
 
-        if (renavam.length !== 11) {
-            setMensagem("RENAVAM deve ter 11 números.");
+        if (!validarRenavam(renavam)) {
+            setMensagem("RENAVAM inválido.");
             setTipoMensagem("erro");
             return;
         }
@@ -331,9 +359,26 @@ export default function NovoVeiculo() {
                             <input
                                 placeholder="Renavam"
                                 value={renavam}
-                                onChange={(e) => setRenavam(apenasNumeros(e.target.value).slice(0, 11))}
+                                onChange={(e) => {
+                                    const valor = apenasNumeros(e.target.value).slice(0, 11);
+                                    setRenavam(valor);
+
+                                    if (valor.length === 11) {
+                                        if (!validarRenavam(valor)) {
+                                            setErroRenavam("RENAVAM inválido");
+                                        } else {
+                                            setErroRenavam("");
+                                        }
+                                    } else {
+                                        setErroRenavam("");
+                                    }
+                                }}
                                 maxLength={11}
                             />
+
+                            {erroRenavam && (
+                                <p className={css.erroMensagem}>{erroRenavam}</p>
+                            )}
                         </div>
                     </div>
 
