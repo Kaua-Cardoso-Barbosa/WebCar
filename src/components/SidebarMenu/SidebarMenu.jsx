@@ -23,6 +23,14 @@ export default function SidebarMenu() {
                     <span>Garagem</span>
                 </Link>
 
+                <Link
+                    to="/servicos"
+                    className={`${styles.item} ${location.pathname === "/servicos" ? styles.active : ""}`}
+                >
+                    <ServicesIcon />
+                    <span>Serviços</span>
+                </Link>
+
                 <Link to="/" className={styles.item}>
                     <SalesIcon />
                     <span>Vendas</span>
@@ -30,7 +38,7 @@ export default function SidebarMenu() {
 
                 <Link to="/" className={styles.item}>
                     <UserIcon />
-                    <span>Usuarios</span>
+                    <span>Usuários</span>
                 </Link>
             </nav>
 
@@ -41,8 +49,6 @@ export default function SidebarMenu() {
         </aside>
     );
 }
-
-/* DAQUI PRA BAIXO DEIXA OS ÍCONES QUE VOCÊ JÁ TINHA */
 
 function DashboardIcon() {
     return (
@@ -63,6 +69,16 @@ function GarageIcon() {
             <path d="M9 11h6" />
             <path d="M10 19v-4h4v4" />
             <path d="M8 3h8" />
+        </svg>
+    );
+}
+
+function ServicesIcon() {
+    return (
+        <svg className={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M14.7 6.3a1 1 0 0 0-1.4 0l-7 7a1 1 0 0 0 0 1.4l3 3a1 1 0 0 0 1.4 0l7-7a1 1 0 0 0 0-1.4z" />
+            <path d="M18 8l-2-2" />
+            <path d="M5 19l3-1" />
         </svg>
     );
 }
