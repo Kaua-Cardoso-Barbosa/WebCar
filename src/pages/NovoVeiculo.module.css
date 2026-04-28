@@ -3,12 +3,6 @@
     min-height: 100vh;
 }
 
-.content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
 .main {
     padding: 30px;
     background-color: #f6f7fb;
@@ -18,28 +12,109 @@
 .titulo {
     font-size: 22px;
     font-weight: 700;
-}
-
-.subtitulo {
     margin-bottom: 20px;
-    color: #6b7280;
 }
 
-.box {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    border: 1px solid #e5e7eb;
+.uploadContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 900px;
 }
 
-.upload {
-    border: 2px dashed #d1d5db;
-    height: 140px;
+.boxPrincipal {
+    width: 100%;
+    height: 350px;
+    border: 3px dashed #d1d5db;
+    border-radius: 18px;
+    background: #f9fafb;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
+    overflow: hidden;
+}
+
+.boxPrincipal img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #2563eb;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+.boxExtras {
+    width: 100%;
+    min-height: 130px;
+    border: 3px dashed #d1d5db;
+    border-radius: 18px;
+    background: #f9fafb;
+    padding: 12px;
+    position: relative;
+}
+
+.listaExtras {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+    overflow-x: auto;
+}
+
+.itemExtra {
+    min-width: 120px;
+    height: 90px;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.itemExtra img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.itemExtra button {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    border: none;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+}
+
+.btnPrincipal {
+    bottom: 4px;
+    top: auto;
+    left: 4px;
+    right: 4px;
+    width: auto;
+    height: 22px;
+    font-size: 10px;
+    border-radius: 6px;
+    background: white;
+    color: black;
+}
+
+.inputImg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
 }
 
 .grid {
@@ -52,170 +127,47 @@
     gap: 10px;
 }
 
-input,
-select {
+.box {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+}
+
+input, select {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
     border-radius: 8px;
     border: 1px solid #d1d5db;
-    background-color: white;
-    box-sizing: border-box;
-    outline: none;
-}
-
-select {
-    cursor: pointer;
 }
 
 .actions {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
+    margin-top: 20px;
 }
 
 .cancelar {
     background: #e5e7eb;
-    border: none;
     padding: 10px 16px;
     border-radius: 8px;
-    cursor: pointer;
+    border: none;
 }
 
 .salvar {
     background: #2563eb;
     color: white;
-    border: none;
     padding: 10px 16px;
     border-radius: 8px;
-    cursor: pointer;
-}
-
-.erro {
-    color: red;
-    font-size: 12px;
-    display: block;
-    margin-top: 6px;
-}
-
-.erroInput {
-    border: 1px solid red;
-}
-
-.inputImg {
-    opacity: 0;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    cursor: pointer;
-}
-
-.containerPreview {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.uploadArea {
-    border: 3px dashed #d9dee7;
-    border-radius: 18px;
-    background-color: #f8fafc;
-    width: 100%;
-    max-width: 935px;
-    height: 200px;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.previewImagem {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-@media (max-width: 400px) {
-    .sumir {
-        display: none;
-    }
-}
-.galeria {
-    width: 100%;
-    min-height: 230px;
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    align-items: center;
-    padding: 14px;
-}
-
-.uploadTexto {
-    width: 100%;
-    height: 200px;
-    border: 2px dashed #d1d5db;
-    border-radius: 18px;
-    background: #f8fafc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    color: #667085;
-}
-
-.previewGrande {
-    width: 360px;
-    height: 220px;
-    position: relative;
-    border-radius: 18px;
-    overflow: hidden;
-}
-
-.previewPequeno {
-    width: 120px;
-    height: 100px;
-    position: relative;
-    border-radius: 14px;
-    overflow: hidden;
-}
-
-.previewGrande img,
-.previewPequeno img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.previewGrande button,
-.previewPequeno button {
-    position: absolute;
-    top: 8px;
-    right: 8px;
     border: none;
-    background: rgba(0,0,0,0.65);
-    color: white;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    cursor: pointer;
 }
 
 .sucesso {
     color: green;
-    font-weight: 600;
 }
 
 .erroMensagem {
     color: red;
-    font-weight: 600;
 }

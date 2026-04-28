@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-// 👇 SUA API GLOBAL (fica aqui)
+                                // API GLOBAL👇
 export const API_URL = "http://localhost:5000";
+
 
 // 👇 seus imports de páginas
 import EditarServico from "./pages/EditarServico.jsx";

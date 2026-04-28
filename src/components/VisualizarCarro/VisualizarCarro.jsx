@@ -1,102 +1,108 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-export default function VisualizarCarro() {
-    const imagens = [
-        "/Car.png",
-        "/Car.png",
-        "/Car.png",
-        "/Car.png",
-        "/Car.png",
-        "/Car.png",
-        "/Car.png",
-    ];
+const API_URL = "http://localhost:5000";
 
-    const [imagemPrincipal, setImagemPrincipal] = useState(imagens[0]);
+export default function VisualizarCarro() {
+    const { id } = useParams();
+
+    const [carro, setCarro] = useState(null);
+    const [imagemSelecionada, setImagemSelecionada] = useState("");
+
+    useEffect(() => {
+        fetch(`${API_URL}/buscar_veiculo`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ id_veiculo: id })
+        })
+            .then(res => res.json())
+            .then(data => {
+                const veiculo = data.veiculos[0];
+
+                setCarro(veiculo);
+
+
+                if (veiculo.IMAGENS && veiculo.IMAGENS.length > 0) {
+                    setImagemSelecionada(API_URL + veiculo.IMAGENS[0]);
+                }
+            });
+    }, [id]);
+
+    if (!carro) return <div className="text-center mt-5">Carregando...</div>;
+
+    const imagensExtras = carro.IMAGENS.slice(1);
 
     return (
         <div className="container py-4">
             <div className="row g-4">
+
+
                 <div className="col-lg-8">
                     <div className="card border-0 shadow-sm p-3">
+
                         <div style={{ height: "420px", background: "#f8f9fa" }}>
                             <img
-                                src={imagemPrincipal}
+                                src={imagemSelecionada}
                                 className="w-100 h-100 rounded"
                                 style={{ objectFit: "cover" }}
-                                onError={(e) => (e.target.style.display = "none")}
                             />
                         </div>
 
                         <div className="d-flex flex-nowrap gap-2 mt-3 overflow-auto">
-                            {imagens.map((img, index) => (
+
+
+                            <img
+                                src={API_URL + carro.IMAGENS[0]}
+                                onClick={() => setImagemSelecionada(API_URL + carro.IMAGENS[0])}
+                                style={{
+                                    width: "110px",
+                                    height: "70px",
+                                    objectFit: "cover",
+                                    cursor: "pointer",
+                                    border: imagemSelecionada === API_URL + carro.IMAGENS[0]
+                                        ? "2px solid #0d6efd"
+                                        : "2px solid transparent",
+                                }}
+                            />
+
+
+                            {imagensExtras.map((img, index) => (
                                 <img
                                     key={index}
-                                    src={img}
-                                    onClick={() => setImagemPrincipal(img)}
-                                    className="rounded flex-shrink-0"
+                                    src={API_URL + img}
+                                    onClick={() => setImagemSelecionada(API_URL + img)}
                                     style={{
                                         width: "110px",
                                         height: "70px",
                                         objectFit: "cover",
                                         cursor: "pointer",
-                                        border: imagemPrincipal === img ? "2px solid #0d6efd" : "2px solid transparent",
+                                        border: imagemSelecionada === API_URL + img
+                                            ? "2px solid #0d6efd"
+                                            : "2px solid transparent",
                                     }}
                                 />
                             ))}
                         </div>
                     </div>
-
-                    <div className="row g-3 mt-3">
-                        {[
-                            { icon: "speedometer2", title: "QUILOMETRAGEM", value: "12,400 mi" },
-                            { icon: "gear", title: "PILOTO", value: "Manual" },
-                            { icon: "fuel-pump", title: "COMBUSTÍVEL", value: "Gasolina" },
-                            { icon: "palette", title: "COR", value: "Verde" },
-                        ].map((item, index) => (
-                            <div className="col-6 col-md-3" key={index}>
-                                <div className="card text-center border-0 shadow-sm p-3 h-100">
-                                    <i className={`bi bi-${item.icon} fs-4 text-primary mb-2`}></i>
-                                    <small className="text-muted fw-semibold">{item.title}</small>
-                                    <div className="fw-bold">{item.value}</div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
                 </div>
+
 
                 <div className="col-lg-4">
                     <div className="card border-0 shadow-sm p-4">
-                        <small className="text-muted">Preço</small>
-                        <h2 className="fw-bold">R$24,950</h2>
+                        <small className="text-muted">Veículo</small>
+                        <h4>{carro.MODELO}</h4>
 
-                        <button className="btn btn-primary w-100 mt-3 d-flex align-items-center justify-content-center gap-2">
-                            <i className="bi bi-calendar"></i>
-                            Agendar Visita
-                        </button>
+                        <small className="text-muted mt-2">Preço</small>
+                        <h2 className="fw-bold">
+                            R$ {Number(carro.PRECO_VENDA).toLocaleString()}
+                        </h2>
                     </div>
                 </div>
             </div>
-
-            <div className="row mt-4">
-                <div className="col-12">
-                    <div className="card border-0 shadow-sm p-4">
-                        <h5 className="fw-bold mb-3">Detalhes</h5>
-                        <p className="text-muted mb-0">
-                            Gurgel X-12, perfeitas condições, com histórico limpo e apenas um proprietário anterior. Equipado com os mais recentes recursos de segurança, um motor econômico e um interior premium, ele oferece o equilíbrio perfeito entre confiabilidade e estilo moderno.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <style>{`
-        @media (max-width: 576px) {
-          h2 {
-            font-size: 1.5rem;
-          }
-        }
-      `}</style>
         </div>
     );
 }
