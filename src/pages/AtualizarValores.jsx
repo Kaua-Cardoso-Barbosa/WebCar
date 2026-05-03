@@ -76,7 +76,7 @@ export default function AtualizarValores() {
             const data = await response.json();
 
             if (!response.ok) {
-                setMensagem(data.mensagem || "Erro ao atualizar valores.");
+                setMensagem(data.mensagem || "Não foi possível salvar as alterações.");
                 setTipoMensagem("erro");
                 return;
             }
@@ -89,7 +89,7 @@ export default function AtualizarValores() {
             }, 800);
         } catch (error) {
             console.error(error);
-            setMensagem("Erro ao conectar com o servidor.");
+            setMensagem("Não foi possível salvar as alterações.");
             setTipoMensagem("erro");
         } finally {
             setSalvando(false);

@@ -60,23 +60,29 @@
     border: 1px solid #e6eaf0;
     border-radius: 14px;
     padding: 22px 18px;
-    width: 210px;
+    flex: 1 1 240px;
+    min-width: 220px;
+    max-width: 360px;
     min-height: 94px;
     display: flex;
     align-items: flex-start;
     gap: 14px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .iconeBox {
-    width: 34px;
+    min-width: 42px;
     height: 34px;
-    border-radius: 10px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
+    font-size: 12px;
     flex-shrink: 0;
+    padding: 0 8px;
 }
 
 .azul {
@@ -102,9 +108,12 @@
 
 .cardValor {
     margin: 0;
-    font-size: 20px;
+    font-size: clamp(17px, 1.4vw, 20px);
     font-weight: 700;
     color: #172033;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .tabelaBox {
@@ -159,10 +168,34 @@
     color: #172033;
 }
 
-.acoes {
-    color: #94a3b8;
-    letter-spacing: 6px;
+.busca {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #dfe5ef;
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.busca input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
     font-size: 15px;
+    color: #111827;
+}
+
+.busca input::placeholder {
+    color: #718096;
+}
+
+.acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 .paginacao {
@@ -181,9 +214,15 @@
     color: #64748b;
     font-size: 14px;
     cursor: pointer;
-    width: 28px;
+    min-width: 28px;
     height: 28px;
     border-radius: 6px;
+    padding: 0 10px;
+}
+
+.paginaSeta:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
 }
 
 .ativa {
@@ -208,11 +247,21 @@
 .btnAcao,
 .btnAcaoDelete {
     border: none;
-    background: #f1f5f9;
-    padding: 7px 10px;
+    padding: 8px 12px;
     border-radius: 8px;
-    margin-right: 6px;
     cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.btnAcao {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.btnAcaoDelete {
+    background: #fef2f2;
+    color: #dc2626;
 }
 
 .btnAcao:hover {
@@ -221,6 +270,13 @@
 
 .btnAcaoDelete:hover {
     background: #fee2e2;
+}
+
+.vazio {
+    text-align: center;
+    color: #64748b !important;
+    padding: 34px 20px !important;
+    font-weight: 600;
 }
 
 .modalFundo {
@@ -260,9 +316,15 @@
 .cancelarModal {
     border: none;
     background: #e5e7eb;
+    color: #111827;
     padding: 10px 16px;
     border-radius: 8px;
     cursor: pointer;
+    font-weight: 700;
+}
+
+.cancelarModal:hover {
+    background: #d1d5db;
 }
 
 .confirmarModal {
@@ -272,9 +334,27 @@
     padding: 10px 16px;
     border-radius: 8px;
     cursor: pointer;
+    font-weight: 700;
+}
+
+.confirmarModal:hover {
+    background: #b91c1c;
 }
 
 .erro {
-    color: #dc2626;
+    background: #fee2e2;
+    color: #991b1b;
     font-weight: 700;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin: 0 0 18px;
+}
+
+.sucesso {
+    background: #dcfce7;
+    color: #166534;
+    font-weight: 700;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin: 0 0 18px;
 }

@@ -47,7 +47,7 @@ export default function NovoVeiculo() {
                     setMarcas(data.marcas || []);
                 }
             } catch (error) {
-                console.log("Erro ao buscar marcas:", error);
+                console.log("Não foi possível carregar os dados. Tente novamente.", error);
             }
         }
 
@@ -214,7 +214,7 @@ export default function NovoVeiculo() {
             const data = await response.json();
 
             if (!response.ok) {
-                setMensagem(data.mensagem || "Erro ao cadastrar veículo.");
+                setMensagem(data.mensagem || "Não foi possível salvar as alterações.");
                 setTipoMensagem("erro");
                 return;
             }
@@ -227,7 +227,7 @@ export default function NovoVeiculo() {
             }, 800);
         } catch (error) {
             console.log(error);
-            setMensagem("Erro ao conectar com o servidor.");
+            setMensagem("Não foi possível salvar as alterações.");
             setTipoMensagem("erro");
         } finally {
             setCarregando(false);
@@ -286,7 +286,7 @@ export default function NovoVeiculo() {
                                             type="button"
                                             onClick={() => removerImagem(img.id)}
                                         >
-                                            ×
+                                            Remover
                                         </button>
 
                                         {index === 0 && <span>Principal</span>}
@@ -301,7 +301,9 @@ export default function NovoVeiculo() {
                             <h3>Informações Básicas</h3>
 
                             <select value={marca} onChange={(e) => setMarca(e.target.value)}>
-                                <option value="">Selecione uma marca</option>
+                                <option value="">
+                                    {marcas.length === 0 ? "Nenhuma marca cadastrada" : "Selecione uma marca"}
+                                </option>
 
                                 {marcas.map((item) => (
                                     <option key={item.id_marca} value={item.id_marca}>
@@ -309,6 +311,12 @@ export default function NovoVeiculo() {
                                     </option>
                                 ))}
                             </select>
+
+                            {marcas.length === 0 && (
+                                <p className={css.avisoCampo}>
+                                    Nenhuma marca cadastrada. Cadastre uma marca antes de adicionar veículos.
+                                </p>
+                            )}
 
                             <input
                                 placeholder="Modelo"

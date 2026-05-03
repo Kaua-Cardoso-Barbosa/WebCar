@@ -1,24 +1,62 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
-
-.header{
-    background-color: white;
+.header {
+    background: #ffffff;
+    border-bottom: 1px solid #e6eaf0;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    font-family: "Inter", sans-serif;
 }
 
-.corFundo{
-    background-color: var(--cor-principal);
+.header :global(.navbar) {
+    min-height: 72px;
+    padding: 10px 18px;
 }
 
-.textoFonte{
+.header :global(.navbar-brand) {
+    text-decoration: none;
+    margin: 0;
+}
+
+.header :global(.nav-link) {
+    color: #475569;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 8px 4px;
+    text-decoration: none;
+}
+
+.header :global(.nav-link:hover) {
+    color: #2563eb;
+}
+
+.corFundo {
+    background: #2563eb !important;
+    border: none !important;
+    color: #ffffff !important;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.22);
+}
+
+.corFundo:hover {
+    background: #1d4ed8 !important;
+}
+
+.textoFonte {
     font-family: "Inter", sans-serif;
     font-weight: 700;
 }
 
-.azul{
+.azul {
     color: var(--cor-logo-web);
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0;
 }
 
-.cinza{
+.cinza {
     color: var(--cor-logo2-web);
 }
 
@@ -26,23 +64,97 @@
     display: none;
 }
 
-.juntar{
+.juntar {
     display: flex;
+    align-items: center;
 }
 
-.corrigir{
-    margin-top: 10px;
-    margin-left: 80px;
+.corrigir {
+    margin-left: 18px;
+    border: 1px solid #dfe5ef;
+    border-radius: 8px;
+    padding: 8px 10px;
 }
 
-@media (max-width: 321px){
-    nav .sumir{
+.buscaDesktop {
+    display: flex;
+    flex: 1;
+    max-width: 520px;
+    margin: 0 28px;
+}
+
+.buscaDesktop :global(.form-control),
+.buscaMobile :global(.form-control) {
+    border: 1px solid #dfe5ef;
+    border-radius: 8px;
+    color: #111827;
+    font-size: 14px;
+    padding: 11px 14px;
+}
+
+.buscaDesktop :global(.form-control:focus),
+.buscaMobile :global(.form-control:focus) {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.buscaMobile {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.botaoBuscar {
+    border: none;
+    background: #2563eb;
+    color: #ffffff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.botaoBuscar:hover {
+    background: #1d4ed8;
+}
+
+.oculto {
+    display: none !important;
+}
+
+.sumir {
+    display: block;
+}
+
+@media (max-width: 760px) {
+    .sumir,
+    .buscaDesktop {
         display: none !important;
     }
 
     .mobile {
         display: block;
+        margin-left: auto;
     }
 
+    .juntar {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .header :global(.navbar) {
+        min-height: 66px;
+        padding: 8px 10px;
+    }
+
+    .azul {
+        font-size: 20px;
+    }
 }
 
+@media (max-width: 420px) {
+    .buscaMobile {
+        flex-direction: column;
+    }
+}

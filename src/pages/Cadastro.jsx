@@ -21,6 +21,29 @@ export default function Cadastro() {
 
     const [erro, setErro] = useState("");
 
+    function apenasNumeros(valor) {
+        return valor.replace(/\D/g, "");
+    }
+
+    function formatarTelefone(valor) {
+        const numeros = apenasNumeros(valor).slice(0, 11);
+
+        if (numeros.length <= 2) return numeros;
+        if (numeros.length <= 7) return `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`;
+
+        return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
+    }
+
+    function formatarCpf(valor) {
+        const numeros = apenasNumeros(valor).slice(0, 11);
+
+        if (numeros.length <= 3) return numeros;
+        if (numeros.length <= 6) return `${numeros.slice(0, 3)}.${numeros.slice(3)}`;
+        if (numeros.length <= 9) return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6)}`;
+
+        return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-${numeros.slice(9)}`;
+    }
+
     function handleImagem(e) {
         const arquivo = e.target.files[0];
 
@@ -44,20 +67,20 @@ export default function Cadastro() {
         setErro("");
 
         if (!nome || !email || !cpf || !senha || !confirmarSenha) {
-            setErro("Preencha todos os campos");
+            setErro("Preencha todos os campos.");
             return;
         }
 
         if (senha !== confirmarSenha) {
-            setErro("As senhas não coincidem");
+            setErro("As senhas não coincidem.");
             return;
         }
 
         const formData = new FormData();
         formData.append("nome", nome);
-        formData.append("telefone", telefone);
+        formData.append("telefone", apenasNumeros(telefone));
         formData.append("email", email);
-        formData.append("cpf", cpf);
+        formData.append("cpf", apenasNumeros(cpf));
         formData.append("senha", senha);
         formData.append("confirma", confirmarSenha);
         formData.append("tipo", "2");
@@ -75,7 +98,7 @@ export default function Cadastro() {
             const data = await response.json();
 
             if (!response.ok) {
-                setErro(data.mensagem);
+                setErro(data.mensagem || "Não foi possível salvar as alterações.");
                 return;
             }
 
@@ -86,7 +109,7 @@ export default function Cadastro() {
             });
 
         } catch (error) {
-            setErro("Erro ao conectar com o servidor");
+            setErro("Não foi possível salvar as alterações.");
         }
     }
 
@@ -120,13 +143,12 @@ export default function Cadastro() {
                                 <label>Telefone</label>
                                 <input
                                     type="text"
-                                    placeholder="Digite seu telefone"
+                                    placeholder="(11) 99999-9999"
                                     className={css.inputCadastro}
                                     value={telefone}
-                                    onChange={(e) => setTelefone(e.target.value.replace(/\D/g, "").slice(0, 11))}
+                                    onChange={(e) => setTelefone(formatarTelefone(e.target.value))}
                                     inputMode="numeric"
-                                    maxLength={11}
-                                    minLength={11}
+                                    maxLength={15}
                                 />
                             </div>
 
@@ -145,13 +167,12 @@ export default function Cadastro() {
                                 <label>CPF</label>
                                 <input
                                     type="text"
-                                    placeholder="Digite seu CPF"
+                                    placeholder="000.000.000-00"
                                     className={css.inputCadastro}
                                     value={cpf}
-                                    onChange={(e) => setCpf(e.target.value.replace(/\D/g, "").slice(0, 11))}
+                                    onChange={(e) => setCpf(formatarCpf(e.target.value))}
                                     inputMode="numeric"
-                                    maxLength={11}
-                                    minLength={11}
+                                    maxLength={14}
                                 />
                             </div>
 

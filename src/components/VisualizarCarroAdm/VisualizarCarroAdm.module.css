@@ -15,3 +15,33 @@
     background-color: #F8FAFC;
     border: #E2E8F0;
 }
+
+.cabecalhoManutencao,
+.linhaManutencao {
+    display: grid;
+    grid-template-columns: minmax(130px, 1fr) 110px 105px 72px;
+    gap: 12px;
+    align-items: center;
+}
+
+.cabecalhoManutencao {
+    border-bottom: 1px solid #e5e7eb;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 800;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+}
+
+.linhaManutencao {
+    border-bottom: 1px solid #edf1f7;
+    padding: 10px 0;
+}
+
+.linhaManutencao:last-child {
+    border-bottom: none;
+}
+
+.linhaManutencao button {
+    width: 100%;
+}

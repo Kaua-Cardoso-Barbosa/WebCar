@@ -47,7 +47,7 @@ export default function EditarServico() {
             const data = await response.json();
 
             if (!response.ok) {
-                setMensagem(data.mensagem || "Serviço não encontrado.");
+                setMensagem(data.mensagem || "Não foi possível carregar os dados. Tente novamente.");
                 setTipoMensagem("erro");
                 return;
             }
@@ -63,7 +63,7 @@ export default function EditarServico() {
             );
         } catch (error) {
             console.error(error);
-            setMensagem("Erro ao conectar com o servidor.");
+            setMensagem("Não foi possível carregar os dados. Tente novamente.");
             setTipoMensagem("erro");
         } finally {
             setCarregando(false);
@@ -98,7 +98,7 @@ export default function EditarServico() {
             const data = await response.json();
 
             if (!response.ok) {
-                setMensagem(data.mensagem || "Erro ao editar serviço.");
+                setMensagem(data.mensagem || "Não foi possível salvar as alterações.");
                 setTipoMensagem("erro");
                 return;
             }
@@ -111,7 +111,7 @@ export default function EditarServico() {
             }, 800);
         } catch (error) {
             console.error(error);
-            setMensagem("Erro ao conectar com o servidor.");
+            setMensagem("Não foi possível salvar as alterações.");
             setTipoMensagem("erro");
         } finally {
             setSalvando(false);
@@ -149,7 +149,7 @@ export default function EditarServico() {
                         <h2>Informações do Serviço</h2>
 
                         {carregando ? (
-                            <p>Carregando serviço...</p>
+                            <p className={css.carregando}>Carregando dados...</p>
                         ) : (
                             <form onSubmit={handleSubmit}>
                                 <div className={css.campo}>

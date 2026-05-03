@@ -1,5 +1,6 @@
 import css from "./CadastrarMarca.module.css";
 import Header from "../components/Header/Header";
+import SidebarMenu from "../components/SidebarMenu/SidebarMenu";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../App";
@@ -38,7 +39,7 @@ export default function CadastrarMarca() {
         setErro("");
 
         if (!nome) {
-            setErro("Preencha todos os campos");
+            setErro("Preencha todos os campos.");
             return;
         }
 
@@ -59,14 +60,14 @@ export default function CadastrarMarca() {
             const data = await response.json();
 
             if (!response.ok) {
-                setErro(data.mensagem);
+                setErro(data.mensagem || "Não foi possível salvar as alterações.");
                 return;
             }
 
             navigate("/dashboard");
 
         } catch (error) {
-            setErro("Erro ao conectar com o servidor");
+            setErro("Não foi possível salvar as alterações.");
         }
     }
 
@@ -74,64 +75,82 @@ export default function CadastrarMarca() {
         <>
             <Header />
 
-            <main className={css.paginaCadastro}>
-                <section className={css.areaCadastro}>
-                    <h1 className={css.tituloCadastro}>Cadastre uma marca</h1>
+            <div className={css.layout}>
+                <SidebarMenu />
 
-                    <p className={css.subtituloCadastro}>
-                        Adicione uma marca ao nosso sistema.
-                    </p>
-
-                    <div className={css.cardCadastro}>
-                        <form className={css.formularioCadastro} onSubmit={handleSubmit}>
-
-                            <div className={css.grupoCampo}>
-                                <label>Nome</label>
-                                <input
-                                    type="text"
-                                    placeholder="Digite o nome da marca"
-                                    className={css.inputCadastro}
-                                    value={nome}
-                                    onChange={(e) => setNome(e.target.value)}
-                                />
-                            </div>
-
-                            <div className={css.uploadArea}>
-                                <div className={css.containerPreview}>
-                                    {!preview && <img src="/Nuvem.png" alt="upload" />}
-
-                                    <input
-                                        type="file"
-                                        className={css.inputImg}
-                                        onChange={handleImagem}
-                                    />
-
-                                    {preview && (
-                                        <img
-                                            src={preview}
-                                            alt="preview"
-                                            className={css.previewImagem}
-                                        />
-                                    )}
-                                </div>
-                            </div>
-
+                <main className={css.paginaCadastro}>
+                    <section className={css.areaCadastro}>
+                        <div className={css.topo}>
                             <div>
-                                <button type="submit" className={css.botaoCadastro}>
-                                    Cadastrar
-                                </button>
-                            </div>
-
-                            {erro && (
-                                <p className={css.erro}>
-                                    {erro}
+                                <h1 className={css.tituloCadastro}>Cadastrar Marca</h1>
+                                <p className={css.subtituloCadastro}>
+                                    Adicione uma marca ao sistema.
                                 </p>
-                            )}
+                            </div>
+                        </div>
 
-                        </form>
-                    </div>
-                </section>
-            </main>
+                        <div className={css.cardCadastro}>
+                            <form className={css.formularioCadastro} onSubmit={handleSubmit}>
+
+                                <div className={css.grupoCampo}>
+                                    <label>Nome da marca</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Ex: Toyota"
+                                        className={css.inputCadastro}
+                                        value={nome}
+                                        onChange={(e) => setNome(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className={css.grupoCampo}>
+                                    <label>Imagem da marca</label>
+                                    <div className={css.uploadArea}>
+                                        <div className={css.containerPreview}>
+                                            {!preview && <span className={css.uploadTexto}>Selecionar imagem</span>}
+
+                                            <input
+                                                type="file"
+                                                className={css.inputImg}
+                                                onChange={handleImagem}
+                                            />
+
+                                            {preview && (
+                                                <img
+                                                    src={preview}
+                                                    alt="Prévia da marca"
+                                                    className={css.previewImagem}
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {erro && (
+                                    <p className={css.erro}>
+                                        {erro}
+                                    </p>
+                                )}
+
+                                <div className={css.botoes}>
+                                    <button
+                                        type="button"
+                                        className={css.cancelar}
+                                        onClick={() => navigate("/listarmarcas")}
+                                    >
+                                        Cancelar
+                                    </button>
+
+                                    <button type="submit" className={css.botaoCadastro}>
+                                        Cadastrar
+                                    </button>
+                                </div>
+
+                            </form>
+                        </div>
+                    </section>
+                </main>
+            </div>
         </>
     );
 }

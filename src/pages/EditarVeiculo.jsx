@@ -7,6 +7,37 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header/Header.jsx";
 import Footer from "../components/Footer/Footer.jsx";
 
+const IMAGEM_PADRAO = `data:image/svg+xml;utf8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <rect width="640" height="360" fill="#f1f5f9"/>
+  <text x="320" y="180" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="28" font-weight="700" fill="#64748b">Sem imagem</text>
+</svg>
+`)}`;
+
+function imagensVeiculo(idVeiculo, numeroFoto = 1) {
+    if (!idVeiculo) return [IMAGEM_PADRAO];
+
+    const versao = Date.now();
+
+    return [
+        `${API_URL}/uploads/veiculo/${idVeiculo}/foto_${numeroFoto}.jpg?v=${versao}`,
+        `${API_URL}/static/uploads/veiculo/${idVeiculo}/foto_${numeroFoto}.jpg?v=${versao}`,
+        `${API_URL}/static/veiculo/${idVeiculo}/foto_${numeroFoto}.jpg?v=${versao}`,
+        `${API_URL}/veiculo/${idVeiculo}/foto_${numeroFoto}.jpg?v=${versao}`,
+        IMAGEM_PADRAO,
+    ];
+}
+
+function tentarProximaImagem(e, imagens) {
+    const indiceAtual = Number(e.currentTarget.dataset.indice || 0);
+    const proximoIndice = indiceAtual + 1;
+
+    if (proximoIndice < imagens.length) {
+        e.currentTarget.dataset.indice = String(proximoIndice);
+        e.currentTarget.src = imagens[proximoIndice];
+    }
+}
+
 export default function EditarVeiculo() {
     const location = useLocation();
     const navigate = useNavigate();
@@ -54,7 +85,7 @@ export default function EditarVeiculo() {
                     }
                 }
             } catch (error) {
-                console.log("Erro ao buscar marcas:", error);
+                console.log("Não foi possível carregar os dados. Tente novamente.", error);
             }
         }
 
@@ -72,7 +103,7 @@ export default function EditarVeiculo() {
             <>
                 <Header />
                 <div className="container py-5">
-                    <h3>Veículo não encontrado.</h3>
+                    <h3>Não foi possível carregar os dados. Tente novamente.</h3>
                     <button className="btn btn-primary mt-3" onClick={() => navigate("/garagem")}>
                         Voltar para garagem
                     </button>
@@ -230,7 +261,7 @@ export default function EditarVeiculo() {
             const data = await response.json();
 
             if (!response.ok) {
-                setMensagem(data.mensagem || "Erro ao editar veículo.");
+                setMensagem(data.mensagem || "Não foi possível salvar as alterações.");
                 setTipoMensagem("erro");
                 return;
             }
@@ -243,7 +274,7 @@ export default function EditarVeiculo() {
             }, 800);
         } catch (error) {
             console.log(error);
-            setMensagem("Erro ao conectar com o servidor.");
+            setMensagem("Não foi possível salvar as alterações.");
             setTipoMensagem("erro");
         } finally {
             setCarregando(false);
@@ -293,8 +324,9 @@ export default function EditarVeiculo() {
                             {imagens.length === 0 ? (
                                 <div className={css.imagemPrincipal}>
                                     <img
-                                        src={carro.IMAGEM}
-                                        onError={(e) => (e.target.src = "/sem-imagem.png")}
+                                        src={imagensVeiculo(carro.ID_VEICULO)[0]}
+                                        data-indice="0"
+                                        onError={(e) => tentarProximaImagem(e, imagensVeiculo(carro.ID_VEICULO))}
                                         alt="Imagem atual"
                                     />
                                     <span>Atual</span>
@@ -308,7 +340,7 @@ export default function EditarVeiculo() {
                                         <img src={img.preview} alt="preview" />
 
                                         <button type="button" onClick={() => removerImagem(img.id)}>
-                                            ×
+                                            Remover
                                         </button>
 
                                         {index === 0 && <span>Principal</span>}
@@ -323,7 +355,9 @@ export default function EditarVeiculo() {
                             <h3>Informações Básicas</h3>
 
                             <select value={marca} onChange={(e) => setMarca(e.target.value)}>
-                                <option value="">Selecione uma marca</option>
+                                <option value="">
+                                    {marcas.length === 0 ? "Nenhuma marca cadastrada" : "Selecione uma marca"}
+                                </option>
 
                                 {marcas.map((item) => (
                                     <option key={item.id_marca} value={item.id_marca}>
@@ -331,6 +365,12 @@ export default function EditarVeiculo() {
                                     </option>
                                 ))}
                             </select>
+
+                            {marcas.length === 0 && (
+                                <p className={css.avisoCampo}>
+                                    Nenhuma marca cadastrada. Cadastre uma marca antes de editar veículos.
+                                </p>
+                            )}
 
                             <input
                                 placeholder="Modelo"

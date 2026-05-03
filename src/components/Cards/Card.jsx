@@ -1,6 +1,39 @@
 import css from "./Cards.module.css";
+import { API_URL } from "../../App";
 
-export default function Card({ modelo, valor, combustivel, ano, nome, km, cambio }) {
+const IMAGEM_PADRAO = `data:image/svg+xml;utf8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+  <rect width="640" height="360" fill="#f1f5f9"/>
+  <text x="320" y="180" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="28" font-weight="700" fill="#64748b">Sem imagem</text>
+</svg>
+`)}`;
+
+function imagensVeiculo(idVeiculo, numeroFoto = 1) {
+    if (!idVeiculo) return [IMAGEM_PADRAO];
+
+    const versao = Date.now();
+
+    return [
+        `${API_URL}/uploads/veiculo/${idVeiculo}/foto_${numeroFoto}.jpg?v=${versao}`,
+        `${API_URL}/static/uploads/veiculo/${idVeiculo}/foto_${numeroFoto}.jpg?v=${versao}`,
+        `${API_URL}/static/veiculo/${idVeiculo}/foto_${numeroFoto}.jpg?v=${versao}`,
+        `${API_URL}/veiculo/${idVeiculo}/foto_${numeroFoto}.jpg?v=${versao}`,
+        IMAGEM_PADRAO,
+    ];
+}
+
+function tentarProximaImagem(e, imagens) {
+    const indiceAtual = Number(e.currentTarget.dataset.indice || 0);
+    const proximoIndice = indiceAtual + 1;
+
+    if (proximoIndice < imagens.length) {
+        e.currentTarget.dataset.indice = String(proximoIndice);
+        e.currentTarget.src = imagens[proximoIndice];
+    }
+}
+
+export default function Card({ idVeiculo, modelo, valor, combustivel, ano, nome, km, cambio }) {
+    const imagens = imagensVeiculo(idVeiculo);
 
     function formatarPreco(valor) {
         return Number(valor).toLocaleString("pt-BR", {
@@ -11,7 +44,13 @@ export default function Card({ modelo, valor, combustivel, ano, nome, km, cambio
 
     return (
         <div className={css.card}>
-            <img src="/Car.png" className={css.imagem} alt="carro" />
+            <img
+                src={imagens[0]}
+                data-indice="0"
+                className={css.imagem}
+                alt={`${nome || "Veículo"} ${modelo || ""}`}
+                onError={(e) => tentarProximaImagem(e, imagens)}
+            />
 
             <div className={css.topo}>
                 <h3>{nome} {modelo}</h3>

@@ -18,6 +18,7 @@ export default function AdicionarManutencao() {
     const [erro, setErro] = useState("");
     const [sucesso, setSucesso] = useState("");
     const [salvando, setSalvando] = useState(false);
+    const hoje = new Date().toISOString().split("T")[0];
 
     useEffect(() => {
         buscarServicos();
@@ -41,7 +42,7 @@ export default function AdicionarManutencao() {
             }
         } catch (error) {
             console.error(error);
-            setErro("Erro ao buscar serviços.");
+            setErro("Não foi possível carregar os dados. Tente novamente.");
         }
     }
 
@@ -132,6 +133,11 @@ export default function AdicionarManutencao() {
             return;
         }
 
+        if (data < hoje) {
+            setErro("A data da manutenção não pode ser passada.");
+            return;
+        }
+
         if (itens.length === 0) {
             setErro("Adicione pelo menos um item de manutenção.");
             return;
@@ -155,14 +161,14 @@ export default function AdicionarManutencao() {
             const dataManutencao = await responseManutencao.json();
 
             if (!responseManutencao.ok) {
-                setErro(dataManutencao.mensagem || "Erro ao cadastrar manutenção.");
+                setErro(dataManutencao.mensagem || "Não foi possível salvar as alterações.");
                 return;
             }
 
             const idManutencao = dataManutencao.id_manutencao;
 
             if (!idManutencao) {
-                setErro("A manutenção foi criada, mas o ID não foi retornado pelo back.");
+                setErro("Não foi possível concluir o cadastro da manutenção.");
                 return;
             }
 
@@ -183,19 +189,19 @@ export default function AdicionarManutencao() {
                 const dataItem = await responseItem.json();
 
                 if (!responseItem.ok) {
-                    setErro(dataItem.mensagem || "Erro ao cadastrar item da manutenção.");
+                    setErro(dataItem.mensagem || "Não foi possível salvar as alterações.");
                     return;
                 }
             }
 
-            setSucesso("Manutenção cadastrada com sucesso!");
+            setSucesso("Manutenção cadastrada com sucesso.");
 
             setTimeout(() => {
                 navigate(-1);
             }, 1000);
         } catch (error) {
             console.error(error);
-            setErro("Erro ao conectar com o servidor.");
+            setErro("Não foi possível salvar as alterações.");
         } finally {
             setSalvando(false);
         }
@@ -231,6 +237,7 @@ export default function AdicionarManutencao() {
                             <input
                                 className={css.input}
                                 type="date"
+                                min={hoje}
                                 value={data}
                                 onChange={(e) => setData(e.target.value)}
                             />
@@ -244,14 +251,16 @@ export default function AdicionarManutencao() {
                                     value={idServico}
                                     onChange={(e) => setIdServico(e.target.value)}
                                 >
-                                    <option value="">Selecione um serviço</option>
+                                    <option value="">
+                                        {servicos.length === 0 ? "Nenhum serviço cadastrado" : "Selecione um serviço"}
+                                    </option>
 
                                     {servicos.map((servico) => (
                                         <option
                                             key={servico.id_servico}
                                             value={servico.id_servico}
                                         >
-                                            {servico.descricao} —{" "}
+                                            {servico.descricao} -{" "}
                                             {Number(servico.valor_unitario).toLocaleString("pt-BR", {
                                                 style: "currency",
                                                 currency: "BRL",
@@ -274,19 +283,26 @@ export default function AdicionarManutencao() {
                             </div>
                         </div>
 
+                        {servicos.length === 0 && (
+                            <p className={css.vazio}>
+                                Nenhum serviço cadastrado. Cadastre um serviço antes de adicionar manutenção.
+                            </p>
+                        )}
+
                         <button
                             type="button"
                             className={css.btnSecundario}
                             onClick={adicionarItem}
+                            disabled={servicos.length === 0}
                         >
-                            Adicionar item +
+                            Adicionar item
                         </button>
 
                         <div className={css.listaItens}>
                             <h3>Itens da manutenção</h3>
 
                             {itens.length === 0 ? (
-                                <p className={css.vazio}>Nenhum item adicionado.</p>
+                                <p className={css.vazio}>Nenhum item de manutenção adicionado.</p>
                             ) : (
                                 itens.map((item) => (
                                     <div className={css.item} key={item.id_servico}>
@@ -313,7 +329,7 @@ export default function AdicionarManutencao() {
                                                 type="button"
                                                 onClick={() => removerItem(item.id_servico)}
                                             >
-                                                🗑
+                                                Remover
                                             </button>
                                         </div>
                                     </div>
@@ -332,7 +348,7 @@ export default function AdicionarManutencao() {
                         </div>
 
                         <button type="submit" className={css.btn} disabled={salvando}>
-                            {salvando ? "Salvando..." : "Confirmar manutenção"} <span>→</span>
+                            {salvando ? "Salvando..." : "Confirmar manutenção"}
                         </button>
 
                         <button

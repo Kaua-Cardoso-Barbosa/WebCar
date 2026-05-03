@@ -83,6 +83,10 @@
     cursor: pointer;
 }
 
+.cancelar:hover {
+    background: #e2e8f0;
+}
+
 .salvar {
     border: none;
     background: #2563eb;
@@ -91,6 +95,10 @@
     border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
+}
+
+.salvar:hover {
+    background: #1d4ed8;
 }
 
 .salvar:disabled {
@@ -114,4 +122,10 @@
 .erro {
     background: #fee2e2;
     color: #991b1b;
+}
+
+.carregando {
+    color: #64748b;
+    font-weight: 600;
+    margin: 0;
 }

@@ -8,6 +8,7 @@ import { API_URL } from "../App.jsx";
 export default function Servicos() {
     const [servicos, setServicos] = useState([]);
     const [busca, setBusca] = useState("");
+    const [paginaAtual, setPaginaAtual] = useState(1);
     const [mensagem, setMensagem] = useState("");
     const [carregando, setCarregando] = useState(true);
 
@@ -32,6 +33,10 @@ export default function Servicos() {
             setTipoToast("");
         }, 3000);
     }
+
+    const totalPaginas = Math.max(1, Math.ceil(servicos.length / 15));
+    const inicioPagina = (paginaAtual - 1) * 15;
+    const servicosPaginados = servicos.slice(inicioPagina, inicioPagina + 15);
 
     function formatarMoeda(valorDigitado) {
         const apenasNumeros = String(valorDigitado).replace(/\D/g, "");
@@ -88,14 +93,14 @@ export default function Servicos() {
 
             if (!resposta.ok) {
                 setServicos([]);
-                setMensagem(dados.mensagem || "Nenhum serviço encontrado.");
+                setMensagem(dados.mensagem || "Não foi possível carregar os dados. Tente novamente.");
                 return;
             }
 
             setServicos(dados.servicos || []);
         } catch (erro) {
             console.error(erro);
-            setMensagem("Erro ao conectar com o servidor.");
+            setMensagem("Não foi possível carregar os dados. Tente novamente.");
         } finally {
             setCarregando(false);
         }
@@ -127,16 +132,16 @@ export default function Servicos() {
             const dados = await resposta.json();
 
             if (!resposta.ok) {
-                mostrarToast(dados.mensagem || "Erro ao editar serviço.", "erro");
+                mostrarToast(dados.mensagem || "Não foi possível salvar as alterações.", "erro");
                 return;
             }
 
-            mostrarToast(dados.mensagem || "Serviço atualizado com sucesso!", "sucesso");
+            mostrarToast(dados.mensagem || "Serviço atualizado com sucesso.", "sucesso");
             fecharModal();
             buscarServicos(busca);
         } catch (erro) {
             console.error(erro);
-            mostrarToast("Erro ao conectar com o servidor.", "erro");
+            mostrarToast("Não foi possível salvar as alterações.", "erro");
         } finally {
             setSalvandoEdit(false);
         }
@@ -154,16 +159,16 @@ export default function Servicos() {
             const dados = await resposta.json();
 
             if (!resposta.ok) {
-                mostrarToast(dados.mensagem || "Erro ao deletar serviço.", "erro");
+                mostrarToast(dados.mensagem || "Não foi possível excluir este item.", "erro");
                 return;
             }
 
-            mostrarToast(dados.mensagem || "Serviço deletado com sucesso!", "sucesso");
+            mostrarToast(dados.mensagem || "Serviço excluído com sucesso.", "sucesso");
             fecharConfirmacao();
             buscarServicos(busca);
         } catch (erro) {
             console.error(erro);
-            mostrarToast("Erro ao conectar com o servidor.", "erro");
+            mostrarToast("Não foi possível excluir este item.", "erro");
         }
     }
 
@@ -192,22 +197,28 @@ export default function Servicos() {
 
                         <div className={css.botoes}>
                             <Link to="/cadastrarservicos" className={css.botaoAzul}>
-                                ⊕ Novo Serviço
+                                Novo Serviço
                             </Link>
 
                             <Link to="/atualizarvalores" className={css.botaoAzul}>
                                 Atualização de Valores
                             </Link>
+
+                            <Link to="/historicoservicos" className={css.botaoNeutro}>
+                                Ver Histórico
+                            </Link>
                         </div>
                     </div>
 
                     <div className={css.busca}>
-                        <span>⌕</span>
                         <input
                             type="text"
-                            placeholder="Procure um serviço..."
+                            placeholder="Buscar..."
                             value={busca}
-                            onChange={(e) => setBusca(e.target.value)}
+                            onChange={(e) => {
+                                setBusca(e.target.value);
+                                setPaginaAtual(1);
+                            }}
                         />
                     </div>
 
@@ -226,11 +237,11 @@ export default function Servicos() {
                             {carregando ? (
                                 <tr>
                                     <td colSpan="4" className={css.vazio}>
-                                        Carregando serviços...
+                                        Carregando dados...
                                     </td>
                                 </tr>
-                            ) : servicos.length > 0 ? (
-                                servicos.map((servico) => (
+            ) : servicos.length > 0 ? (
+                                servicosPaginados.map((servico) => (
                                     <tr key={servico.id_servico}>
                                         <td>{servico.descricao}</td>
 
@@ -267,7 +278,7 @@ export default function Servicos() {
                                                     className={css.icone}
                                                     onClick={() => abrirModalEditar(servico)}
                                                 >
-                                                    ✎
+                                                    Editar
                                                 </button>
 
                                                 <button
@@ -275,7 +286,7 @@ export default function Servicos() {
                                                     className={css.icone}
                                                     onClick={() => abrirConfirmacao(servico)}
                                                 >
-                                                    🗑
+                                                    Excluir
                                                 </button>
                                             </div>
                                         </td>
@@ -284,13 +295,31 @@ export default function Servicos() {
                             ) : (
                                 <tr>
                                     <td colSpan="4" className={css.vazio}>
-                                        {mensagem || "Nenhum serviço cadastrado."}
+                                        {busca ? "Nenhum resultado encontrado." : mensagem || "Nenhum serviço cadastrado."}
                                     </td>
                                 </tr>
                             )}
                             </tbody>
                         </table>
                     </section>
+
+                    <div className={css.paginacao}>
+                        <button
+                            type="button"
+                            disabled={paginaAtual === 1}
+                            onClick={() => setPaginaAtual((pagina) => Math.max(1, pagina - 1))}
+                        >
+                            Anterior
+                        </button>
+                        <span>{paginaAtual} / {totalPaginas}</span>
+                        <button
+                            type="button"
+                            disabled={paginaAtual === totalPaginas}
+                            onClick={() => setPaginaAtual((pagina) => Math.min(totalPaginas, pagina + 1))}
+                        >
+                            Próxima
+                        </button>
+                    </div>
                 </main>
             </div>
 

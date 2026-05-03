@@ -34,6 +34,49 @@
     gap: 24px;
 }
 
+.vazio {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    color: #64748b;
+    font-weight: 700;
+    padding: 28px;
+    text-align: center;
+}
+
+.paginacao {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.paginacao button,
+.paginacao span {
+    border: none;
+    background: #ffffff;
+    color: #64748b;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.paginacao button {
+    cursor: pointer;
+}
+
+.paginacao button:hover:not(:disabled) {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.paginacao button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
 @media (max-width: 1000px) {
     .grid {
         grid-template-columns: repeat(2, 1fr);

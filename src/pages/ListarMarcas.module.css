@@ -28,8 +28,8 @@
     background: #2563eb;
     color: white;
     text-decoration: none;
-    padding: 13px 22px;
-    border-radius: 7px;
+    padding: 11px 18px;
+    border-radius: 8px;
     font-weight: 700;
     border: none;
     cursor: pointer;
@@ -42,18 +42,13 @@
 
 .busca {
     width: 100%;
-    background: #eef3fa;
+    background: #ffffff;
+    border: 1px solid #dfe5ef;
     border-radius: 8px;
-    padding: 14px 16px;
+    padding: 12px 14px;
     display: flex;
     align-items: center;
-    gap: 10px;
     margin-bottom: 16px;
-}
-
-.busca span {
-    font-size: 22px;
-    color: #64748b;
 }
 
 .busca input {
@@ -100,6 +95,11 @@
     vertical-align: middle;
 }
 
+.tabelaCard th:last-child,
+.tabelaCard td:last-child {
+    text-align: right;
+}
+
 .logoMarca {
     width: 50px;
     height: 50px;
@@ -112,25 +112,71 @@
 
 .acoes {
     display: flex;
-    gap: 14px;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 .icone {
     border: none;
-    background: transparent;
+    background: #eff6ff;
     cursor: pointer;
-    font-size: 18px;
-    color: #64748b;
+    font-size: 13px;
+    color: #1d4ed8;
+    font-weight: 700;
+    padding: 8px 12px;
+    border-radius: 8px;
 }
 
 .icone:hover {
-    color: #111827;
+    background: #dbeafe;
+}
+
+.acoes .icone:last-child {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.acoes .icone:last-child:hover {
+    background: #fee2e2;
 }
 
 .vazio {
     text-align: center;
     color: #64748b !important;
     padding: 35px !important;
+}
+
+.paginacao {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.paginacao button,
+.paginacao span {
+    border: none;
+    background: #ffffff;
+    color: #64748b;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.paginacao button {
+    cursor: pointer;
+}
+
+.paginacao button:hover:not(:disabled) {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.paginacao button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
 }
 
 .modalFundo {
@@ -221,6 +267,10 @@
     cursor: pointer;
 }
 
+.cancelar:hover {
+    background: #e2e8f0;
+}
+
 .salvar {
     border: none;
     background: #2563eb;
@@ -231,6 +281,10 @@
     cursor: pointer;
 }
 
+.salvar:hover {
+    background: #1d4ed8;
+}
+
 .excluir {
     background: #dc2626;
     color: white;
@@ -239,6 +293,10 @@
     border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
+}
+
+.excluir:hover {
+    background: #b91c1c;
 }
 
 .toast {

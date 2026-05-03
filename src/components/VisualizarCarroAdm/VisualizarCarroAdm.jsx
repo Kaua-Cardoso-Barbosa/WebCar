@@ -5,14 +5,68 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import css from "./VisualizarCarroAdm.module.css";
 import { API_URL } from "../../App";
 
+const IMAGEM_PADRAO = `data:image/svg+xml;utf8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+  <rect width="900" height="520" fill="#f1f5f9"/>
+  <text x="450" y="260" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="34" font-weight="700" fill="#64748b">Sem imagem</text>
+</svg>
+`)}`;
+
+function imagensVeiculo(idVeiculo, numeroFoto = 1) {
+    if (!idVeiculo) return [];
+
+    const versao = Date.now();
+
+    return [
+        `${API_URL}/uploads/veiculo/${idVeiculo}/foto_${numeroFoto}.jpg?v=${versao}`,
+        `${API_URL}/static/uploads/veiculo/${idVeiculo}/foto_${numeroFoto}.jpg?v=${versao}`,
+        `${API_URL}/static/veiculo/${idVeiculo}/foto_${numeroFoto}.jpg?v=${versao}`,
+        `${API_URL}/veiculo/${idVeiculo}/foto_${numeroFoto}.jpg?v=${versao}`,
+    ];
+}
+
+function testarImagem(urls) {
+    return new Promise((resolve) => {
+        let indice = 0;
+
+        function tentar() {
+            if (indice >= urls.length) {
+                resolve(null);
+                return;
+            }
+
+            const img = new Image();
+            img.onload = () => resolve(urls[indice]);
+            img.onerror = () => {
+                indice += 1;
+                tentar();
+            };
+            img.src = urls[indice];
+        }
+
+        tentar();
+    });
+}
+
+function tentarProximaImagem(e, imagens = []) {
+    const indiceAtual = Number(e.currentTarget.dataset.indice || 0);
+    const proximoIndice = indiceAtual + 1;
+
+    if (proximoIndice < imagens.length) {
+        e.currentTarget.dataset.indice = String(proximoIndice);
+        e.currentTarget.src = imagens[proximoIndice];
+    }
+}
+
 export default function VisualizarCarroAdm() {
     const location = useLocation();
     const navigate = useNavigate();
 
     const carro = location.state?.carro;
 
-    const imagens = ["/Car.png", "/Car.png", "/Car.png", "/Car.png"];
-    const [imagemPrincipal, setImagemPrincipal] = useState(imagens[0]);
+    const imagemSemFoto = { numero: 0, urls: [IMAGEM_PADRAO], placeholder: true };
+    const [imagens, setImagens] = useState([imagemSemFoto]);
+    const [imagemPrincipal, setImagemPrincipal] = useState(imagemSemFoto);
 
     const [itens, setItens] = useState([]);
     const [mensagem, setMensagem] = useState("");
@@ -28,7 +82,36 @@ export default function VisualizarCarroAdm() {
 
     useEffect(() => {
         buscarItens();
+        carregarImagensDisponiveis();
     }, [carro]);
+
+    async function carregarImagensDisponiveis() {
+        if (!carro?.ID_VEICULO) {
+            setImagens([imagemSemFoto]);
+            setImagemPrincipal(imagemSemFoto);
+            return;
+        }
+
+        const encontradas = [];
+
+        for (let numero = 1; numero <= 10; numero += 1) {
+            const urls = imagensVeiculo(carro.ID_VEICULO, numero);
+            const urlValida = await testarImagem(urls);
+
+            if (!urlValida) break;
+
+            encontradas.push({
+                numero,
+                urls: [urlValida],
+                placeholder: false,
+            });
+        }
+
+        const listaFinal = encontradas.length > 0 ? encontradas : [imagemSemFoto];
+
+        setImagens(listaFinal);
+        setImagemPrincipal(listaFinal[0]);
+    }
 
     async function buscarItens() {
         if (!carro?.ID_VEICULO) return;
@@ -93,7 +176,7 @@ export default function VisualizarCarroAdm() {
             const data = await response.json();
 
             if (!response.ok) {
-                mostrarMensagem(data.mensagem || "Erro ao excluir item.", "erro");
+                mostrarMensagem(data.mensagem || "Não foi possível excluir este item.", "erro");
                 return;
             }
 
@@ -102,7 +185,7 @@ export default function VisualizarCarroAdm() {
             buscarItens();
         } catch (error) {
             console.error(error);
-            mostrarMensagem("Erro ao conectar com o servidor.", "erro");
+            mostrarMensagem("Não foi possível excluir este item.", "erro");
         }
     }
 
@@ -126,6 +209,10 @@ export default function VisualizarCarroAdm() {
 
     function formatarData(data) {
         if (!data) return "Não informado";
+
+        if (String(data).includes("/")) {
+            return String(data);
+        }
 
         try {
             return new Date(data).toLocaleDateString("pt-BR", {
@@ -164,7 +251,7 @@ export default function VisualizarCarroAdm() {
                 )}
 
                 <button className="btn btn-light mb-3" onClick={() => navigate("/garagem")}>
-                    ← Voltar
+                    Voltar
                 </button>
 
                 <div className="row g-4">
@@ -172,7 +259,9 @@ export default function VisualizarCarroAdm() {
                         <div className="card border-0 shadow-sm p-3">
                             <div style={{ height: "420px", background: "#f8f9fa" }}>
                                 <img
-                                    src={imagemPrincipal}
+                                    src={imagemPrincipal.urls[0]}
+                                    data-indice="0"
+                                    onError={(e) => tentarProximaImagem(e, imagemPrincipal.urls)}
                                     className="w-100 h-100 rounded"
                                     style={{ objectFit: "cover" }}
                                     alt={carro.MODELO}
@@ -180,25 +269,28 @@ export default function VisualizarCarroAdm() {
                             </div>
 
                             <div className="d-flex flex-nowrap gap-2 mt-3 overflow-auto">
-                                {imagens.map((img, index) => (
-                                    <img
-                                        key={index}
-                                        src={img}
-                                        onClick={() => setImagemPrincipal(img)}
-                                        className="rounded flex-shrink-0"
-                                        style={{
-                                            width: "110px",
-                                            height: "70px",
-                                            objectFit: "cover",
-                                            cursor: "pointer",
-                                            border:
-                                                imagemPrincipal === img
-                                                    ? "2px solid #0d6efd"
-                                                    : "2px solid transparent",
-                                        }}
-                                        alt={`Imagem ${index + 1}`}
-                                    />
-                                ))}
+                                {!imagemPrincipal.placeholder &&
+                                    imagens.map((img, index) => (
+                                        <img
+                                            key={img.numero}
+                                            src={img.urls[0]}
+                                            data-indice="0"
+                                            onError={(e) => tentarProximaImagem(e, img.urls)}
+                                            onClick={() => setImagemPrincipal(img)}
+                                            className="rounded flex-shrink-0"
+                                            style={{
+                                                width: "110px",
+                                                height: "70px",
+                                                objectFit: "cover",
+                                                cursor: "pointer",
+                                                border:
+                                                    imagemPrincipal.numero === img.numero
+                                                        ? "2px solid #0d6efd"
+                                                        : "2px solid transparent",
+                                            }}
+                                            alt={`Imagem ${index + 1}`}
+                                        />
+                                    ))}
                             </div>
                         </div>
 
@@ -270,25 +362,25 @@ export default function VisualizarCarroAdm() {
                                 className="btn btn-primary w-100 mb-3"
                                 onClick={() => navigate("/adicionarmanutencao", { state: { carro } })}
                             >
-                                Adicionar +
+                                Adicionar manutenção
                             </button>
 
-                            <div className="d-flex fw-bold border-bottom pb-2 mb-2 small text-muted">
+                            <div className={css.cabecalhoManutencao}>
                                 <div className="flex-fill">Serviço</div>
-                                <div style={{ width: "100px" }}>Valor</div>
-                                <div style={{ width: "90px" }}>Data</div>
-                                <div style={{ width: "42px" }}></div>
+                                <div>Valor</div>
+                                <div>Data</div>
+                                <div></div>
                             </div>
 
                             {itens.length === 0 ? (
-                                <p className="text-muted mb-0">Nenhum serviço registrado.</p>
+                                <p className="text-muted mb-0">Nenhuma manutenção cadastrada.</p>
                             ) : (
                                 itens.map((item) => (
                                     <div
                                         key={item.id_item_manutencao}
-                                        className="d-flex align-items-center border-bottom py-2"
+                                        className={css.linhaManutencao}
                                     >
-                                        <div className="flex-fill">
+                                        <div>
                                             <strong>{item.descricao}</strong>
                                             <br />
                                             <small className="text-muted">
@@ -296,22 +388,22 @@ export default function VisualizarCarroAdm() {
                                             </small>
                                         </div>
 
-                                        <div style={{ width: "100px" }}>
+                                        <div>
                                             <small>{formatarPreco(item.valor_total)}</small>
                                         </div>
 
-                                        <div style={{ width: "90px" }}>
+                                        <div>
                                             <small>{formatarData(item.data)}</small>
                                         </div>
 
-                                        <div style={{ width: "42px" }}>
+                                        <div>
                                             <button
                                                 type="button"
                                                 className="btn btn-light text-danger btn-sm"
                                                 onClick={() => abrirModalExcluir(item)}
                                                 title="Excluir item"
                                             >
-                                                <i className="bi bi-trash"></i>
+                                                Excluir
                                             </button>
                                         </div>
                                     </div>
@@ -355,8 +447,8 @@ export default function VisualizarCarroAdm() {
                         <h4 className="fw-bold mb-2">Excluir item</h4>
 
                         <p className="text-muted">
-                            Tem certeza que deseja remover{" "}
-                            <strong>{itemExcluir?.descricao}</strong> da manutenção?
+                            Tem certeza que deseja excluir este item?{" "}
+                            <strong>{itemExcluir?.descricao}</strong>
                         </p>
 
                         <div className="d-flex justify-content-end gap-2 mt-4">

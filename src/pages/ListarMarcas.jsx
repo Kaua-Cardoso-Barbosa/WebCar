@@ -8,6 +8,7 @@ import css from "./ListarMarcas.module.css";
 export default function ListarMarcas() {
     const [marcas, setMarcas] = useState([]);
     const [busca, setBusca] = useState("");
+    const [paginaAtual, setPaginaAtual] = useState(1);
     const [carregando, setCarregando] = useState(true);
 
     const [modalAberta, setModalAberta] = useState(false);
@@ -34,6 +35,10 @@ export default function ListarMarcas() {
         }, 3000);
     }
 
+    const totalPaginas = Math.max(1, Math.ceil(marcas.length / 15));
+    const inicioPagina = (paginaAtual - 1) * 15;
+    const marcasPaginadas = marcas.slice(inicioPagina, inicioPagina + 15);
+
     async function buscarMarcas(nomeBusca = "") {
         try {
             setCarregando(true);
@@ -53,7 +58,7 @@ export default function ListarMarcas() {
                 setMarcas([]);
             }
         } catch {
-            mostrarToast("Erro ao buscar marcas.", "erro");
+            mostrarToast("Não foi possível carregar os dados. Tente novamente.", "erro");
         } finally {
             setCarregando(false);
         }
@@ -130,15 +135,15 @@ export default function ListarMarcas() {
             const data = await res.json();
 
             if (!res.ok) {
-                mostrarToast(data.mensagem || "Erro ao salvar marca.", "erro");
+                mostrarToast(data.mensagem || "Não foi possível salvar as alterações.", "erro");
                 return;
             }
 
-            mostrarToast(data.mensagem || "Marca salva com sucesso!", "sucesso");
+            mostrarToast(data.mensagem || "Marca salva com sucesso.", "sucesso");
             setModalAberta(false);
             buscarMarcas(busca);
         } catch {
-            mostrarToast("Erro ao salvar marca.", "erro");
+            mostrarToast("Não foi possível salvar as alterações.", "erro");
         }
     }
 
@@ -164,15 +169,15 @@ export default function ListarMarcas() {
             const data = await res.json();
 
             if (!res.ok) {
-                mostrarToast(data.mensagem || "Erro ao excluir marca.", "erro");
+                mostrarToast(data.mensagem || "Não foi possível excluir este item.", "erro");
                 return;
             }
 
-            mostrarToast(data.mensagem || "Marca excluída com sucesso!", "sucesso");
+            mostrarToast(data.mensagem || "Marca excluída com sucesso.", "sucesso");
             fecharModalExcluir();
             buscarMarcas(busca);
         } catch {
-            mostrarToast("Erro ao excluir marca.", "erro");
+            mostrarToast("Não foi possível excluir este item.", "erro");
         }
     }
 
@@ -188,17 +193,19 @@ export default function ListarMarcas() {
                         <h1>Marcas</h1>
 
                         <button className={css.botaoAzul} onClick={abrirModalAdicionar}>
-                            ⊕ Nova Marca
+                            Nova Marca
                         </button>
                     </div>
 
                     <div className={css.busca}>
-                        <span>⌕</span>
                         <input
                             type="text"
-                            placeholder="Procure uma marca..."
+                            placeholder="Buscar por nome..."
                             value={busca}
-                            onChange={(e) => setBusca(e.target.value)}
+                            onChange={(e) => {
+                                setBusca(e.target.value);
+                                setPaginaAtual(1);
+                            }}
                         />
                     </div>
 
@@ -216,11 +223,11 @@ export default function ListarMarcas() {
                             {carregando ? (
                                 <tr>
                                     <td colSpan="3" className={css.vazio}>
-                                        Carregando marcas...
+                                        Carregando dados...
                                     </td>
                                 </tr>
                             ) : marcas.length > 0 ? (
-                                marcas.map((marca) => (
+                                marcasPaginadas.map((marca) => (
                                     <tr key={marca.id_marca}>
                                         <td>
                                             <img
@@ -242,7 +249,7 @@ export default function ListarMarcas() {
                                                     className={css.icone}
                                                     onClick={() => abrirModalEditar(marca)}
                                                 >
-                                                    ✎
+                                                    Editar
                                                 </button>
 
                                                 <button
@@ -250,7 +257,7 @@ export default function ListarMarcas() {
                                                     className={css.icone}
                                                     onClick={() => abrirModalExcluir(marca)}
                                                 >
-                                                    🗑
+                                                    Excluir
                                                 </button>
                                             </div>
                                         </td>
@@ -259,13 +266,31 @@ export default function ListarMarcas() {
                             ) : (
                                 <tr>
                                     <td colSpan="3" className={css.vazio}>
-                                        Nenhuma marca encontrada.
+                                        {busca ? "Nenhum resultado encontrado." : "Nenhuma marca cadastrada."}
                                     </td>
                                 </tr>
                             )}
                             </tbody>
                         </table>
                     </section>
+
+                    <div className={css.paginacao}>
+                        <button
+                            type="button"
+                            disabled={paginaAtual === 1}
+                            onClick={() => setPaginaAtual((pagina) => Math.max(1, pagina - 1))}
+                        >
+                            Anterior
+                        </button>
+                        <span>{paginaAtual} / {totalPaginas}</span>
+                        <button
+                            type="button"
+                            disabled={paginaAtual === totalPaginas}
+                            onClick={() => setPaginaAtual((pagina) => Math.min(totalPaginas, pagina + 1))}
+                        >
+                            Próxima
+                        </button>
+                    </div>
                 </main>
             </div>
 

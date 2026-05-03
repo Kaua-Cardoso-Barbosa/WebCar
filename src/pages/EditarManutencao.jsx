@@ -16,6 +16,7 @@ export default function EditarManutencao() {
     const [erro, setErro] = useState("");
     const [sucesso, setSucesso] = useState("");
     const [salvando, setSalvando] = useState(false);
+    const hoje = new Date().toISOString().split("T")[0];
 
     function formatarDataParaInput(dataRecebida) {
         if (!dataRecebida) return "";
@@ -68,6 +69,11 @@ export default function EditarManutencao() {
             return;
         }
 
+        if (data < hoje) {
+            setErro("A data da manutenção não pode ser passada.");
+            return;
+        }
+
         try {
             setSalvando(true);
 
@@ -86,18 +92,18 @@ export default function EditarManutencao() {
             const result = await response.json();
 
             if (!response.ok) {
-                setErro(result.mensagem || "Erro ao editar manutenção.");
+                setErro(result.mensagem || "Não foi possível salvar as alterações.");
                 return;
             }
 
-            setSucesso(result.mensagem || "Manutenção atualizada com sucesso!");
+            setSucesso(result.mensagem || "Manutenção atualizada com sucesso.");
 
             setTimeout(() => {
                 navigate(-1);
             }, 900);
         } catch (error) {
             console.error(error);
-            setErro("Erro ao conectar com o servidor.");
+            setErro("Não foi possível salvar as alterações.");
         } finally {
             setSalvando(false);
         }
@@ -146,13 +152,14 @@ export default function EditarManutencao() {
                             <input
                                 className={css.input}
                                 type="date"
+                                min={hoje}
                                 value={data}
                                 onChange={(e) => setData(e.target.value)}
                             />
                         </div>
 
                         <button type="submit" className={css.btn} disabled={salvando}>
-                            {salvando ? "Salvando..." : "Salvar alterações"} <span>→</span>
+                            {salvando ? "Salvando..." : "Salvar alterações"}
                         </button>
 
                         <button

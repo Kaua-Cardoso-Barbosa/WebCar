@@ -55,7 +55,7 @@ export default function CadastrarServico() {
             const data = await response.json();
 
             if (!response.ok) {
-                setMensagem(data.mensagem || "Erro ao cadastrar serviço.");
+                setMensagem(data.mensagem || "Não foi possível salvar as alterações.");
                 setTipoMensagem("erro");
                 return;
             }
@@ -68,7 +68,7 @@ export default function CadastrarServico() {
             }, 700);
         } catch (error) {
             console.error(error);
-            setMensagem("Erro ao conectar com o servidor.");
+            setMensagem("Não foi possível salvar as alterações.");
             setTipoMensagem("erro");
         } finally {
             setSalvando(false);

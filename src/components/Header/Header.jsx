@@ -9,12 +9,35 @@ export default function Header({ busca = "", setBusca = null }) {
     // agora usamos usuario_tipo e não token
     const tipoUsuario = localStorage.getItem("usuario_tipo");
     const estaLogado = !!tipoUsuario;
+    const tipoNumero = Number(tipoUsuario);
+    const usuarioInterno = tipoNumero === 0 || tipoNumero === 1;
+    const linkLogo = tipoNumero === 0 ? "/dashboard" : tipoNumero === 1 ? "/restrita-vendedor" : "/";
+    const [buscaLocal, setBuscaLocal] = useState("");
+    const valorBusca = setBusca ? busca : buscaLocal;
+
+    function handleBuscaChange(e) {
+        if (setBusca) {
+            setBusca(e.target.value);
+            return;
+        }
+
+        setBuscaLocal(e.target.value);
+    }
+
+    function handleBuscar(e) {
+        e.preventDefault();
+
+        if (!setBusca && buscaLocal.trim()) {
+            navigate(`/catalogo?busca=${encodeURIComponent(buscaLocal.trim())}`);
+        }
+    }
 
     const handleLogout = () => {
         localStorage.removeItem("usuario_id");
         localStorage.removeItem("usuario_nome");
         localStorage.removeItem("usuario_email");
         localStorage.removeItem("usuario_tipo");
+        localStorage.removeItem("token");
 
         navigate("/login");
     };
@@ -47,7 +70,7 @@ export default function Header({ busca = "", setBusca = null }) {
                     <div className={css.juntar}>
                         <Link
                             className="navbar-brand d-flex align-items-center gap-2"
-                            to="/"
+                            to={linkLogo}
                         >
                             <img
                                 src="/Logo.png"
@@ -78,7 +101,7 @@ export default function Header({ busca = "", setBusca = null }) {
                                 <div className="offcanvas-header">
                                     <Link
                                         className="navbar-brand d-flex align-items-center gap-2"
-                                        to="/"
+                                        to={linkLogo}
                                     >
                                         <img
                                             src="/Logo.png"
@@ -101,13 +124,17 @@ export default function Header({ busca = "", setBusca = null }) {
                                 <div className="offcanvas-body">
                                     <ul className="navbar-nav flex-grow-1">
 
-                                        <li className="nav-item">
-                                            <a className="nav-link">Comprar</a>
-                                        </li>
+                                        {!usuarioInterno && (
+                                            <>
+                                                <li className="nav-item">
+                                                    <Link className="nav-link" to="/catalogo">Comprar</Link>
+                                                </li>
 
-                                        <li className="nav-item">
-                                            <a className="nav-link">Sobre nós</a>
-                                        </li>
+                                                <li className="nav-item">
+                                                    <Link className="nav-link" to="/">Sobre nós</Link>
+                                                </li>
+                                            </>
+                                        )}
 
                                         {!estaLogado ? (
                                             <>
@@ -147,19 +174,19 @@ export default function Header({ busca = "", setBusca = null }) {
                                         )}
                                     </ul>
 
-                                    <form className="d-flex mt-3">
+                                    <form
+                                        className={usuarioInterno ? css.oculto : css.buscaMobile}
+                                        onSubmit={handleBuscar}
+                                    >
                                         <input
                                             className="form-control"
                                             type="search"
                                             placeholder="Buscar veículos..."
-                                            value={busca}
-                                            onChange={(e) => setBusca && setBusca(e.target.value)}
+                                            value={valorBusca}
+                                            onChange={handleBuscaChange}
                                         />
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline-success"
-                                        >
-                                            Pesquisar
+                                        <button type="submit" className={css.botaoBuscar}>
+                                            Buscar
                                         </button>
                                     </form>
                                 </div>
@@ -167,19 +194,28 @@ export default function Header({ busca = "", setBusca = null }) {
                         </div>
                     </div>
 
-                    <form className={"d-flex mx-4 flex-grow-1 " + css.sumir}>
+                    <form
+                        className={usuarioInterno ? css.oculto : css.buscaDesktop}
+                        onSubmit={handleBuscar}
+                    >
                         <input
                             className="form-control"
                             type="search"
                             placeholder="Buscar veículos..."
+                            value={valorBusca}
+                            onChange={handleBuscaChange}
                         />
                     </form>
 
                     <div className={css.sumir}>
                         <div className="d-flex align-items-center gap-3">
 
-                            <a className="nav-link">Comprar</a>
-                            <a className="nav-link">Sobre nós</a>
+                            {!usuarioInterno && (
+                                <>
+                                    <Link className="nav-link" to="/catalogo">Comprar</Link>
+                                    <Link className="nav-link" to="/">Sobre nós</Link>
+                                </>
+                            )}
 
                             {!estaLogado ? (
                                 <>

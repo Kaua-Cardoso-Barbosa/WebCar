@@ -32,6 +32,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import CadastrarMarca from "./pages/CadastrarMarca.jsx";
 import AtualizarValores from "./pages/AtualizarValores.jsx";
 import ListarMarcas from "./pages/ListarMarcas.jsx";
+import HistoricoServicos from "./pages/HistoricoServicos.jsx";
 
 export default function App() {
     return (
@@ -46,25 +47,125 @@ export default function App() {
                 <Route path="/trocarSenha" element={<TrocarSenha />} />
                 <Route path="/verificarEmailConta" element={<VerificarEmailConta />} />
                 <Route path="/Visualizar" element={<Visualizar />} />
-                <Route path="/VisualizarAdm" element={<VisualizarAdm />} />
-                <Route path="/Agendar" element={<AgendarSuaVisita />} />
-                <Route path="/garagem" element={<Garagem />} />
-                <Route path="/Cadastroveiculo" element={<NovoVeiculo />} />
-                <Route path="/EdicaoVeiculo" element={<EditarVeiculo />} />
-                <Route path="/cadastrarservicos" element={<CadastrarServico />} />
-                <Route path="/adicionarmanutencao" element={<AdicionarManutencao />} />
-                <Route path="/editarmanutencao" element={<EditarManutencao />} />
-                <Route path="/servicos" element={<Servicos />} />
-                <Route path="/cadastrarmarca" element={<CadastrarMarca />} />
-                <Route path="/atualizarvalores" element={<AtualizarValores />} />
-                <Route path="/editarservico/:id_servico" element={<EditarServico />} />
-                <Route path="/listarmarcas" element={<ListarMarcas />} />
+                <Route path="/not" element={<Not />} />
+                <Route
+                    path="/VisualizarAdm"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <VisualizarAdm />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/Agendar"
+                    element={
+                        <RotaProtegida>
+                            <AgendarSuaVisita />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/garagem"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <Garagem />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/Cadastroveiculo"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <NovoVeiculo />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/EdicaoVeiculo"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <EditarVeiculo />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/cadastrarservicos"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <CadastrarServico />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/adicionarmanutencao"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <AdicionarManutencao />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/editarmanutencao"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <EditarManutencao />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/servicos"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <Servicos />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/cadastrarmarca"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <CadastrarMarca />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/atualizarvalores"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <AtualizarValores />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/historicoservicos"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <HistoricoServicos />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/editarservico/:id_servico"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <EditarServico />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/listarmarcas"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <ListarMarcas />
+                        </RotaProtegida>
+                    }
+                />
                 <Route path="*" element={<Not />} />
 
                 <Route
                     path="/catalogo"
                     element={
-                        <RotaProtegida tiposPermitidos={[2]}>
+                        <RotaProtegida>
                             <Catalogo />
                         </RotaProtegida>
                     }
@@ -73,10 +174,9 @@ export default function App() {
                 <Route
                     path="/restrita"
                     element={
-                        <RotaProtegida
-                            componente={<Restrita />}
-                            tipoPermitido="2"
-                        />
+                        <RotaProtegida>
+                            <Restrita />
+                        </RotaProtegida>
                     }
                 />
 
@@ -93,10 +193,9 @@ export default function App() {
                 <Route
                     path="/restrita-vendedor"
                     element={
-                        <RotaProtegida
-                            componente={<RestritaVendedor />}
-                            tipoPermitido="1"
-                        />
+                        <RotaProtegida>
+                            <RestritaVendedor />
+                        </RotaProtegida>
                     }
                 />
 

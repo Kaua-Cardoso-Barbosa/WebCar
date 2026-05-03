@@ -1,13 +1,47 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import css from "./Filtro.module.css";
 
 export default function Filtro({ carros, setCarrosFiltrados }) {
+    const anoAtual = new Date().getFullYear();
+    const menorAnoLoja = useMemo(() => {
+        const anos = carros
+            .map((carro) => Number(carro.ANO_MODELO))
+            .filter((ano) => ano > 0 && ano <= anoAtual);
+
+        return anos.length > 0 ? Math.min(...anos) : 1900;
+    }, [carros, anoAtual]);
+
     const [marcasSelecionadas, setMarcasSelecionadas] = useState([]);
-    const [precoMax, setPrecoMax] = useState(150000);
+    const precoMaximoLoja = useMemo(() => {
+        const maiorPreco = carros.reduce((maior, carro) => {
+            const preco = Number(carro.PRECO_VENDA || 0);
+            return preco > maior ? preco : maior;
+        }, 0);
+
+        return Math.ceil(maiorPreco / 5000) * 5000;
+    }, [carros]);
+
+    const [precoMax, setPrecoMax] = useState(0);
     const [anoDe, setAnoDe] = useState("");
     const [anoAte, setAnoAte] = useState("");
 
     const marcas = [...new Set(carros.map((carro) => carro.MARCA).filter(Boolean))];
+
+    function normalizarAno(valor) {
+        if (valor === "") return "";
+
+        const ano = Number(valor);
+        if (Number.isNaN(ano)) return "";
+        if (ano < menorAnoLoja) return String(menorAnoLoja);
+        if (ano > anoAtual) return String(anoAtual);
+
+        return String(ano);
+    }
+
+    useEffect(() => {
+        setPrecoMax(precoMaximoLoja);
+        setCarrosFiltrados(carros);
+    }, [carros, precoMaximoLoja, setCarrosFiltrados]);
 
     function filtrar({ marcas = marcasSelecionadas, preco = precoMax, de = anoDe, ate = anoAte }) {
         const filtrados = carros.filter((carro) => {
@@ -17,7 +51,7 @@ export default function Filtro({ carros, setCarrosFiltrados }) {
             const passaMarca =
                 marcas.length === 0 || marcas.includes(carro.MARCA);
 
-            const passaPreco = precoCarro <= preco;
+            const passaPreco = preco === 0 || precoCarro <= preco;
 
             const passaAnoDe =
                 de === "" || anoCarro >= Number(de);
@@ -47,18 +81,20 @@ export default function Filtro({ carros, setCarrosFiltrados }) {
     }
 
     function mudarAnoDe(valor) {
-        setAnoDe(valor);
-        filtrar({ de: valor });
+        const ano = normalizarAno(valor);
+        setAnoDe(ano);
+        filtrar({ de: ano });
     }
 
     function mudarAnoAte(valor) {
-        setAnoAte(valor);
-        filtrar({ ate: valor });
+        const ano = normalizarAno(valor);
+        setAnoAte(ano);
+        filtrar({ ate: ano });
     }
 
     function resetarFiltros() {
         setMarcasSelecionadas([]);
-        setPrecoMax(150000);
+        setPrecoMax(precoMaximoLoja);
         setAnoDe("");
         setAnoAte("");
         setCarrosFiltrados(carros);
@@ -99,16 +135,23 @@ export default function Filtro({ carros, setCarrosFiltrados }) {
                 <input
                     type="range"
                     min="0"
-                    max="150000"
+                    max={precoMaximoLoja}
                     step="5000"
                     value={precoMax}
                     onChange={(e) => mudarPreco(e.target.value)}
                     className={css.range}
+                    disabled={precoMaximoLoja === 0}
                 />
 
                 <div className={css.precoLinha}>
                     <span>R$0</span>
-                    <span>R$150k+</span>
+                    <span>
+                        {precoMaximoLoja.toLocaleString("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                            maximumFractionDigits: 0,
+                        })}
+                    </span>
                 </div>
             </div>
 
@@ -118,14 +161,20 @@ export default function Filtro({ carros, setCarrosFiltrados }) {
                 <div className={css.ano}>
                     <input
                         type="number"
-                        placeholder="De"
+                        placeholder={`De ${menorAnoLoja}`}
+                        min={menorAnoLoja}
+                        max={anoAtual}
+                        step="1"
                         value={anoDe}
                         onChange={(e) => mudarAnoDe(e.target.value)}
                     />
 
                     <input
                         type="number"
-                        placeholder="Até"
+                        placeholder={`Até ${anoAtual}`}
+                        min={menorAnoLoja}
+                        max={anoAtual}
+                        step="1"
                         value={anoAte}
                         onChange={(e) => mudarAnoAte(e.target.value)}
                     />
