@@ -74,9 +74,12 @@ export default function VisualizarCarroAdm() {
 
     const [modalExcluir, setModalExcluir] = useState(false);
     const [itemExcluir, setItemExcluir] = useState(null);
+    const [manutencaoAberta, setManutencaoAberta] = useState(null);
+    const [manutencaoExcluir, setManutencaoExcluir] = useState(null);
 
-    const totalManutencoes = itens.reduce(
-        (total, item) => total + Number(item.valor_total || 0),
+    const manutencoes = agruparManutencoes(itens);
+    const totalManutencoes = manutencoes.reduce(
+        (total, manutencao) => total + Number(manutencao.valor_total || 0),
         0
     );
 
@@ -117,6 +120,11 @@ export default function VisualizarCarroAdm() {
         if (!carro?.ID_VEICULO) return;
 
         try {
+            const manutencoesPendentes = buscarManutencoesPendentes();
+            const manutencoesCadastradas = [
+                ...manutencoesPendentes,
+                ...(await buscarManutencoes()),
+            ];
             const response = await fetch(`${API_URL}/buscar_itens_manutencao_veiculo`, {
                 method: "POST",
                 headers: {
@@ -128,17 +136,252 @@ export default function VisualizarCarroAdm() {
                 }),
             });
 
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
 
             if (response.ok) {
-                setItens(data.itens || []);
+                const manutencoesDaResposta = extrairManutencoes(data);
+
+                if (manutencoesDaResposta.length > 0) {
+                    setItens(
+                        mesclarManutencoesComItens(
+                            [...manutencoesCadastradas, ...manutencoesDaResposta],
+                            []
+                        )
+                    );
+                    return;
+                }
+
+                const itensManutencao = data.itens || [];
+                setItens(mesclarManutencoesComItens(manutencoesCadastradas, itensManutencao));
             } else {
-                setItens([]);
+                setItens(mesclarManutencoesComItens(manutencoesCadastradas, []));
             }
         } catch (error) {
             console.error(error);
-            setItens([]);
+            setItens(mesclarManutencoesComItens(buscarManutencoesPendentes(), []));
         }
+    }
+
+    function chaveManutencoesPendentes(idVeiculo) {
+        return `webcar:manutencoes-sem-itens:${idVeiculo}`;
+    }
+
+    function buscarManutencoesPendentes() {
+        if (!carro?.ID_VEICULO) return [];
+
+        try {
+            const salvas = JSON.parse(
+                sessionStorage.getItem(chaveManutencoesPendentes(carro.ID_VEICULO)) || "[]"
+            );
+            const novaManutencao = location.state?.novaManutencao;
+            const lista = novaManutencao ? [...salvas, novaManutencao] : salvas;
+            const mapa = new Map();
+
+            lista.forEach((manutencao) => {
+                const id = idManutencaoDe(manutencao);
+
+                if (id) {
+                    mapa.set(String(id), manutencao);
+                }
+            });
+
+            return Array.from(mapa.values());
+        } catch {
+            return [];
+        }
+    }
+
+    async function buscarManutencoes() {
+        try {
+            const response = await fetch(`${API_URL}/buscar_manutencao`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    id_veiculo: carro.ID_VEICULO,
+                }),
+            });
+
+            if (!response.ok) return [];
+
+            const data = await response.json().catch(() => ({}));
+            return data.manutencoes || data["manutenções"] || data.manutencao || [];
+        } catch {
+            return [];
+        }
+    }
+
+    function getCampo(objeto, nomes) {
+        for (const nome of nomes) {
+            if (objeto?.[nome] !== undefined && objeto?.[nome] !== null) {
+                return objeto[nome];
+            }
+        }
+
+        return undefined;
+    }
+
+    function idManutencaoDe(registro, fallback) {
+        return getCampo(registro, [
+            "id_manutencao",
+            "ID_MANUTENCAO",
+            "idManutencao",
+            "ID",
+            "id",
+            "codigo_manutencao",
+            "CODIGO_MANUTENCAO",
+            "id manutenção",
+            "id manutenÃ§Ã£o",
+        ]) || fallback;
+    }
+
+    function idItemDe(registro) {
+        return getCampo(registro, [
+            "id_item_manutencao",
+            "ID_ITEM_MANUTENCAO",
+            "idItemManutencao",
+            "id_item_manutencao_servico",
+            "ID_ITEM_MANUTENCAO_SERVICO",
+            "id_item_servico",
+            "ID_ITEM_SERVICO",
+            "idManutencaoServico",
+            "id_item",
+            "ID_ITEM",
+        ]);
+    }
+
+    function itensDeManutencao(registro) {
+        return getCampo(registro, [
+            "itens",
+            "ITENS",
+            "items",
+            "servicos",
+            "serviÃ§os",
+            "serviços",
+            "itens_manutencao",
+            "itensManutencao",
+        ]) || [];
+    }
+
+    function dataManutencaoDe(registro) {
+        return getCampo(registro, [
+            "data",
+            "DATA",
+            "data_manutencao",
+            "DATA_MANUTENCAO",
+            "dataManutencao",
+        ]);
+    }
+
+    function valorManutencaoDe(registro) {
+        return Number(
+            getCampo(registro, [
+                "valor_total",
+                "VALOR_TOTAL",
+                "valorTotal",
+                "total",
+                "TOTAL",
+            ]) || 0
+        );
+    }
+
+    function extrairManutencoes(data) {
+        const lista = getCampo(data, [
+            "manutencoes",
+            "manutenções",
+            "manutenÃ§Ãµes",
+            "manutencao",
+            "manutenção",
+            "manutenÃ§Ã£o",
+        ]);
+
+        if (!Array.isArray(lista)) return [];
+
+        return lista.map((manutencao, index) =>
+            normalizarManutencao(manutencao, `manutencao-${index}`)
+        );
+    }
+
+    function normalizarItem(item, idManutencao) {
+        const quantidade = Number(getCampo(item, ["quantidade", "QUANTIDADE", "qtd", "QTD"]) || 0);
+        const valorTotal = Number(getCampo(item, ["valor_total", "VALOR_TOTAL", "valorTotal"]) || 0);
+        const valorUnitario = Number(
+            getCampo(item, ["valor_unitario", "VALOR_UNITARIO", "valorUnitario"]) ||
+            (quantidade > 0 ? valorTotal / quantidade : 0)
+        );
+
+        return {
+            ...item,
+            id_manutencao: idManutencao,
+            id_item_manutencao: idItemDe(item),
+            id_servico: getCampo(item, ["id_servico", "ID_SERVICO", "idServico"]),
+            descricao: getCampo(item, ["descricao", "DESCRICAO", "descrição", "descriÃ§Ã£o"]) || "Servico",
+            quantidade,
+            valor_unitario: valorUnitario,
+            valor_total: valorTotal || valorUnitario * quantidade,
+        };
+    }
+
+    function normalizarManutencao(manutencao, fallback) {
+        const idManutencao = idManutencaoDe(manutencao, fallback);
+        const itensNormalizados = itensDeManutencao(manutencao).map((item) =>
+            normalizarItem(item, idManutencao)
+        );
+        const totalItens = itensNormalizados.reduce(
+            (total, item) => total + Number(item.valor_total || 0),
+            0
+        );
+
+        return {
+            id_manutencao: idManutencao,
+            data: dataManutencaoDe(manutencao),
+            valor_total: totalItens || valorManutencaoDe(manutencao),
+            temItens: true,
+            ehManutencao: true,
+            recebeuItensDoBackend: false,
+            itens: itensNormalizados,
+        };
+    }
+
+    function mesclarManutencoesComItens(manutencoesCadastradas, itensManutencao) {
+        const mapa = new Map();
+
+        manutencoesCadastradas.forEach((manutencao, index) => {
+            const normalizada = normalizarManutencao(manutencao, `manutencao-${index}`);
+            mapa.set(String(normalizada.id_manutencao), normalizada);
+        });
+
+        itensManutencao.forEach((item, index) => {
+            const idManutencao = idManutencaoDe(item, `sem-id-${index}`);
+
+            if (!mapa.has(String(idManutencao))) {
+                mapa.set(String(idManutencao), {
+                    id_manutencao: idManutencao,
+                    data: dataManutencaoDe(item),
+                    valor_total: 0,
+                    temItens: true,
+                    ehManutencao: true,
+                    recebeuItensDoBackend: false,
+                    itens: [],
+                });
+            }
+
+            const manutencao = mapa.get(String(idManutencao));
+
+            if (!manutencao.recebeuItensDoBackend) {
+                manutencao.itens = [];
+                manutencao.valor_total = 0;
+                manutencao.recebeuItensDoBackend = true;
+            }
+
+            const itemNormalizado = normalizarItem(item, idManutencao);
+            manutencao.itens.push(itemNormalizado);
+            manutencao.valor_total += Number(itemNormalizado.valor_total || 0);
+        });
+
+        return Array.from(mapa.values());
     }
 
     function mostrarMensagem(texto, tipo) {
@@ -156,13 +399,180 @@ export default function VisualizarCarroAdm() {
         setModalExcluir(true);
     }
 
+    function abrirModalManutencao(manutencao) {
+        setManutencaoAberta(manutencao);
+    }
+
+    function fecharModalManutencao() {
+        setManutencaoAberta(null);
+    }
+
+    function abrirModalExcluirManutencao(manutencao) {
+        setManutencaoExcluir(manutencao);
+    }
+
+    function fecharModalExcluirManutencao() {
+        setManutencaoExcluir(null);
+    }
+
+    function removerManutencaoPendente(idManutencao) {
+        if (!carro?.ID_VEICULO || !idManutencao) return;
+
+        try {
+            const chave = chaveManutencoesPendentes(carro.ID_VEICULO);
+            const salvas = JSON.parse(sessionStorage.getItem(chave) || "[]");
+            const atualizadas = salvas.filter(
+                (manutencao) =>
+                    String(idManutencaoDe(manutencao)) !== String(idManutencao)
+            );
+
+            sessionStorage.setItem(chave, JSON.stringify(atualizadas));
+        } catch {
+            // Mantem a tela funcionando mesmo se a sessao estiver indisponivel.
+        }
+    }
+
+    async function excluirManutencaoInteira() {
+        const manutencao = manutencaoExcluir;
+
+        if (!manutencao?.id_manutencao) {
+            mostrarMensagem("Manutencao nao encontrada para exclusao.", "erro");
+            fecharModalExcluirManutencao();
+            return;
+        }
+
+        try {
+            for (const item of manutencao.itens || []) {
+                if (item?.id_item_manutencao) {
+                    const responseItem = await fetch(
+                        `${API_URL}/deletar_item_manutencao/${item.id_item_manutencao}`,
+                        {
+                            method: "DELETE",
+                            credentials: "include",
+                        }
+                    );
+                    const dataItem = await responseItem.json().catch(() => ({}));
+
+                    if (!responseItem.ok) {
+                        mostrarMensagem(
+                            dataItem.mensagem || "Nao foi possivel excluir os itens da manutencao.",
+                            "erro"
+                        );
+                        fecharModalManutencao();
+                        fecharModalExcluirManutencao();
+                        return;
+                    }
+                }
+            }
+
+            const response = await fetch(
+                `${API_URL}/deletar_manutencao/${manutencao.id_manutencao}`,
+                {
+                    method: "DELETE",
+                    credentials: "include",
+                }
+            );
+            const data = await response.json().catch(() => ({}));
+            const mensagem = String(data.mensagem || "").toLowerCase();
+
+            if (!response.ok || mensagem.includes("erro") || mensagem.includes("não existe")) {
+                mostrarMensagem(data.mensagem || "Nao foi possivel excluir a manutencao.", "erro");
+                fecharModalManutencao();
+                fecharModalExcluirManutencao();
+                return;
+            }
+
+            removerManutencaoPendente(manutencao.id_manutencao);
+            setItens((listaAtual) =>
+                listaAtual.filter(
+                    (item) =>
+                        String(item.id_manutencao) !== String(manutencao.id_manutencao)
+                )
+            );
+            fecharModalManutencao();
+            fecharModalManutencao();
+            fecharModalExcluirManutencao();
+            mostrarMensagem(data.mensagem || "Manutencao excluida com sucesso.", "sucesso");
+            buscarItens();
+        } catch (error) {
+            console.error(error);
+            fecharModalExcluirManutencao();
+            mostrarMensagem("Nao foi possivel excluir a manutencao.", "erro");
+        }
+    }
+
+    function agruparManutencoes(listaItens) {
+        if (listaItens.every((item) => item.ehManutencao)) {
+            return listaItens.sort((a, b) => {
+                const dataA = new Date(a.data).getTime() || 0;
+                const dataB = new Date(b.data).getTime() || 0;
+                return dataB - dataA;
+            });
+        }
+
+        const mapa = new Map();
+
+        listaItens.forEach((item, index) => {
+            const idManutencao =
+                item.id_manutencao ||
+                item.ID_MANUTENCAO ||
+                item.idManutencao ||
+                `sem-id-${index}`;
+
+            if (!mapa.has(idManutencao)) {
+                mapa.set(idManutencao, {
+                    id_manutencao: idManutencao,
+                    data: item.data || item.DATA || item.data_manutencao || item.DATA_MANUTENCAO,
+                    valor_total: 0,
+                    temItens: false,
+                    itens: [],
+                });
+            }
+
+            const manutencao = mapa.get(idManutencao);
+            const temItem =
+                item.id_item_manutencao ||
+                item.ID_ITEM_MANUTENCAO ||
+                item.id_servico ||
+                item.ID_SERVICO ||
+                item.descricao;
+
+            if (temItem) {
+                if (!manutencao.temItens) {
+                    manutencao.valor_total = 0;
+                    manutencao.temItens = true;
+                }
+
+                manutencao.itens.push(item);
+                manutencao.valor_total += Number(item.valor_total || 0);
+            } else if (!manutencao.temItens) {
+                manutencao.valor_total = Number(
+                    item.valor_total || item.VALOR_TOTAL || manutencao.valor_total || 0
+                );
+            }
+        });
+
+        return Array.from(mapa.values()).sort((a, b) => {
+            const dataA = new Date(a.data).getTime() || 0;
+            const dataB = new Date(b.data).getTime() || 0;
+            return dataB - dataA;
+        });
+    }
+
     function fecharModalExcluir() {
         setItemExcluir(null);
         setModalExcluir(false);
     }
 
     async function confirmarExcluirItem() {
-        if (!itemExcluir?.id_item_manutencao) return;
+        if (!itemExcluir?.id_item_manutencao) {
+            mostrarMensagem(
+                "Este item ainda nao possui identificador para exclusao. Atualize a pagina e tente novamente.",
+                "erro"
+            );
+            fecharModalExcluir();
+            return;
+        }
 
         try {
             const response = await fetch(
@@ -173,7 +583,7 @@ export default function VisualizarCarroAdm() {
                 }
             );
 
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
                 mostrarMensagem(data.mensagem || "Não foi possível excluir este item.", "erro");
@@ -181,6 +591,26 @@ export default function VisualizarCarroAdm() {
             }
 
             mostrarMensagem(data.mensagem || "Item removido com sucesso.", "sucesso");
+            setItens((listaAtual) =>
+                listaAtual.map((manutencao) => {
+                    if (!manutencao.ehManutencao) return manutencao;
+
+                    const itensAtualizados = manutencao.itens.filter(
+                        (item) =>
+                            String(item.id_item_manutencao) !==
+                            String(itemExcluir.id_item_manutencao)
+                    );
+
+                    return {
+                        ...manutencao,
+                        itens: itensAtualizados,
+                        valor_total: itensAtualizados.reduce(
+                            (total, item) => total + Number(item.valor_total || 0),
+                            0
+                        ),
+                    };
+                })
+            );
             fecharModalExcluir();
             buscarItens();
         } catch (error) {
@@ -235,6 +665,153 @@ export default function VisualizarCarroAdm() {
         if (String(valor) === "2") return "Etanol";
         if (String(valor) === "3") return "Diesel";
         return valor || "Não informado";
+    }
+
+    function renderManutencoesDetalhadas() {
+        if (manutencoes.length === 0) {
+            return (
+                <div className={css.estadoVazioManutencao}>
+                    <h4>Nenhuma manutencao cadastrada</h4>
+                    <p>Crie a primeira manutencao deste veiculo para depois cadastrar os itens dela.</p>
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={() => navigate("/adicionarmanutencao", { state: { carro } })}
+                    >
+                        Adicionar manutencao
+                    </button>
+                </div>
+            );
+        }
+
+        return (
+            <div className={css.listaManutencoesCompacta}>
+                {manutencoes.map((manutencao, index) => (
+                    <button
+                        type="button"
+                        className={css.botaoManutencaoCompacta}
+                        key={manutencao.id_manutencao}
+                        onClick={() => abrirModalManutencao(manutencao)}
+                    >
+                        <div>
+                            <span className={css.indiceManutencao}>
+                                Manutencao {index + 1}
+                            </span>
+                            <strong>{formatarData(manutencao.data)}</strong>
+                        </div>
+
+                        <div className={css.resumoManutencaoCompacta}>
+                            <span>
+                                {manutencao.itens.length === 0
+                                    ? "Sem itens"
+                                    : `${manutencao.itens.length} item(ns)`}
+                            </span>
+                            <strong>{formatarPreco(manutencao.valor_total)}</strong>
+                        </div>
+                    </button>
+                ))}
+            </div>
+        );
+    }
+
+    function renderModalManutencao() {
+        if (!manutencaoAberta) return null;
+
+        const indice = manutencoes.findIndex(
+            (manutencao) =>
+                String(manutencao.id_manutencao) === String(manutencaoAberta.id_manutencao)
+        );
+        const manutencaoAtual =
+            manutencoes.find(
+                (manutencao) =>
+                    String(manutencao.id_manutencao) === String(manutencaoAberta.id_manutencao)
+            ) || manutencaoAberta;
+
+        return (
+            <div className={css.modalFundo}>
+                <div className={css.modalManutencao}>
+                    <div className={css.modalTopo}>
+                        <div>
+                            <span className={css.indiceManutencao}>
+                                Manutencao {indice >= 0 ? indice + 1 : ""}
+                            </span>
+                            <h3>{formatarData(manutencaoAtual.data)}</h3>
+                            <p>
+                                {manutencaoAtual.itens.length === 0
+                                    ? "Esta manutencao ainda nao possui itens."
+                                    : `${manutencaoAtual.itens.length} item(ns) cadastrados.`}
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            className={css.fecharModal}
+                            onClick={fecharModalManutencao}
+                            aria-label="Fechar"
+                        >
+                            ×
+                        </button>
+                    </div>
+
+                    <div className={css.modalResumo}>
+                        <span>Total da manutencao</span>
+                        <strong>{formatarPreco(manutencaoAtual.valor_total)}</strong>
+                    </div>
+
+                    <div className={css.modalAcoesManutencao}>
+                        <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={() =>
+                                navigate("/editarmanutencao", {
+                                    state: { carro, manutencao: manutencaoAtual },
+                                })
+                            }
+                        >
+                            Adicionar ou editar itens
+                        </button>
+
+                        <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={() => abrirModalExcluirManutencao(manutencaoAtual)}
+                        >
+                            Excluir manutencao
+                        </button>
+                    </div>
+
+                    {manutencaoAtual.itens.length === 0 ? (
+                        <div className={css.modalSemItens}>
+                            Nenhum item cadastrado nesta manutencao.
+                        </div>
+                    ) : (
+                        <div className={css.modalListaItens}>
+                            {manutencaoAtual.itens.map((item) => (
+                                <div className={css.modalItem} key={item.id_item_manutencao}>
+                                    <div>
+                                        <strong>{item.descricao}</strong>
+                                        <span>
+                                            Qtd: {item.quantidade} · {formatarPreco(item.valor_unitario)} un.
+                                        </span>
+                                    </div>
+
+                                    <div className={css.modalItemAcoes}>
+                                        <strong>{formatarPreco(item.valor_total)}</strong>
+                                        <button
+                                            type="button"
+                                            className="btn btn-light text-danger btn-sm"
+                                            onClick={() => abrirModalExcluir(item)}
+                                        >
+                                            Excluir
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -346,7 +923,7 @@ export default function VisualizarCarroAdm() {
                             <p><strong>Renavam:</strong> {carro.RENAVAM}</p>
                         </div>
 
-                        <div className="card border-0 shadow-sm p-4 mt-3">
+                        <div className={`card border-0 shadow-sm p-4 mt-3 ${css.resumoLateralManutencao}`}>
                             <div className="d-flex justify-content-between align-items-start mb-3">
                                 <div>
                                     <h3 className="fw-bold mb-1">Manutenção</h3>
@@ -358,13 +935,6 @@ export default function VisualizarCarroAdm() {
                                 </strong>
                             </div>
 
-                            <button
-                                className="btn btn-primary w-100 mb-3"
-                                onClick={() => navigate("/adicionarmanutencao", { state: { carro } })}
-                            >
-                                Adicionar manutenção
-                            </button>
-
                             <div className={css.cabecalhoManutencao}>
                                 <div className="flex-fill">Serviço</div>
                                 <div>Valor</div>
@@ -372,46 +942,107 @@ export default function VisualizarCarroAdm() {
                                 <div></div>
                             </div>
 
-                            {itens.length === 0 ? (
+                            {manutencoes.length === 0 ? (
                                 <p className="text-muted mb-0">Nenhuma manutenção cadastrada.</p>
                             ) : (
-                                itens.map((item) => (
-                                    <div
-                                        key={item.id_item_manutencao}
-                                        className={css.linhaManutencao}
-                                    >
-                                        <div>
-                                            <strong>{item.descricao}</strong>
-                                            <br />
-                                            <small className="text-muted">
-                                                Qtd: {item.quantidade}
-                                            </small>
+                                manutencoes.map((manutencao) => (
+                                    <div className={css.cardManutencao} key={manutencao.id_manutencao}>
+                                        <div className={css.topoManutencao}>
+                                            <div>
+                                                <strong>{formatarData(manutencao.data)}</strong>
+                                                <small className="text-muted">
+                                                    {manutencao.itens.length === 0
+                                                        ? "Sem itens cadastrados"
+                                                        : `${manutencao.itens.length} item(ns)`}
+                                                </small>
+                                            </div>
+
+                                            <div className={css.acoesManutencao}>
+                                                <strong className="text-primary">
+                                                    {formatarPreco(manutencao.valor_total)}
+                                                </strong>
+
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-light btn-sm"
+                                                    onClick={() =>
+                                                        navigate("/editarmanutencao", {
+                                                            state: { carro, manutencao },
+                                                        })
+                                                    }
+                                                >
+                                                    Editar
+                                                </button>
+                                            </div>
                                         </div>
 
-                                        <div>
-                                            <small>{formatarPreco(item.valor_total)}</small>
-                                        </div>
+                                        {manutencao.itens.length === 0 ? (
+                                            <p className={css.manutencaoVazia}>
+                                                Adicione itens para detalhar esta manutencao.
+                                            </p>
+                                        ) : (
+                                            <div className={css.listaItensManutencao}>
+                                                {manutencao.itens.map((item) => (
+                                                    <div
+                                                        key={item.id_item_manutencao}
+                                                        className={css.linhaManutencao}
+                                                    >
+                                                        <div>
+                                                            <strong>{item.descricao}</strong>
+                                                            <br />
+                                                            <small className="text-muted">
+                                                                Qtd: {item.quantidade}
+                                                            </small>
+                                                        </div>
 
-                                        <div>
-                                            <small>{formatarData(item.data)}</small>
-                                        </div>
+                                                        <div>
+                                                            <small>{formatarPreco(item.valor_total)}</small>
+                                                        </div>
 
-                                        <div>
-                                            <button
-                                                type="button"
-                                                className="btn btn-light text-danger btn-sm"
-                                                onClick={() => abrirModalExcluir(item)}
-                                                title="Excluir item"
-                                            >
-                                                Excluir
-                                            </button>
-                                        </div>
+                                                        <div>
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-light text-danger btn-sm"
+                                                                onClick={() => abrirModalExcluir(item)}
+                                                                title="Excluir item"
+                                                            >
+                                                                Excluir
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 ))
                             )}
                         </div>
                     </div>
                 </div>
+
+                <section className={css.secaoManutencoes}>
+                    <div className={css.topoSecaoManutencoes}>
+                        <div>
+                            <span>Historico do veiculo</span>
+                            <h3>Manutencoes cadastradas</h3>
+                            <p>Clique em uma manutencao para ver os itens dela.</p>
+                        </div>
+
+                        <div className={css.totalSecaoManutencoes}>
+                            <small>Total em manutencoes</small>
+                            <strong>{formatarPreco(totalManutencoes)}</strong>
+                            <button
+                                type="button"
+                                className="btn btn-primary btn-sm"
+                                onClick={() => navigate("/adicionarmanutencao", { state: { carro } })}
+                            >
+                                Nova manutencao
+                            </button>
+                        </div>
+                    </div>
+
+                    {renderManutencoesDetalhadas()}
+                </section>
 
                 <div className="row mt-4">
                     <div className="col-12">
@@ -427,6 +1058,50 @@ export default function VisualizarCarroAdm() {
                     </div>
                 </div>
             </div>
+
+            {renderModalManutencao()}
+
+            {manutencaoExcluir && (
+                <div
+                    style={{
+                        position: "fixed",
+                        inset: 0,
+                        background: "rgba(15, 23, 42, 0.45)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 10000,
+                        padding: "20px",
+                    }}
+                >
+                    <div
+                        className="bg-white rounded shadow p-4"
+                        style={{ width: "100%", maxWidth: "460px" }}
+                    >
+                        <h4 className="fw-bold mb-2">Excluir manutencao</h4>
+
+                        <p className="text-muted mb-0">
+                            Tem certeza que deseja excluir esta manutencao inteira?
+                        </p>
+
+                        {(manutencaoExcluir.itens || []).length > 0 && (
+                            <p className="text-muted mt-2 mb-0">
+                                Todos os itens dela tambem serao removidos.
+                            </p>
+                        )}
+
+                        <div className="d-flex justify-content-end gap-2 mt-4">
+                            <button className="btn btn-light" onClick={fecharModalExcluirManutencao}>
+                                Cancelar
+                            </button>
+
+                            <button className="btn btn-danger" onClick={excluirManutencaoInteira}>
+                                Excluir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {modalExcluir && (
                 <div

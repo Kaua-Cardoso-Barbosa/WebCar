@@ -20,6 +20,10 @@ export default function AdicionarManutencao() {
     const [salvando, setSalvando] = useState(false);
     const hoje = new Date().toISOString().split("T")[0];
 
+    function chaveManutencoesPendentes(idVeiculo) {
+        return `webcar:manutencoes-sem-itens:${idVeiculo}`;
+    }
+
     useEffect(() => {
         buscarServicos();
     }, []);
@@ -49,6 +53,18 @@ export default function AdicionarManutencao() {
     function formatarDataParaBack(dataInput) {
         const [ano, mes, dia] = dataInput.split("-");
         return `${dia}/${mes}/${ano}`;
+    }
+
+    function guardarManutencaoCriada(manutencaoCriada) {
+        if (!carro?.ID_VEICULO || !manutencaoCriada?.id_manutencao) return;
+
+        const chave = chaveManutencoesPendentes(carro.ID_VEICULO);
+        const salvas = JSON.parse(sessionStorage.getItem(chave) || "[]");
+        const semDuplicar = salvas.filter(
+            (item) => String(item.id_manutencao) !== String(manutencaoCriada.id_manutencao)
+        );
+
+        sessionStorage.setItem(chave, JSON.stringify([...semDuplicar, manutencaoCriada]));
     }
 
     function adicionarItem() {
@@ -138,11 +154,6 @@ export default function AdicionarManutencao() {
             return;
         }
 
-        if (itens.length === 0) {
-            setErro("Adicione pelo menos um item de manutenção.");
-            return;
-        }
-
         try {
             setSalvando(true);
 
@@ -196,8 +207,23 @@ export default function AdicionarManutencao() {
 
             setSucesso("Manutenção cadastrada com sucesso.");
 
+            const manutencaoCriada = {
+                id_manutencao: idManutencao,
+                id_veiculo: carro.ID_VEICULO,
+                data: formatarDataParaBack(data),
+                valor_total: totalPreview,
+                itens,
+            };
+
+            guardarManutencaoCriada(manutencaoCriada);
+
             setTimeout(() => {
-                navigate(-1);
+                navigate("/VisualizarAdm", {
+                    state: {
+                        carro,
+                        novaManutencao: manutencaoCriada,
+                    },
+                });
             }, 1000);
         } catch (error) {
             console.error(error);
