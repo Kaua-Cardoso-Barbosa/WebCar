@@ -68,9 +68,9 @@ export default function VerificarEmailSenha() {
         <>
             <Header />
 
-            <div className={css.loginFundo}>
-                <div className={css.cartao}>
-                    <h2 className={css.h2}>Digite o código enviado no seu email</h2>
+            <div className={css.verificacaoFundo}>
+                <div className={css.cartaoVerificacao}>
+                    <h2 className={css.tituloVerificacao}>Digite o código enviado no seu email</h2>
 
                     <form onSubmit={avancar}>
                         <div className={css.grupoInput}>
@@ -81,6 +81,8 @@ export default function VerificarEmailSenha() {
                                     placeholder="Digite o código"
                                     value={codigo}
                                     maxLength={6}
+                                    inputMode="numeric"
+                                    autoComplete="one-time-code"
                                     onChange={(e) => setCodigo(e.target.value)}
                                     onKeyPress={(e) => {
                                         if (isNaN(e.key)) e.preventDefault();

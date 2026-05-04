@@ -202,6 +202,45 @@ select {
     cursor: pointer;
 }
 
+.campoCor {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 48px auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.campoCor input {
+    margin-top: 12px;
+}
+
+.seletorCor {
+    width: 48px;
+    height: 46px;
+    margin-top: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.seletorCor input {
+    width: 64px;
+    height: 62px;
+    padding: 0;
+    margin: -8px;
+    border: 0;
+    cursor: pointer;
+}
+
+.codigoCor {
+    margin-top: 12px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
 .actions {
     display: flex;
     justify-content: flex-end;

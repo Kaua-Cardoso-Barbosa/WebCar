@@ -69,19 +69,21 @@ export default function VerificarEmailConta() {
         <>
             <Header />
 
-            <div className={css.loginFundo}>
-                <div className={css.cartao}>
-                    <h2 className={css.h2}>Digite o código enviado no seu email</h2>
+            <div className={css.verificacaoFundo}>
+                <div className={css.cartaoVerificacao}>
+                    <h2 className={css.tituloVerificacao}>Digite o código enviado no seu email</h2>
 
                     <form onSubmit={avancar}>
                         <div className={css.grupoInput}>
                             <label className={css.label}>Código</label>
-                            <div className={css.input}>
+                            <div>
                                 <input
                                     type="text"
                                     placeholder="Digite o código"
                                     value={codigo}
                                     maxLength={6}
+                                    inputMode="numeric"
+                                    autoComplete="one-time-code"
                                     onChange={(e) => setCodigo(e.target.value)}
                                 />
                             </div>

@@ -36,11 +36,32 @@ export default function Card({ idVeiculo, modelo, valor, combustivel, ano, nome,
     const imagens = imagensVeiculo(idVeiculo);
 
     function formatarPreco(valor) {
-        return Number(valor).toLocaleString("pt-BR", {
+        return Number(valor || 0).toLocaleString("pt-BR", {
             style: "currency",
             currency: "BRL"
         });
     }
+
+    function textoCombustivel(valor) {
+        if (String(valor) === "0") return "Flex";
+        if (String(valor) === "1") return "Gasolina";
+        if (String(valor) === "2") return "Etanol";
+        if (String(valor) === "3") return "Diesel";
+        return valor || "Não informado";
+    }
+
+    function textoCambio(valor) {
+        if (String(valor) === "0") return "Manual";
+        if (String(valor) === "1") return "Automático";
+        return valor || "Não informado";
+    }
+
+    function formatarKm(valor) {
+        return Number(valor || 0).toLocaleString("pt-BR");
+    }
+
+    const combustivelFormatado = textoCombustivel(combustivel);
+    const cambioFormatado = textoCambio(cambio);
 
     return (
         <div className={css.card}>
@@ -58,23 +79,23 @@ export default function Card({ idVeiculo, modelo, valor, combustivel, ano, nome,
             </div>
 
             <p className={css.info}>
-                {combustivel} • {ano} • {cambio}
+                {combustivelFormatado} - {ano || "Não informado"} - {cambioFormatado}
             </p>
 
             <div className={css.rodape}>
                 <div>
-                    <img src="/velocimetro.png" />
-                    <span>{km} km</span>
+                    <img src="/velocimetro.png" alt="" />
+                    <span>{formatarKm(km)} km</span>
                 </div>
 
                 <div>
-                    <img src="/engrenagem.png" />
-                    <span>{cambio}</span>
+                    <img src="/engrenagem.png" alt="" />
+                    <span>{cambioFormatado}</span>
                 </div>
 
                 <div>
-                    <img src="/gasolina.png" />
-                    <span>{combustivel}</span>
+                    <img src="/gasolina.png" alt="" />
+                    <span>{combustivelFormatado}</span>
                 </div>
             </div>
         </div>

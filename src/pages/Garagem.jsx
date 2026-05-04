@@ -165,7 +165,7 @@ export default function Garagem() {
 
                 <main className={css.garagem}>
                     <div className={css.topo}>
-                        <h1 className={css.titulo}>Garagem</h1>
+                        <h1>Garagem</h1>
                     </div>
 
                     <section className={css.cards}>
@@ -206,7 +206,7 @@ export default function Garagem() {
                     <div className={css.busca}>
                         <input
                             type="text"
-                            placeholder="Buscar por marca, modelo, ano ou placa..."
+                            placeholder="Buscar por ..."
                             value={busca}
                             onChange={(e) => {
                                 setBusca(e.target.value);

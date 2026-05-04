@@ -19,8 +19,8 @@
 .cabecalhoManutencao,
 .linhaManutencao {
     display: grid;
-    grid-template-columns: minmax(130px, 1fr) 110px 105px 72px;
-    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) minmax(72px, auto) minmax(82px, auto) 68px;
+    gap: 10px;
     align-items: center;
 }
 
@@ -36,6 +36,7 @@
 .linhaManutencao {
     border-bottom: 1px solid #edf1f7;
     padding: 10px 0;
+    overflow: hidden;
 }
 
 .linhaManutencao:last-child {
@@ -44,4 +45,35 @@
 
 .linhaManutencao button {
     width: 100%;
+    white-space: nowrap;
+}
+
+.linhaManutencao > div,
+.cabecalhoManutencao > div {
+    min-width: 0;
+}
+
+.linhaManutencao strong,
+.linhaManutencao small {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 420px) {
+    .cabecalhoManutencao {
+        display: none;
+    }
+
+    .linhaManutencao {
+        grid-template-columns: 1fr auto;
+        gap: 8px 12px;
+        padding: 12px 0;
+    }
+
+    .linhaManutencao > div:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .linhaManutencao > div:last-child {
+        align-self: end;
+    }
 }

@@ -1,12 +1,47 @@
 import Header from "../components/Header/Header.jsx";
 import Footer from "../components/Footer/Footer.jsx";
-import "./Home.module.css";
 import Banner from "../components/Banner/Banner.jsx";
 import css from "./Home.module.css";
 import Card from "../components/Cards/Card.jsx";
 import {Link} from "react-router-dom";
+import { useEffect, useState } from "react";
+import { API_URL } from "../App";
 
 export default function Home() {
+    const [carros, setCarros] = useState([]);
+    const [erro, setErro] = useState("");
+
+    useEffect(() => {
+        async function buscarDados() {
+            try {
+                const response = await fetch(`${API_URL}/buscar_veiculo`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({})
+                });
+
+                if (!response.ok) {
+                    const erroApi = await response.json();
+                    setErro(erroApi.mensagem || "Não foi possível carregar os veículos.");
+                    return;
+                }
+
+                const data = await response.json();
+                const lista = data.veiculos || data;
+
+                setCarros(lista.slice(0, 4));
+            } catch (error) {
+                setErro("Erro ao conectar com o servidor.");
+                console.log(error);
+            }
+        }
+
+        buscarDados();
+    }, []);
+
     return (
         <>
             <Header />
@@ -23,22 +58,28 @@ export default function Home() {
 
 
                 <div style={{ marginBottom: "70px" }} className="row g-4 justify-content-center">
+                    {erro && <p className="text-center text-danger fw-semibold">{erro}</p>}
 
-                    <div className="col-12 col-sm-6 col-md-3">
-                        <Card />
-                    </div>
+                    {!erro && carros.length === 0 && (
+                        <p className="text-center text-muted fw-semibold">
+                            Nenhum veículo em destaque no momento.
+                        </p>
+                    )}
 
-                    <div className="col-12 col-sm-6 col-md-3">
-                        <Card />
-                    </div>
-
-                    <div className="col-12 col-sm-6 col-md-3">
-                        <Card />
-                    </div>
-
-                    <div className="col-12 col-sm-6 col-md-3">
-                        <Card />
-                    </div>
+                    {carros.map((carro) => (
+                        <div className="col-12 col-sm-6 col-md-3" key={carro.ID_VEICULO || carro.id}>
+                            <Card
+                                idVeiculo={carro.ID_VEICULO}
+                                modelo={carro.MODELO}
+                                valor={carro.PRECO_VENDA}
+                                combustivel={carro.COMBUSTIVEL}
+                                ano={carro.ANO_MODELO}
+                                nome={carro.MARCA}
+                                km={carro.KM}
+                                cambio={carro.CAMBIO}
+                            />
+                        </div>
+                    ))}
 
                 </div>
             </div>

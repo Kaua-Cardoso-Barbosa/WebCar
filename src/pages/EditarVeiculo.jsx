@@ -7,6 +7,30 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header/Header.jsx";
 import Footer from "../components/Footer/Footer.jsx";
 
+const CORES_VEICULO = {
+    Preto: "#111111",
+    Branco: "#ffffff",
+    Prata: "#c0c0c0",
+    Cinza: "#6b7280",
+    Vermelho: "#dc2626",
+    Azul: "#2563eb",
+    Verde: "#16a34a",
+    Amarelo: "#facc15",
+    Marrom: "#7c2d12",
+    Bege: "#d6b98c",
+    Dourado: "#d4af37",
+    Champagne: "#f7e7ce",
+};
+
+function formatarMoedaBanco(valor) {
+    if (valor === null || valor === undefined || valor === "") return "";
+
+    return Number(valor).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+    });
+}
+
 const IMAGEM_PADRAO = `data:image/svg+xml;utf8,${encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
   <rect width="640" height="360" fill="#f1f5f9"/>
@@ -53,10 +77,11 @@ export default function EditarVeiculo() {
     const [combustivel, setCombustivel] = useState(String(carro?.COMBUSTIVEL ?? ""));
     const [cambio, setCambio] = useState(String(carro?.CAMBIO ?? ""));
     const [cor, setCor] = useState(carro?.COR || "");
+    const [codigoCor, setCodigoCor] = useState(CORES_VEICULO[carro?.COR] || "#111111");
     const [placa, setPlaca] = useState(carro?.PLACA || "");
     const [renavam, setRenavam] = useState(carro?.RENAVAM || "");
-    const [valorCusto, setValorCusto] = useState(carro?.PRECO_CUSTO || "");
-    const [valorVenda, setValorVenda] = useState(carro?.PRECO_VENDA || "");
+    const [valorCusto, setValorCusto] = useState(() => formatarMoedaBanco(carro?.PRECO_CUSTO));
+    const [valorVenda, setValorVenda] = useState(() => formatarMoedaBanco(carro?.PRECO_VENDA));
     const [imagens, setImagens] = useState([]);
 
     const [erroRenavam, setErroRenavam] = useState("");
@@ -117,6 +142,13 @@ export default function EditarVeiculo() {
         return String(valor).replace(/\D/g, "");
     }
 
+    function formatarKm(valor) {
+        const numeros = apenasNumeros(valor);
+        if (!numeros) return "";
+
+        return Number(numeros).toLocaleString("pt-BR");
+    }
+
     function formatarMoeda(valor) {
         const numeros = String(valor).replace(/\D/g, "");
         if (!numeros) return "";
@@ -131,6 +163,32 @@ export default function EditarVeiculo() {
 
     function limparMoeda(valor) {
         return String(valor).replace(/\D/g, "");
+    }
+
+    function moedaParaBackend(valor) {
+        return String(Number(limparMoeda(valor)) / 100);
+    }
+
+    function valorMoedaMaiorQueZero(valor) {
+        return Number(limparMoeda(valor)) > 0;
+    }
+
+    function placaTemTamanhoValido(valor) {
+        return String(valor).replace(/[^A-Z0-9]/gi, "").length === 7;
+    }
+
+    function handleCor(valor) {
+        setCor(valor);
+
+        const corEncontrada = CORES_VEICULO[valor.trim()];
+        if (corEncontrada) {
+            setCodigoCor(corEncontrada);
+        }
+    }
+
+    function handleCodigoCor(valor) {
+        setCodigoCor(valor);
+        setCor(valor.toUpperCase());
     }
 
     function formatarPlaca(valor) {
@@ -221,6 +279,24 @@ export default function EditarVeiculo() {
             return;
         }
 
+        if (Number(anoFabricacao) <= 0 || Number(anoModelo) <= 0) {
+            setMensagem("O ano de fabricação e o ano modelo devem ser maiores que 0.");
+            setTipoMensagem("erro");
+            return;
+        }
+
+        if (!placaTemTamanhoValido(placa)) {
+            setMensagem("A placa deve ter 7 caracteres.");
+            setTipoMensagem("erro");
+            return;
+        }
+
+        if (!valorMoedaMaiorQueZero(valorCusto) || !valorMoedaMaiorQueZero(valorVenda)) {
+            setMensagem("Valor de custo e valor de venda devem ser maiores que 0.");
+            setTipoMensagem("erro");
+            return;
+        }
+
         if (!validarRenavam(renavam)) {
             setMensagem("Corrija o RENAVAM antes de salvar.");
             setTipoMensagem("erro");
@@ -238,13 +314,13 @@ export default function EditarVeiculo() {
             formData.append("ano_fabricacao", anoFabricacao);
             formData.append("ano_modelo", anoModelo);
             formData.append("placa", placa);
-            formData.append("km", km);
+            formData.append("km", apenasNumeros(km));
             formData.append("cor", cor);
             formData.append("cambio", cambio);
             formData.append("combustivel", combustivel);
             formData.append("renavam", renavam);
-            formData.append("preco_custo", limparMoeda(valorCusto));
-            formData.append("preco_venda", limparMoeda(valorVenda));
+            formData.append("preco_custo", moedaParaBackend(valorCusto));
+            formData.append("preco_venda", moedaParaBackend(valorVenda));
             formData.append("documentacao", documento);
             formData.append("status", carro.STATUS ?? 0);
 
@@ -412,7 +488,7 @@ export default function EditarVeiculo() {
                                 <input
                                     placeholder="KM"
                                     value={km}
-                                    onChange={(e) => setKm(apenasNumeros(e.target.value))}
+                                    onChange={(e) => setKm(formatarKm(e.target.value))}
                                 />
 
                                 <select value={combustivel} onChange={(e) => setCombustivel(e.target.value)}>
@@ -431,16 +507,41 @@ export default function EditarVeiculo() {
                                     <option value="1">Automático</option>
                                 </select>
 
-                                <select value={cor} onChange={(e) => setCor(e.target.value)}>
-                                    <option value="">Cor</option>
-                                    <option value="Preto">Preto</option>
-                                    <option value="Branco">Branco</option>
-                                    <option value="Prata">Prata</option>
-                                    <option value="Cinza">Cinza</option>
-                                    <option value="Vermelho">Vermelho</option>
-                                    <option value="Azul">Azul</option>
-                                </select>
+                                <div className={css.campoCor}>
+                                    <input
+                                        placeholder="Cor"
+                                        value={cor}
+                                        onChange={(e) => handleCor(e.target.value)}
+                                        list="cores-veiculo"
+                                        maxLength={30}
+                                    />
+
+                                    <label className={css.seletorCor} title="Escolher cor">
+                                        <input
+                                            type="color"
+                                            value={codigoCor}
+                                            onChange={(e) => handleCodigoCor(e.target.value)}
+                                        />
+                                    </label>
+
+                                    <span className={css.codigoCor}>{codigoCor.toUpperCase()}</span>
+                                </div>
                             </div>
+
+                            <datalist id="cores-veiculo">
+                                <option value="Preto" />
+                                <option value="Branco" />
+                                <option value="Prata" />
+                                <option value="Cinza" />
+                                <option value="Vermelho" />
+                                <option value="Azul" />
+                                <option value="Verde" />
+                                <option value="Amarelo" />
+                                <option value="Marrom" />
+                                <option value="Bege" />
+                                <option value="Dourado" />
+                                <option value="Champagne" />
+                            </datalist>
 
                             <input
                                 placeholder="Placa"
