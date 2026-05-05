@@ -166,6 +166,15 @@ export default function Garagem() {
                 <main className={css.garagem}>
                     <div className={css.topo}>
                         <h1>Garagem</h1>
+
+                        <button
+                            type="button"
+                            className={css.botaoNovo}
+                            onClick={() => navigate("/Cadastroveiculo")}
+                        >
+                            <span className={css.mais}>+</span>
+                            Adicionar veículo
+                        </button>
                     </div>
 
                     <section className={css.cards}>
