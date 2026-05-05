@@ -19,7 +19,7 @@ export default function ListaUsuario() {
     const inicioPagina = (paginaAtual - 1) * 15;
     const usuariosPaginados = usuariosFiltrados.slice(inicioPagina, inicioPagina + 15);
     const [modalBloquear, setModalBloquear] = useState(false);
-    const [usuarioBloquear, setUsuarioBloquear] = useState(null);
+    const [usuarioBloquear] = useState(null);
 
 
     async function buscarUsuarios(nomeBusca = "") {
@@ -168,7 +168,7 @@ export default function ListaUsuario() {
 
                                                 <button
                                                     className={`${css.icone} ${css.bloquear}`}
-                                                    onClick={() => abrirModalBloquear(usuario)}
+                                                    onClick={() => (usuario)}
                                                 >
                                                     Bloquear
                                                 </button>
