@@ -64,3 +64,61 @@
     gap: 10px;
 }
 
+/* HAMBURGUER */
+.hamburger {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 1001;
+    font-size: 24px;
+    background: #3867eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: none;
+}
+
+/* BOTÃO FECHAR */
+.close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    align-self: flex-end;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+/* OVERLAY */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+    .hamburger {
+        display: block;
+        padding: 8px;
+        /* margin-bottom: -10px; */
+        margin-top: -10px;
+        position: absolute;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        height: 100%;
+        z-index: 1001;
+        transition: 0.3s;
+    }
+
+    .open {
+        left: 0;
+    }
+}
+

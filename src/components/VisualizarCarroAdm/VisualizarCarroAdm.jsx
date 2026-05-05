@@ -11,6 +11,7 @@ const IMAGEM_PADRAO = `data:image/svg+xml;utf8,${encodeURIComponent(`
   <text x="450" y="260" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="34" font-weight="700" fill="#64748b">Sem imagem</text>
 </svg>
 `)}`;
+const MANUTENCOES_POR_PAGINA = 3;
 
 function imagensVeiculo(idVeiculo, numeroFoto = 1) {
     if (!idVeiculo) return [];
@@ -76,8 +77,18 @@ export default function VisualizarCarroAdm() {
     const [itemExcluir, setItemExcluir] = useState(null);
     const [manutencaoAberta, setManutencaoAberta] = useState(null);
     const [manutencaoExcluir, setManutencaoExcluir] = useState(null);
+    const [paginaManutencao, setPaginaManutencao] = useState(1);
 
     const manutencoes = agruparManutencoes(itens);
+    const totalPaginasManutencao = Math.max(
+        1,
+        Math.ceil(manutencoes.length / MANUTENCOES_POR_PAGINA)
+    );
+    const inicioPaginaManutencao = (paginaManutencao - 1) * MANUTENCOES_POR_PAGINA;
+    const manutencoesPaginadas = manutencoes.slice(
+        inicioPaginaManutencao,
+        inicioPaginaManutencao + MANUTENCOES_POR_PAGINA
+    );
     const totalManutencoes = manutencoes.reduce(
         (total, manutencao) => total + Number(manutencao.valor_total || 0),
         0
@@ -87,6 +98,12 @@ export default function VisualizarCarroAdm() {
         buscarItens();
         carregarImagensDisponiveis();
     }, [carro]);
+
+    useEffect(() => {
+        setPaginaManutencao((paginaAtual) =>
+            Math.min(paginaAtual, totalPaginasManutencao)
+        );
+    }, [totalPaginasManutencao]);
 
     async function carregarImagensDisponiveis() {
         if (!carro?.ID_VEICULO) {
@@ -173,11 +190,9 @@ export default function VisualizarCarroAdm() {
             const salvas = JSON.parse(
                 sessionStorage.getItem(chaveManutencoesPendentes(carro.ID_VEICULO)) || "[]"
             );
-            const novaManutencao = location.state?.novaManutencao;
-            const lista = novaManutencao ? [...salvas, novaManutencao] : salvas;
             const mapa = new Map();
 
-            lista.forEach((manutencao) => {
+            salvas.forEach((manutencao) => {
                 const id = idManutencaoDe(manutencao);
 
                 if (id) {
@@ -317,7 +332,7 @@ export default function VisualizarCarroAdm() {
             id_manutencao: idManutencao,
             id_item_manutencao: idItemDe(item),
             id_servico: getCampo(item, ["id_servico", "ID_SERVICO", "idServico"]),
-            descricao: getCampo(item, ["descricao", "DESCRICAO", "descrição", "descriÃ§Ã£o"]) || "Servico",
+            descricao: getCampo(item, ["descricao", "DESCRICAO", "descrição", "descriÃ§Ã£o"]) || "Serviço",
             quantidade,
             valor_unitario: valorUnitario,
             valor_total: valorTotal || valorUnitario * quantidade,
@@ -432,11 +447,19 @@ export default function VisualizarCarroAdm() {
         }
     }
 
+    function removerManutencaoDaTela(idManutencao) {
+        setItens((listaAtual) =>
+            listaAtual.filter(
+                (item) => String(item.id_manutencao) !== String(idManutencao)
+            )
+        );
+    }
+
     async function excluirManutencaoInteira() {
         const manutencao = manutencaoExcluir;
 
         if (!manutencao?.id_manutencao) {
-            mostrarMensagem("Manutencao nao encontrada para exclusao.", "erro");
+            mostrarMensagem("Manutenção não encontrada para exclusão.", "erro");
             fecharModalExcluirManutencao();
             return;
         }
@@ -455,7 +478,7 @@ export default function VisualizarCarroAdm() {
 
                     if (!responseItem.ok) {
                         mostrarMensagem(
-                            dataItem.mensagem || "Nao foi possivel excluir os itens da manutencao.",
+                            dataItem.mensagem || "Não foi possível excluir os itens da manutenção.",
                             "erro"
                         );
                         fecharModalManutencao();
@@ -475,29 +498,31 @@ export default function VisualizarCarroAdm() {
             const data = await response.json().catch(() => ({}));
             const mensagem = String(data.mensagem || "").toLowerCase();
 
-            if (!response.ok || mensagem.includes("erro") || mensagem.includes("não existe")) {
-                mostrarMensagem(data.mensagem || "Nao foi possivel excluir a manutencao.", "erro");
+            if (mensagem.includes("não existe")) {
+                removerManutencaoPendente(manutencao.id_manutencao);
+                removerManutencaoDaTela(manutencao.id_manutencao);
+                fecharModalManutencao();
+                fecharModalExcluirManutencao();
+                mostrarMensagem("Manutenção removida da tela.", "sucesso");
+                return;
+            }
+
+            if (!response.ok || mensagem.includes("erro")) {
+                mostrarMensagem(data.mensagem || "Não foi possível excluir a manutenção.", "erro");
                 fecharModalManutencao();
                 fecharModalExcluirManutencao();
                 return;
             }
 
             removerManutencaoPendente(manutencao.id_manutencao);
-            setItens((listaAtual) =>
-                listaAtual.filter(
-                    (item) =>
-                        String(item.id_manutencao) !== String(manutencao.id_manutencao)
-                )
-            );
-            fecharModalManutencao();
+            removerManutencaoDaTela(manutencao.id_manutencao);
             fecharModalManutencao();
             fecharModalExcluirManutencao();
-            mostrarMensagem(data.mensagem || "Manutencao excluida com sucesso.", "sucesso");
-            buscarItens();
+            mostrarMensagem(data.mensagem || "Manutenção excluída com sucesso.", "sucesso");
         } catch (error) {
             console.error(error);
             fecharModalExcluirManutencao();
-            mostrarMensagem("Nao foi possivel excluir a manutencao.", "erro");
+            mostrarMensagem("Não foi possível excluir a manutenção.", "erro");
         }
     }
 
@@ -567,7 +592,7 @@ export default function VisualizarCarroAdm() {
     async function confirmarExcluirItem() {
         if (!itemExcluir?.id_item_manutencao) {
             mostrarMensagem(
-                "Este item ainda nao possui identificador para exclusao. Atualize a pagina e tente novamente.",
+                "Este item ainda não possui identificador para exclusão. Atualize a página e tente novamente.",
                 "erro"
             );
             fecharModalExcluir();
@@ -671,46 +696,69 @@ export default function VisualizarCarroAdm() {
         if (manutencoes.length === 0) {
             return (
                 <div className={css.estadoVazioManutencao}>
-                    <h4>Nenhuma manutencao cadastrada</h4>
-                    <p>Crie a primeira manutencao deste veiculo para depois cadastrar os itens dela.</p>
-                    <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={() => navigate("/adicionarmanutencao", { state: { carro } })}
-                    >
-                        Adicionar manutencao
-                    </button>
+                    <h4>Nenhuma manutenção cadastrada</h4>
+                    <p>Adicione uma manutenção para registrar o histórico deste veículo.</p>
                 </div>
             );
         }
 
         return (
-            <div className={css.listaManutencoesCompacta}>
-                {manutencoes.map((manutencao, index) => (
-                    <button
-                        type="button"
-                        className={css.botaoManutencaoCompacta}
-                        key={manutencao.id_manutencao}
-                        onClick={() => abrirModalManutencao(manutencao)}
-                    >
-                        <div>
-                            <span className={css.indiceManutencao}>
-                                Manutencao {index + 1}
-                            </span>
-                            <strong>{formatarData(manutencao.data)}</strong>
-                        </div>
+            <>
+                <div className={css.listaManutencoesCompacta}>
+                    {manutencoesPaginadas.map((manutencao, index) => (
+                        <button
+                            type="button"
+                            className={css.botaoManutencaoCompacta}
+                            key={manutencao.id_manutencao}
+                            onClick={() => abrirModalManutencao(manutencao)}
+                        >
+                            <div>
+                                <span className={css.indiceManutencao}>
+                                    Manutenção {inicioPaginaManutencao + index + 1}
+                                </span>
+                                <strong>{formatarData(manutencao.data)}</strong>
+                            </div>
 
-                        <div className={css.resumoManutencaoCompacta}>
-                            <span>
-                                {manutencao.itens.length === 0
-                                    ? "Sem itens"
-                                    : `${manutencao.itens.length} item(ns)`}
-                            </span>
-                            <strong>{formatarPreco(manutencao.valor_total)}</strong>
-                        </div>
-                    </button>
-                ))}
-            </div>
+                            <div className={css.resumoManutencaoCompacta}>
+                                <span>
+                                    {manutencao.itens.length === 0
+                                        ? "Sem itens"
+                                        : `${manutencao.itens.length} item(ns)`}
+                                </span>
+                                <strong>{formatarPreco(manutencao.valor_total)}</strong>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+
+                {totalPaginasManutencao > 1 && (
+                    <div className={css.paginacaoManutencao}>
+                        <button
+                            type="button"
+                            disabled={paginaManutencao === 1}
+                            onClick={() =>
+                                setPaginaManutencao((pagina) => Math.max(1, pagina - 1))
+                            }
+                        >
+                            Anterior
+                        </button>
+
+                        <span>{paginaManutencao} / {totalPaginasManutencao}</span>
+
+                        <button
+                            type="button"
+                            disabled={paginaManutencao === totalPaginasManutencao}
+                            onClick={() =>
+                                setPaginaManutencao((pagina) =>
+                                    Math.min(totalPaginasManutencao, pagina + 1)
+                                )
+                            }
+                        >
+                            Próxima
+                        </button>
+                    </div>
+                )}
+            </>
         );
     }
 
@@ -733,12 +781,12 @@ export default function VisualizarCarroAdm() {
                     <div className={css.modalTopo}>
                         <div>
                             <span className={css.indiceManutencao}>
-                                Manutencao {indice >= 0 ? indice + 1 : ""}
+                                Manutenção {indice >= 0 ? indice + 1 : ""}
                             </span>
                             <h3>{formatarData(manutencaoAtual.data)}</h3>
                             <p>
                                 {manutencaoAtual.itens.length === 0
-                                    ? "Esta manutencao ainda nao possui itens."
+                                    ? "Esta manutenção ainda não possui itens."
                                     : `${manutencaoAtual.itens.length} item(ns) cadastrados.`}
                             </p>
                         </div>
@@ -754,7 +802,7 @@ export default function VisualizarCarroAdm() {
                     </div>
 
                     <div className={css.modalResumo}>
-                        <span>Total da manutencao</span>
+                        <span>Total da manutenção</span>
                         <strong>{formatarPreco(manutencaoAtual.valor_total)}</strong>
                     </div>
 
@@ -776,13 +824,13 @@ export default function VisualizarCarroAdm() {
                             className="btn btn-danger"
                             onClick={() => abrirModalExcluirManutencao(manutencaoAtual)}
                         >
-                            Excluir manutencao
+                            Excluir manutenção
                         </button>
                     </div>
 
                     {manutencaoAtual.itens.length === 0 ? (
                         <div className={css.modalSemItens}>
-                            Nenhum item cadastrado nesta manutencao.
+                            Nenhum item cadastrado nesta manutenção.
                         </div>
                     ) : (
                         <div className={css.modalListaItens}>
@@ -935,114 +983,18 @@ export default function VisualizarCarroAdm() {
                                 </strong>
                             </div>
 
-                            <div className={css.cabecalhoManutencao}>
-                                <div className="flex-fill">Serviço</div>
-                                <div>Valor</div>
-                                <div>Data</div>
-                                <div></div>
-                            </div>
+                            <button
+                                type="button"
+                                className="btn btn-primary w-100 mb-3"
+                                onClick={() => navigate("/adicionarmanutencao", { state: { carro } })}
+                            >
+                                Nova manutenção
+                            </button>
 
-                            {manutencoes.length === 0 ? (
-                                <p className="text-muted mb-0">Nenhuma manutenção cadastrada.</p>
-                            ) : (
-                                manutencoes.map((manutencao) => (
-                                    <div className={css.cardManutencao} key={manutencao.id_manutencao}>
-                                        <div className={css.topoManutencao}>
-                                            <div>
-                                                <strong>{formatarData(manutencao.data)}</strong>
-                                                <small className="text-muted">
-                                                    {manutencao.itens.length === 0
-                                                        ? "Sem itens cadastrados"
-                                                        : `${manutencao.itens.length} item(ns)`}
-                                                </small>
-                                            </div>
-
-                                            <div className={css.acoesManutencao}>
-                                                <strong className="text-primary">
-                                                    {formatarPreco(manutencao.valor_total)}
-                                                </strong>
-
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-light btn-sm"
-                                                    onClick={() =>
-                                                        navigate("/editarmanutencao", {
-                                                            state: { carro, manutencao },
-                                                        })
-                                                    }
-                                                >
-                                                    Editar
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {manutencao.itens.length === 0 ? (
-                                            <p className={css.manutencaoVazia}>
-                                                Adicione itens para detalhar esta manutencao.
-                                            </p>
-                                        ) : (
-                                            <div className={css.listaItensManutencao}>
-                                                {manutencao.itens.map((item) => (
-                                                    <div
-                                                        key={item.id_item_manutencao}
-                                                        className={css.linhaManutencao}
-                                                    >
-                                                        <div>
-                                                            <strong>{item.descricao}</strong>
-                                                            <br />
-                                                            <small className="text-muted">
-                                                                Qtd: {item.quantidade}
-                                                            </small>
-                                                        </div>
-
-                                                        <div>
-                                                            <small>{formatarPreco(item.valor_total)}</small>
-                                                        </div>
-
-                                                        <div>
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-light text-danger btn-sm"
-                                                                onClick={() => abrirModalExcluir(item)}
-                                                                title="Excluir item"
-                                                            >
-                                                                Excluir
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))
-                            )}
+                            {renderManutencoesDetalhadas()}
                         </div>
                     </div>
                 </div>
-
-                <section className={css.secaoManutencoes}>
-                    <div className={css.topoSecaoManutencoes}>
-                        <div>
-                            <span>Historico do veiculo</span>
-                            <h3>Manutencoes cadastradas</h3>
-                            <p>Clique em uma manutencao para ver os itens dela.</p>
-                        </div>
-
-                        <div className={css.totalSecaoManutencoes}>
-                            <small>Total em manutencoes</small>
-                            <strong>{formatarPreco(totalManutencoes)}</strong>
-                            <button
-                                type="button"
-                                className="btn btn-primary btn-sm"
-                                onClick={() => navigate("/adicionarmanutencao", { state: { carro } })}
-                            >
-                                Nova manutencao
-                            </button>
-                        </div>
-                    </div>
-
-                    {renderManutencoesDetalhadas()}
-                </section>
 
                 <div className="row mt-4">
                     <div className="col-12">
@@ -1078,15 +1030,15 @@ export default function VisualizarCarroAdm() {
                         className="bg-white rounded shadow p-4"
                         style={{ width: "100%", maxWidth: "460px" }}
                     >
-                        <h4 className="fw-bold mb-2">Excluir manutencao</h4>
+                        <h4 className="fw-bold mb-2">Excluir manutenção</h4>
 
                         <p className="text-muted mb-0">
-                            Tem certeza que deseja excluir esta manutencao inteira?
+                            Tem certeza que deseja excluir esta manutenção inteira?
                         </p>
 
                         {(manutencaoExcluir.itens || []).length > 0 && (
                             <p className="text-muted mt-2 mb-0">
-                                Todos os itens dela tambem serao removidos.
+                                Todos os itens dela também serão removidos.
                             </p>
                         )}
 

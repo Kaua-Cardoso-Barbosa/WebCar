@@ -45,7 +45,7 @@ export default function EditarManutencao() {
             }
         } catch (error) {
             console.error(error);
-            setErro("Nao foi possivel carregar os servicos.");
+            setErro("Não foi possível carregar os serviços.");
         }
     }
 
@@ -179,7 +179,7 @@ export default function EditarManutencao() {
             id_manutencao: idManutencaoDe(item) || manutencao?.id_manutencao,
             id_item_manutencao: idItemDe(item) || `local-${idServicoItem || Date.now()}`,
             id_servico: idServicoItem,
-            descricao: getCampo(item, ["descricao", "DESCRICAO", "descrição", "descriÃ§Ã£o"]) || "Servico",
+            descricao: getCampo(item, ["descricao", "DESCRICAO", "descrição", "descriÃ§Ã£o"]) || "Serviço",
             quantidade: quantidadeItem,
             quantidadeSalva: Number(item.quantidadeSalva || quantidadeItem),
             valor_unitario: valorUnitario,
@@ -259,7 +259,7 @@ export default function EditarManutencao() {
         const result = await response.json();
 
         if (!response.ok) {
-            throw new Error(result.mensagem || "Nao foi possivel adicionar o item.");
+            throw new Error(result.mensagem || "Não foi possível adicionar o item.");
         }
 
         return result;
@@ -274,7 +274,7 @@ export default function EditarManutencao() {
         const result = await response.json();
 
         if (!response.ok) {
-            throw new Error(result.mensagem || "Nao foi possivel excluir o item.");
+            throw new Error(result.mensagem || "Não foi possível excluir o item.");
         }
 
         return result;
@@ -285,7 +285,7 @@ export default function EditarManutencao() {
         setSucesso("");
 
         if (!idServico || !quantidade) {
-            setErro("Selecione um servico e informe a quantidade.");
+            setErro("Selecione um serviço e informe a quantidade.");
             return;
         }
 
@@ -301,7 +301,7 @@ export default function EditarManutencao() {
         );
 
         if (!servicoSelecionado) {
-            setErro("Servico invalido.");
+            setErro("Serviço inválido.");
             return;
         }
 
@@ -384,7 +384,7 @@ export default function EditarManutencao() {
             setSucesso("Quantidade atualizada com sucesso.");
         } catch (error) {
             console.error(error);
-            setErro(error.message || "Nao foi possivel atualizar a quantidade.");
+            setErro(error.message || "Não foi possível atualizar a quantidade.");
         } finally {
             setSalvando(false);
         }
@@ -441,22 +441,22 @@ export default function EditarManutencao() {
         setSucesso("");
 
         if (!manutencao?.id_manutencao) {
-            setErro("Manutencao nao encontrada.");
+            setErro("Manutenção não encontrada.");
             return;
         }
 
         if (!carro?.ID_VEICULO) {
-            setErro("Veiculo nao encontrado.");
+            setErro("Veículo não encontrado.");
             return;
         }
 
         if (!data) {
-            setErro("Informe a data da manutencao.");
+            setErro("Informe a data da manutenção.");
             return;
         }
 
         if (data < hoje) {
-            setErro("A data da manutencao nao pode ser passada.");
+            setErro("A data da manutenção não pode ser passada.");
             return;
         }
 
@@ -483,20 +483,20 @@ export default function EditarManutencao() {
             const result = await response.json();
 
             if (!response.ok) {
-                setErro(result.mensagem || "Nao foi possivel salvar as alteracoes.");
+                setErro(result.mensagem || "Não foi possível salvar as alterações.");
                 return;
             }
 
             await salvarItensDaManutencao();
 
-            setSucesso(result.mensagem || "Manutencao atualizada com sucesso.");
+            setSucesso(result.mensagem || "Manutenção atualizada com sucesso.");
 
             setTimeout(() => {
                 navigate(-1);
             }, 700);
         } catch (error) {
             console.error(error);
-            setErro("Nao foi possivel salvar as alteracoes.");
+            setErro("Não foi possível salvar as alterações.");
         } finally {
             setSalvando(false);
         }
@@ -508,7 +508,7 @@ export default function EditarManutencao() {
                 <Header />
                 <div className={css.container}>
                     <div className={css.card}>
-                        <h2>Manutencao nao encontrada</h2>
+                        <h2>Manutenção não encontrada</h2>
                         <button className={css.cancelar} onClick={() => navigate(-1)}>
                             Voltar
                         </button>
@@ -525,10 +525,10 @@ export default function EditarManutencao() {
 
             <div className={css.container}>
                 <div className={css.card}>
-                    <h2>Editar manutencao</h2>
+                    <h2>Editar manutenção</h2>
 
                     <p className={css.subtitulo}>
-                        Veiculo: <strong>{carro.MARCA} {carro.MODELO}</strong>
+                        Veículo: <strong>{carro.MARCA} {carro.MODELO}</strong>
                     </p>
 
                     {erro && <div className={css.erro}>{erro}</div>}
@@ -536,7 +536,7 @@ export default function EditarManutencao() {
 
                     <form className={css.form} onSubmit={handleSubmit}>
                         <div className={css.inputgroup}>
-                            <label>Data da manutencao</label>
+                            <label>Data da manutenção</label>
                             <input
                                 className={css.input}
                                 type="date"
@@ -548,14 +548,14 @@ export default function EditarManutencao() {
 
                         <div className={css.linha}>
                             <div className={css.inputgroup}>
-                                <label>Servico</label>
+                                <label>Serviço</label>
                                 <select
                                     className={css.input}
                                     value={idServico}
                                     onChange={(e) => setIdServico(e.target.value)}
                                 >
                                     <option value="">
-                                        {servicos.length === 0 ? "Nenhum servico cadastrado" : "Selecione um servico"}
+                                        {servicos.length === 0 ? "Nenhum serviço cadastrado" : "Selecione um serviço"}
                                     </option>
 
                                     {servicos.map((servico) => (
@@ -589,10 +589,10 @@ export default function EditarManutencao() {
                         </button>
 
                         <div className={css.listaItens}>
-                            <h3>Itens da manutencao</h3>
+                            <h3>Itens da manutenção</h3>
 
                             {itens.length === 0 ? (
-                                <p className={css.vazio}>Esta manutencao ainda nao tem itens.</p>
+                                <p className={css.vazio}>Esta manutenção ainda não tem itens.</p>
                             ) : (
                                 itens.map((item) => (
                                     <div className={css.item} key={item.id_item_manutencao}>
@@ -626,12 +626,12 @@ export default function EditarManutencao() {
                         </div>
 
                         <div className={css.total}>
-                            <span>Total da manutencao</span>
+                            <span>Total da manutenção</span>
                             <strong>{formatarPreco(totalPreview)}</strong>
                         </div>
 
                         <button type="submit" className={css.btn} disabled={salvando}>
-                            {salvando ? "Salvando..." : "Concluir edicao"}
+                            {salvando ? "Salvando..." : "Concluir edição"}
                         </button>
 
                         <button
