@@ -46,11 +46,6 @@ export default function SidebarMenu() {
                 <span className={styles.icon}>⊕</span>
                 <span>Marcas</span>
             </Link>
-
-            <Link to="/Cadastroveiculo" className={styles.botaoAdicionar}>
-                <span>＋</span>
-                Adicione veículos
-            </Link>
         </aside>
     );
 }
