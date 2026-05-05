@@ -147,7 +147,7 @@ export default function EditarCliente() {
             setTipoMensagem("sucesso");
 
             setTimeout(() => {
-                navigate("/usuarios");
+                navigate("/ListaUsuarios");
             }, 800);
 
         } catch {
@@ -257,7 +257,7 @@ export default function EditarCliente() {
                         </div>
 
                         <div className={css.actions}>
-                            <button className={css.cancelar} onClick={() => navigate("/usuarios")}>
+                            <button className={css.cancelar} onClick={() => navigate("/ListaUsuarios")}>
                                 Cancelar
                             </button>
 
