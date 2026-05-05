@@ -318,3 +318,154 @@
     background: #fee2e2;
     color: #991b1b;
 }
+
+@media (max-width: 768px) {
+    .main {
+        margin-left: 0;
+        padding: 20px 14px 80px;
+    }
+
+    .topo {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    .topo h1 {
+        font-size: 30px;
+    }
+
+    .botaoAzul {
+        width: 100%;
+        height: 48px;
+    }
+
+    .busca {
+        padding: 16px;
+        border-radius: 14px;
+    }
+
+    .busca input {
+        width: 100%;
+        font-size: 15px;
+    }
+
+    .tabelaCard {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+    }
+
+    .tabelaCard table,
+    .tabelaCard thead,
+    .tabelaCard tbody,
+    .tabelaCard th,
+    .tabelaCard td,
+    .tabelaCard tr {
+        display: block;
+        width: 100%;
+    }
+
+    .tabelaCard thead {
+        display: none;
+    }
+
+    .tabelaCard tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .tabelaCard tr {
+        background: white;
+        border: 1px solid rgba(105, 109, 114, 0.18);
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: 0 8px 22px rgba(105, 109, 114, 0.10);
+    }
+
+    .tabelaCard td {
+        border: none;
+        padding: 8px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .tabelaCard td::before {
+        color: var(--cor-logo2-web);
+        font-size: 13px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .tabelaCard td:nth-child(1)::before {
+        content: "Ícone";
+    }
+
+    .tabelaCard td:nth-child(2)::before {
+        content: "Marca";
+    }
+
+    .tabelaCard td:nth-child(3)::before {
+        content: "Ações";
+    }
+
+    .logoMarca {
+        width: 72px;
+        height: 72px;
+        object-fit: contain;
+        border-radius: 14px;
+    }
+
+    .acoes {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .icone {
+        flex: 1;
+        padding: 12px;
+        border-radius: 12px;
+        font-size: 14px;
+    }
+
+    .paginacao {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .paginacao button {
+        width: 100%;
+    }
+
+    .modal {
+        width: calc(100% - 28px);
+        padding: 22px;
+    }
+
+    .modalBotoes {
+        flex-direction: column;
+    }
+
+    .modalBotoes button {
+        width: 100%;
+    }
+
+    .toast {
+        left: 14px;
+        right: 14px;
+        bottom: 20px;
+        width: auto;
+        text-align: center;
+    }
+}
+
+.layout {
+    display: block;
+}
