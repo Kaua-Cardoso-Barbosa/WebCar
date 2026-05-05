@@ -3,14 +3,16 @@ import { API_URL } from "../App";
 import Header from "../components/Header/Header";
 import SidebarMenu from "../components/SidebarMenu/SidebarMenu";
 import Footer from "../components/Footer/Footer";
-import css from "./ListaUsuarios.module.css"
-import {Link} from "react-router-dom";
+import css from "./ListaUsuarios.module.css";
+import { useNavigate } from "react-router-dom";
 
 export default function ListaUsuario() {
     const [usuarios, setUsuarios] = useState([]);
     const [busca, setBusca] = useState("");
     const [paginaAtual, setPaginaAtual] = useState(1);
     const [carregando, setCarregando] = useState(true);
+
+    const navigate = useNavigate();
 
     const usuariosFiltrados = usuarios.filter(u => Number(u.tipo) !== 0);
     const totalPaginas = Math.max(1, Math.ceil(usuariosFiltrados.length / 15));
@@ -54,12 +56,38 @@ export default function ListaUsuario() {
         return () => clearTimeout(timer);
     }, [busca]);
 
+
     function editarUsuario(usuario) {
-        console.log("Editar:", usuario);
+        navigate(`/editarcliente/${usuario.id_usuario}`);
     }
 
-    function bloquearUsuario(usuario) {
-        console.log("Bloquear:", usuario);
+
+    async function bloquearUsuario(usuario) {
+        const confirmar = window.confirm(`Deseja bloquear ${usuario.nome}?`);
+
+        if (!confirmar) return;
+
+        try {
+            const res = await fetch(`${API_URL}/bloquear_usuario/${usuario.id_usuario}`, {
+                method: "PUT",
+                credentials: "include"
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.mensagem || "Erro ao bloquear usuário");
+                return;
+            }
+
+            alert("Usuário bloqueado com sucesso");
+
+
+            buscarUsuarios(busca);
+
+        } catch {
+            alert("Erro ao bloquear usuário");
+        }
     }
 
     return (
@@ -128,14 +156,12 @@ export default function ListaUsuario() {
 
                                         <td>
                                             <div className={css.acoes}>
-                                                <Link to={"/editarcliente/:id_usuario"}>
-                                                    <button
-                                                        className={css.icone}
-                                                        onClick={() => editarUsuario(usuario)}
-                                                    >
-                                                        Editar
-                                                    </button>
-                                                </Link>
+                                                <button
+                                                    className={css.icone}
+                                                    onClick={() => editarUsuario(usuario)}
+                                                >
+                                                    Editar
+                                                </button>
 
                                                 <button
                                                     className={`${css.icone} ${css.bloquear}`}

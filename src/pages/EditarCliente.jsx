@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header/Header.jsx";
 import Footer from "../components/Footer/Footer.jsx";
 import SidebarMenu from "../components/SidebarMenu/SidebarMenu.jsx";
@@ -8,17 +8,12 @@ import css from "./EditarCliente.module.css";
 
 export default function EditarCliente() {
     const navigate = useNavigate();
-    const location = useLocation();
     const { id_usuario } = useParams();
 
-    const usuarioState = location.state?.usuario;
-    const usuarioLogado = JSON.parse(localStorage.getItem("usuario")) || {};
-    const idUsuario = id_usuario || usuarioState?.id_usuario || usuarioLogado.id_usuario;
-
-    const [nome, setNome] = useState(usuarioState?.nome || usuarioLogado.nome || "");
-    const [email, setEmail] = useState(usuarioState?.email || usuarioLogado.email || "");
-    const [telefone, setTelefone] = useState(usuarioState?.telefone || "");
-    const [cpf, setCpf] = useState(usuarioState?.cpf || "");
+    const [nome, setNome] = useState("");
+    const [email, setEmail] = useState("");
+    const [telefone, setTelefone] = useState("");
+    const [cpf, setCpf] = useState("");
     const [senha, setSenha] = useState("");
     const [imagem, setImagem] = useState(null);
     const [preview, setPreview] = useState(null);
@@ -26,6 +21,45 @@ export default function EditarCliente() {
     const [mensagem, setMensagem] = useState("");
     const [tipoMensagem, setTipoMensagem] = useState("");
     const [carregando, setCarregando] = useState(false);
+
+    async function carregarUsuario() {
+        try {
+            const res = await fetch(`${API_URL}/buscar_usuario`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ id_usuario })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                setMensagem(data.mensagem || "Erro ao carregar usuário");
+                setTipoMensagem("erro");
+                return;
+            }
+
+            const usuario = data.usuarios[0];
+
+            setNome(usuario.nome || "");
+            setEmail(usuario.email || "");
+            setTelefone(usuario.telefone || "");
+            setCpf(usuario.cpf || "");
+
+
+            setPreview(`${usuario.imagem}?v=${Date.now()}`);
+
+        } catch {
+            setMensagem("Erro ao carregar usuário.");
+            setTipoMensagem("erro");
+        }
+    }
+
+    useEffect(() => {
+        if (id_usuario) {
+            carregarUsuario();
+        }
+    }, [id_usuario]);
 
     useEffect(() => {
         return () => {
@@ -69,15 +103,10 @@ export default function EditarCliente() {
         }
     }
 
-    async function salvarEdicao() {
-        if (!nome.trim() || !email.trim() || !telefone.trim() || !cpf.trim() || !senha.trim()) {
-            setMensagem("Preencha todos os campos.");
-            setTipoMensagem("erro");
-            return;
-        }
 
-        if (!idUsuario) {
-            setMensagem("Erro ao identificar usuário.");
+    async function salvarEdicao() {
+        if (!nome.trim() || !email.trim() || !telefone.trim() || !cpf.trim()) {
+            setMensagem("Preencha todos os campos.");
             setTipoMensagem("erro");
             return;
         }
@@ -85,20 +114,22 @@ export default function EditarCliente() {
         try {
             setCarregando(true);
             setMensagem("");
-            setTipoMensagem("");
 
             const formData = new FormData();
             formData.append("nome", nome);
             formData.append("email", email);
             formData.append("telefone", apenasNumeros(telefone));
             formData.append("cpf", apenasNumeros(cpf));
-            formData.append("senha", senha);
+
+            if (senha.trim()) {
+                formData.append("senha", senha);
+            }
 
             if (imagem) {
                 formData.append("imagem", imagem);
             }
 
-            const response = await fetch(`${API_URL}/edicao_usuario/${idUsuario}`, {
+            const response = await fetch(`${API_URL}/edicao_usuario/${id_usuario}`, {
                 method: "PUT",
                 credentials: "include",
                 body: formData
@@ -112,15 +143,15 @@ export default function EditarCliente() {
                 return;
             }
 
-            setMensagem(data.mensagem || "Cliente atualizado com sucesso.");
+            setMensagem("Usuário atualizado com sucesso.");
             setTipoMensagem("sucesso");
 
             setTimeout(() => {
                 navigate("/usuarios");
             }, 800);
-        } catch (error) {
-            console.log(error);
-            setMensagem("Erro ao editar cliente.");
+
+        } catch {
+            setMensagem("Erro ao editar usuário.");
             setTipoMensagem("erro");
         } finally {
             setCarregando(false);
@@ -137,20 +168,18 @@ export default function EditarCliente() {
                 <main className={css.main}>
                     <div className="container-fluid px-0">
                         <div className={css.topo}>
-                            <h1 className={css.titulo}>Editar Cliente</h1>
+                            <h1 className={css.titulo}>Editar Usuário</h1>
                             <p className={css.subtitulo}>
-                                Atualize as informações pessoais, foto e senha do cliente.
+                                Atualize as informações do usuário.
                             </p>
                         </div>
 
                         {mensagem && (
-                            <div
-                                className={
-                                    tipoMensagem === "sucesso"
-                                        ? css.sucesso
-                                        : css.erroMensagem
-                                }
-                            >
+                            <div className={
+                                tipoMensagem === "sucesso"
+                                    ? css.sucesso
+                                    : css.erroMensagem
+                            }>
                                 {mensagem}
                             </div>
                         )}
@@ -159,8 +188,7 @@ export default function EditarCliente() {
                             <div className="col-12 col-xl-4">
                                 <section className={css.card}>
                                     <div className={css.cardHeader}>
-                                        <h3>Foto do Cliente</h3>
-                                        <span>Imagem de perfil</span>
+                                        <h3>Foto</h3>
                                     </div>
 
                                     <label className={css.uploadBox}>
@@ -171,22 +199,10 @@ export default function EditarCliente() {
                                         />
 
                                         {preview ? (
-                                            <img
-                                                className={css.preview}
-                                                src={preview}
-                                                alt="Preview"
-                                            />
+                                            <img className={css.preview} src={preview} alt="Preview" />
                                         ) : (
                                             <div className={css.uploadContent}>
-                                                <img
-                                                    className={css.uploadIcon}
-                                                    src="/Nuvem.png"
-                                                    alt="Upload"
-                                                />
-                                                <p>Clique para adicionar imagem</p>
-                                                <small>
-                                                    A imagem será atualizada ao salvar
-                                                </small>
+                                                <p>Adicionar imagem</p>
                                             </div>
                                         )}
                                     </label>
@@ -196,53 +212,28 @@ export default function EditarCliente() {
                             <div className="col-12 col-xl-8">
                                 <section className={css.card}>
                                     <div className={css.cardHeader}>
-                                        <h3>Dados do Cliente</h3>
-                                        <span>Informações principais da conta</span>
+                                        <h3>Dados</h3>
                                     </div>
 
                                     <div className="row g-3">
                                         <div className="col-12">
                                             <label className={css.label}>Nome</label>
-                                            <input
-                                                className={`form-control ${css.input}`}
-                                                placeholder="Digite o nome completo"
-                                                value={nome}
-                                                onChange={(e) => setNome(e.target.value)}
-                                            />
+                                            <input className={`form-control ${css.input}`} value={nome} onChange={(e) => setNome(e.target.value)} />
                                         </div>
 
                                         <div className="col-12">
                                             <label className={css.label}>Email</label>
-                                            <input
-                                                className={`form-control ${css.input}`}
-                                                placeholder="Digite o email"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                            />
+                                            <input className={`form-control ${css.input}`} value={email} onChange={(e) => setEmail(e.target.value)} />
                                         </div>
 
-                                        <div className="col-12 col-md-6">
+                                        <div className="col-6">
                                             <label className={css.label}>Telefone</label>
-                                            <input
-                                                className={`form-control ${css.input}`}
-                                                placeholder="Digite o telefone"
-                                                value={telefone}
-                                                onChange={(e) =>
-                                                    setTelefone(formatarTelefone(e.target.value))
-                                                }
-                                            />
+                                            <input className={`form-control ${css.input}`} value={telefone} onChange={(e) => setTelefone(formatarTelefone(e.target.value))} />
                                         </div>
 
-                                        <div className="col-12 col-md-6">
+                                        <div className="col-6">
                                             <label className={css.label}>CPF</label>
-                                            <input
-                                                className={`form-control ${css.input}`}
-                                                placeholder="Digite o CPF"
-                                                value={cpf}
-                                                onChange={(e) =>
-                                                    setCpf(formatarCPF(e.target.value))
-                                                }
-                                            />
+                                            <input className={`form-control ${css.input}`} value={cpf} onChange={(e) => setCpf(formatarCPF(e.target.value))} />
                                         </div>
                                     </div>
                                 </section>
@@ -251,42 +242,27 @@ export default function EditarCliente() {
                             <div className="col-12">
                                 <section className={css.card}>
                                     <div className={css.cardHeader}>
-                                        <h3>Segurança</h3>
-                                        <span>Informe uma nova senha para salvar a edição</span>
+                                        <h3>Senha</h3>
                                     </div>
 
-                                    <div className="row g-3">
-                                        <div className="col-12 col-md-6">
-                                            <label className={css.label}>Nova senha</label>
-                                            <input
-                                                className={`form-control ${css.input}`}
-                                                type="password"
-                                                placeholder="Digite a nova senha"
-                                                value={senha}
-                                                onChange={(e) => setSenha(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
+                                    <input
+                                        type="password"
+                                        className={`form-control ${css.input}`}
+                                        placeholder="Nova senha (opcional)"
+                                        value={senha}
+                                        onChange={(e) => setSenha(e.target.value)}
+                                    />
                                 </section>
                             </div>
                         </div>
 
                         <div className={css.actions}>
-                            <button
-                                type="button"
-                                className={css.cancelar}
-                                onClick={() => navigate("/usuarios")}
-                            >
+                            <button className={css.cancelar} onClick={() => navigate("/usuarios")}>
                                 Cancelar
                             </button>
 
-                            <button
-                                type="button"
-                                className={css.salvar}
-                                onClick={salvarEdicao}
-                                disabled={carregando}
-                            >
-                                {carregando ? "Salvando..." : "Salvar Alterações"}
+                            <button className={css.salvar} onClick={salvarEdicao} disabled={carregando}>
+                                {carregando ? "Salvando..." : "Salvar"}
                             </button>
                         </div>
                     </div>
