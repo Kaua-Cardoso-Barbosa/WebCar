@@ -3,13 +3,16 @@ import { API_URL } from "../App";
 import Header from "../components/Header/Header";
 import SidebarMenu from "../components/SidebarMenu/SidebarMenu";
 import Footer from "../components/Footer/Footer";
-import css from "./ListaUsuarios.module.css"
+import css from "./ListaUsuarios.module.css";
+import { useNavigate } from "react-router-dom";
 
 export default function ListaUsuario() {
     const [usuarios, setUsuarios] = useState([]);
     const [busca, setBusca] = useState("");
     const [paginaAtual, setPaginaAtual] = useState(1);
     const [carregando, setCarregando] = useState(true);
+
+    const navigate = useNavigate();
 
     const usuariosFiltrados = usuarios.filter(u => Number(u.tipo) !== 0);
     const totalPaginas = Math.max(1, Math.ceil(usuariosFiltrados.length / 15));
@@ -56,41 +59,37 @@ export default function ListaUsuario() {
         return () => clearTimeout(timer);
     }, [busca]);
 
+
     function editarUsuario(usuario) {
-        console.log("Editar:", usuario);
+        navigate(`/editarcliente/${usuario.id_usuario}`);
     }
 
-    function abrirModalBloquear(usuario) {
-        setUsuarioBloquear(usuario);
-        setModalBloquear(true);
-    }
 
-    async function bloquearUsuario() {
-        if (!usuarioBloquear) return;
+    async function bloquearUsuario(usuario) {
+        const confirmar = window.confirm(`Deseja bloquear ${usuario.nome}?`);
+
+        if (!confirmar) return;
 
         try {
-            const formData = new FormData();
-            formData.append("situacao", 1);
-
-            const res = await fetch(`${API_URL}/alterar_situacao/${usuarioBloquear.id_usuario}`, {
+            const res = await fetch(`${API_URL}/bloquear_usuario/${usuario.id_usuario}`, {
                 method: "PUT",
-                credentials: "include",
-                body: formData
+                credentials: "include"
             });
 
             const data = await res.json();
 
             if (!res.ok) {
-                alert(data.mensagem || "Erro ao bloquear usuário.");
+                alert(data.mensagem || "Erro ao bloquear usuário");
                 return;
             }
 
-            alert(data.mensagem || "Usuário bloqueado com sucesso.");
-            setModalBloquear(false);
-            setUsuarioBloquear(null);
+            alert("Usuário bloqueado com sucesso");
+
+
             buscarUsuarios(busca);
+
         } catch {
-            alert("Erro ao bloquear usuário.");
+            alert("Erro ao bloquear usuário");
         }
     }
 

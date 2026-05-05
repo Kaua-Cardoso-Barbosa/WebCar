@@ -221,7 +221,9 @@ export default function AdicionarManutencao() {
                 navigate("/VisualizarAdm", {
                     state: {
                         carro,
-                        novaManutencao: manutencaoCriada,
+                        abrirModalManutencoes: true,
+                        mensagem: "Manutenção cadastrada com sucesso.",
+                        tipoMensagem: "sucesso",
                     },
                 });
             }, 1000);

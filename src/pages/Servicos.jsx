@@ -20,6 +20,11 @@ export default function Servicos() {
 
     const [modalConfirmacao, setModalConfirmacao] = useState(false);
     const [servicoExcluir, setServicoExcluir] = useState(null);
+    const [modalHistorico, setModalHistorico] = useState(false);
+    const [servicoHistorico, setServicoHistorico] = useState(null);
+    const [historicoServico, setHistoricoServico] = useState([]);
+    const [servicosComHistorico, setServicosComHistorico] = useState(new Set());
+    const [carregandoHistorico, setCarregandoHistorico] = useState(false);
 
     const [toast, setToast] = useState("");
     const [tipoToast, setTipoToast] = useState("");
@@ -37,6 +42,46 @@ export default function Servicos() {
     const totalPaginas = Math.max(1, Math.ceil(servicos.length / 15));
     const inicioPagina = (paginaAtual - 1) * 15;
     const servicosPaginados = servicos.slice(inicioPagina, inicioPagina + 15);
+
+    function formatarPreco(valor) {
+        return Number(valor || 0).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+        });
+    }
+
+    function formatarData(valor) {
+        if (!valor) return "Não informado";
+
+        if (String(valor).includes("/")) {
+            return String(valor);
+        }
+
+        try {
+            return new Date(valor).toLocaleDateString("pt-BR", {
+                timeZone: "UTC",
+            });
+        } catch {
+            return String(valor);
+        }
+    }
+
+    function valorHistoricoDe(item) {
+        return Number(
+            item?.["valor_unitário"] ??
+            item?.["valor_unitÃ¡rio"] ??
+            item?.valor_unitario ??
+            0
+        );
+    }
+
+    function dataHistoricoDe(item) {
+        return item?.["data_histórico"] ?? item?.["data_histÃ³rico"] ?? item?.data_historico;
+    }
+
+    function servicoTemHistorico(servico) {
+        return servicosComHistorico.has(Number(servico.id_servico));
+    }
 
     function formatarMoeda(valorDigitado) {
         const apenasNumeros = String(valorDigitado).replace(/\D/g, "");
@@ -75,6 +120,96 @@ export default function Servicos() {
         setModalConfirmacao(false);
     }
 
+    function fecharHistorico() {
+        setModalHistorico(false);
+        setServicoHistorico(null);
+        setHistoricoServico([]);
+    }
+
+    async function abrirHistorico(servico) {
+        setServicoHistorico(servico);
+        setModalHistorico(true);
+        setHistoricoServico([]);
+
+        try {
+            setCarregandoHistorico(true);
+
+            const response = await fetch(`${API_URL}/buscar_historico_servico`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                    id_servico: servico.id_servico,
+                }),
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                setHistoricoServico([]);
+                return;
+            }
+
+            setHistoricoServico(data["manutenções"] || data["manutenÃ§Ãµes"] || []);
+        } catch (error) {
+            console.error(error);
+            setHistoricoServico([]);
+        } finally {
+            setCarregandoHistorico(false);
+        }
+    }
+
+    async function sincronizarServicosComHistorico(listaServicos) {
+        const idsComHistorico = new Set();
+
+        await Promise.all(
+            listaServicos.map(async (servico) => {
+                try {
+                    const response = await fetch(`${API_URL}/buscar_historico_servico`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({
+                            id_servico: servico.id_servico,
+                        }),
+                    });
+
+                    if (!response.ok) return;
+
+                    const data = await response.json().catch(() => ({}));
+                    const historico = data["manutenções"] || data["manutenÃ§Ãµes"] || [];
+
+                    if (historico.length > 0) {
+                        idsComHistorico.add(Number(servico.id_servico));
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            })
+        );
+
+        setServicosComHistorico(idsComHistorico);
+    }
+
+    function linhasHistoricoServico() {
+        if (!servicoHistorico) return [];
+
+        const atual = Number(servicoHistorico.valor_unitario || 0);
+
+        return historicoServico.map((item, index) => {
+            const valorAnterior = valorHistoricoDe(item);
+            const valorNovo = index === 0 ? atual : valorHistoricoDe(historicoServico[index - 1]);
+            const diferenca = valorNovo - valorAnterior;
+
+            return {
+                data: dataHistoricoDe(item),
+                valorAnterior,
+                valorNovo,
+                diferenca,
+            };
+        });
+    }
+
     async function buscarServicos(descricao = "") {
         try {
             setCarregando(true);
@@ -97,7 +232,9 @@ export default function Servicos() {
                 return;
             }
 
-            setServicos(dados.servicos || []);
+            const listaServicos = dados.servicos || [];
+            setServicos(listaServicos);
+            sincronizarServicosComHistorico(listaServicos);
         } catch (erro) {
             console.error(erro);
             setMensagem("Não foi possível carregar os dados. Tente novamente.");
@@ -204,9 +341,6 @@ export default function Servicos() {
                                 Atualização de Valores
                             </Link>
 
-                            <Link to="/historicoservicos" className={css.botaoNeutro}>
-                                Ver Histórico
-                            </Link>
                         </div>
                     </div>
 
@@ -264,8 +398,8 @@ export default function Servicos() {
                                                 >
                                                     {servico.valor_porcentagem > 0 && "+"}
                                                     {Number(servico.valor_porcentagem || 0).toLocaleString("pt-BR", {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
+                                                        minimumFractionDigits: 4,
+                                                        maximumFractionDigits: 4,
                                                     })}
                                                     %
                                                 </span>
@@ -273,9 +407,19 @@ export default function Servicos() {
 
                                         <td>
                                             <div className={css.acoes}>
+                                                {servicoTemHistorico(servico) && (
+                                                    <button
+                                                        type="button"
+                                                        className={css.icone}
+                                                        onClick={() => abrirHistorico(servico)}
+                                                    >
+                                                        Histórico
+                                                    </button>
+                                                )}
+
                                                 <button
                                                     type="button"
-                                                    className={css.icone}
+                                                    className={`${css.icone} ${css.editar}`}
                                                     onClick={() => abrirModalEditar(servico)}
                                                 >
                                                     Editar
@@ -380,6 +524,83 @@ export default function Servicos() {
                                 Excluir
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {modalHistorico && (
+                <div className={css.modalFundo}>
+                    <div className={`${css.modal} ${css.modalHistorico}`}>
+                        <div className={css.modalTopoHistorico}>
+                            <div>
+                                <h2>Histórico do serviço</h2>
+                                <p>{servicoHistorico?.descricao}</p>
+                            </div>
+
+                            <button type="button" className={css.fecharHistorico} onClick={fecharHistorico}>
+                                ×
+                            </button>
+                        </div>
+
+                        <div className={css.resumoHistorico}>
+                            <div>
+                                <span>Preço atual</span>
+                                <strong>{formatarPreco(servicoHistorico?.valor_unitario)}</strong>
+                            </div>
+
+                            <div>
+                                <span>Última variação</span>
+                                <strong
+                                    className={
+                                        Number(servicoHistorico?.valor_porcentagem || 0) > 0
+                                            ? css.positivo
+                                            : Number(servicoHistorico?.valor_porcentagem || 0) < 0
+                                                ? css.negativo
+                                                : css.neutro
+                                    }
+                                >
+                                    {Number(servicoHistorico?.valor_porcentagem || 0) > 0 && "+"}
+                                    {Number(servicoHistorico?.valor_porcentagem || 0).toLocaleString("pt-BR", {
+                                        minimumFractionDigits: 4,
+                                        maximumFractionDigits: 4,
+                                    })}
+                                    %
+                                </strong>
+                            </div>
+                        </div>
+
+                        {carregandoHistorico ? (
+                            <p className={css.vazio}>Carregando histórico...</p>
+                        ) : linhasHistoricoServico().length > 0 ? (
+                            <div className={css.tabelaHistorico}>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Antes</th>
+                                        <th>Depois</th>
+                                        <th>Diferença</th>
+                                    </tr>
+                                    </thead>
+
+                                    <tbody>
+                                    {linhasHistoricoServico().map((linha, index) => (
+                                        <tr key={`${linha.data}-${index}`}>
+                                            <td>{formatarData(linha.data)}</td>
+                                            <td>{formatarPreco(linha.valorAnterior)}</td>
+                                            <td>{formatarPreco(linha.valorNovo)}</td>
+                                            <td className={linha.diferenca >= 0 ? css.positivo : css.negativo}>
+                                                {linha.diferenca > 0 && "+"}
+                                                {formatarPreco(linha.diferenca)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <p className={css.vazio}>Nenhum histórico encontrado para este serviço.</p>
+                        )}
                     </div>
                 </div>
             )}
