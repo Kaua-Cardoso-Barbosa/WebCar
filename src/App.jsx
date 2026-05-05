@@ -33,6 +33,7 @@ import CadastrarMarca from "./pages/CadastrarMarca.jsx";
 import AtualizarValores from "./pages/AtualizarValores.jsx";
 import ListarMarcas from "./pages/ListarMarcas.jsx";
 import HistoricoServicos from "./pages/HistoricoServicos.jsx";
+import EditarCliente from "./pages/EditarCliente.jsx";
 
 export default function App() {
     return (
@@ -149,6 +150,15 @@ export default function App() {
                     element={
                         <RotaProtegida tiposPermitidos={[0]}>
                             <EditarServico />
+                        </RotaProtegida>
+                    }
+                />
+
+                <Route
+                    path="/editarcliente/:id_usuario"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <EditarCliente />
                         </RotaProtegida>
                     }
                 />
