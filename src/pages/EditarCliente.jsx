@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import Header from "../components/Header/Header.jsx";
 import Footer from "../components/Footer/Footer.jsx";
 import SidebarMenu from "../components/SidebarMenu/SidebarMenu.jsx";
@@ -147,7 +147,7 @@ export default function EditarCliente() {
             setTipoMensagem("sucesso");
 
             setTimeout(() => {
-                navigate("/usuarios");
+                navigate("/ListaUsuarios");
             }, 800);
 
         } catch {
@@ -257,9 +257,11 @@ export default function EditarCliente() {
                         </div>
 
                         <div className={css.actions}>
-                            <button className={css.cancelar} onClick={() => navigate("/usuarios")}>
-                                Cancelar
-                            </button>
+                            <Link to={"/listausuarios"}>
+                                <button className={css.cancelar} onClick={() => navigate("/usuarios")}>
+                                    Cancelar
+                                </button>
+                            </Link>
 
                             <button className={css.salvar} onClick={salvarEdicao} disabled={carregando}>
                                 {carregando ? "Salvando..." : "Salvar"}

@@ -11,7 +11,7 @@ const IMAGEM_PADRAO = `data:image/svg+xml;utf8,${encodeURIComponent(`
   <text x="450" y="260" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="34" font-weight="700" fill="#64748b">Sem imagem</text>
 </svg>
 `)}`;
-const MANUTENCOES_POR_PAGINA = 3;
+const MANUTENCOES_POR_PAGINA = 4;
 
 function imagensVeiculo(idVeiculo, numeroFoto = 1) {
     if (!idVeiculo) return [];
@@ -128,6 +128,15 @@ export default function VisualizarCarroAdm() {
             return;
         }
 
+        const primeiraImagem = {
+            numero: 1,
+            urls: [...imagensVeiculo(carro.ID_VEICULO, 1), IMAGEM_PADRAO],
+            placeholder: false,
+        };
+
+        setImagens([primeiraImagem]);
+        setImagemPrincipal(primeiraImagem);
+
         const encontradas = [];
 
         for (let numero = 1; numero <= 10; numero += 1) {
@@ -141,6 +150,12 @@ export default function VisualizarCarroAdm() {
                 urls: [urlValida],
                 placeholder: false,
             });
+
+            setImagens([...encontradas]);
+
+            if (numero === 1) {
+                setImagemPrincipal(encontradas[0]);
+            }
         }
 
         const listaFinal = encontradas.length > 0 ? encontradas : [imagemSemFoto];
@@ -782,6 +797,20 @@ export default function VisualizarCarroAdm() {
         );
     }
 
+    function renderMensagem() {
+        if (!mensagem) return null;
+
+        return (
+            <div
+                className={`${css.mensagemModal} ${
+                    tipoMensagem === "sucesso" ? css.mensagemSucesso : css.mensagemErro
+                }`}
+            >
+                {mensagem}
+            </div>
+        );
+    }
+
     function renderModalManutencao() {
         if (!manutencaoAberta) return null;
 
@@ -820,6 +849,8 @@ export default function VisualizarCarroAdm() {
                             ×
                         </button>
                     </div>
+
+                    {renderMensagem()}
 
                     <div className={css.modalResumo}>
                         <span>Total da manutenção</span>
@@ -889,7 +920,7 @@ export default function VisualizarCarroAdm() {
     return (
         <>
             <div className="container py-4">
-                {mensagem && (
+                {mensagem && !modalListaManutencoes && !manutencaoAberta && !manutencaoExcluir && !modalExcluir && (
                     <div
                         className={`alert ${
                             tipoMensagem === "sucesso" ? "alert-success" : "alert-danger"
@@ -1068,6 +1099,8 @@ export default function VisualizarCarroAdm() {
                                 ×
                             </button>
                         </div>
+
+                        {renderMensagem()}
 
                         <div className={css.modalResumo}>
                             <span>Total em manutenções</span>
