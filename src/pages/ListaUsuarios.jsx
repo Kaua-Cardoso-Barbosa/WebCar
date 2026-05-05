@@ -4,6 +4,7 @@ import Header from "../components/Header/Header";
 import SidebarMenu from "../components/SidebarMenu/SidebarMenu";
 import Footer from "../components/Footer/Footer";
 import css from "./ListaUsuarios.module.css"
+import {Link} from "react-router-dom";
 
 export default function ListaUsuario() {
     const [usuarios, setUsuarios] = useState([]);
@@ -127,12 +128,14 @@ export default function ListaUsuario() {
 
                                         <td>
                                             <div className={css.acoes}>
-                                                <button
-                                                    className={css.icone}
-                                                    onClick={() => editarUsuario(usuario)}
-                                                >
-                                                    Editar
-                                                </button>
+                                                <Link to={"/editarcliente/:id_usuario"}>
+                                                    <button
+                                                        className={css.icone}
+                                                        onClick={() => editarUsuario(usuario)}
+                                                    >
+                                                        Editar
+                                                    </button>
+                                                </Link>
 
                                                 <button
                                                     className={`${css.icone} ${css.bloquear}`}
