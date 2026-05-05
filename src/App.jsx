@@ -29,9 +29,12 @@ import Dashboard from "./pages/Dashboard.jsx";
 import CadastrarMarca from "./pages/CadastrarMarca.jsx";
 import AtualizarValores from "./pages/AtualizarValores.jsx";
 import ListarMarcas from "./pages/ListarMarcas.jsx";
+<<<<<<< Updated upstream
 import HistoricoServicos from "./pages/HistoricoServicos.jsx";
 import EditarCliente from "./pages/EditarCliente.jsx";
 import ListaUsuarios from "./pages/ListaUsuarios.jsx";
+=======
+>>>>>>> Stashed changes
 
 export default function App() {
     return (
@@ -142,14 +145,6 @@ export default function App() {
                     element={
                         <RotaProtegida tiposPermitidos={[0]}>
                             <AtualizarValores />
-                        </RotaProtegida>
-                    }
-                />
-                <Route
-                    path="/historicoservicos"
-                    element={
-                        <RotaProtegida tiposPermitidos={[0]}>
-                            <HistoricoServicos />
                         </RotaProtegida>
                     }
                 />
