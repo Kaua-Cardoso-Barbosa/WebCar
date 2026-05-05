@@ -44,7 +44,7 @@ export default function App() {
                 <Route path="/verificarEmailSenha" element={<VerificarEmailSenha />} />
                 <Route path="/trocarSenha" element={<TrocarSenha />} />
                 <Route path="/verificarEmailConta" element={<VerificarEmailConta />} />
-                <Route path="/Visualizar" element={<Visualizar />} />
+                <Route path="/Visualizar/:id" element={<Visualizar />} />
                 <Route path="/not" element={<Not />} />
                 <Route
                     path="/VisualizarAdm"

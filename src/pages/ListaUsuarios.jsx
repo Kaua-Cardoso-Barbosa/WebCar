@@ -6,6 +6,37 @@ import SidebarMenu from "../components/SidebarMenu/SidebarMenu";
 import Footer from "../components/Footer/Footer";
 import css from "./ListaUsuarios.module.css";
 
+const IMAGEM_USUARIO_PADRAO = `data:image/svg+xml;utf8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="18" fill="#f1f5f9"/>
+  <circle cx="60" cy="46" r="22" fill="#94a3b8"/>
+  <path d="M25 102c5-23 19-34 35-34s30 11 35 34" fill="#94a3b8"/>
+</svg>
+`)}`;
+
+function imagensUsuario(usuario) {
+    if (!usuario?.id_usuario) return [IMAGEM_USUARIO_PADRAO];
+
+    return [
+        usuario.imagem,
+        `${API_URL}/uploads/Usuarios/${usuario.id_usuario}.jpg`,
+        `${API_URL}/uploads/usuarios/${usuario.id_usuario}.jpg`,
+        `${API_URL}/static/uploads/Usuarios/${usuario.id_usuario}.jpg`,
+        `${API_URL}/static/uploads/usuarios/${usuario.id_usuario}.jpg`,
+        IMAGEM_USUARIO_PADRAO,
+    ].filter(Boolean);
+}
+
+function tentarProximaImagem(e, imagens) {
+    const indiceAtual = Number(e.currentTarget.dataset.indice || 0);
+    const proximoIndice = indiceAtual + 1;
+
+    if (proximoIndice < imagens.length) {
+        e.currentTarget.dataset.indice = String(proximoIndice);
+        e.currentTarget.src = imagens[proximoIndice];
+    }
+}
+
 export default function ListaUsuario() {
     const [usuarios, setUsuarios] = useState([]);
     const [busca, setBusca] = useState("");
@@ -455,12 +486,11 @@ export default function ListaUsuario() {
                                     >
                                         <td>
                                             <img
-                                                src={`${usuario.imagem}?v=${usuario.id_usuario}`}
+                                                src={imagensUsuario(usuario)[0]}
+                                                data-indice="0"
                                                 alt={usuario.nome}
                                                 className={`${css.logoUsuario} ${classeTipo(usuario.tipo)}`}
-                                                onError={(e) => {
-                                                    e.currentTarget.style.display = "none";
-                                                }}
+                                                onError={(e) => tentarProximaImagem(e, imagensUsuario(usuario))}
                                             />
                                         </td>
 

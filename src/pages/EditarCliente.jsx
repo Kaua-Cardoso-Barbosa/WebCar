@@ -6,6 +6,20 @@ import SidebarMenu from "../components/SidebarMenu/SidebarMenu.jsx";
 import { API_URL } from "../App";
 import css from "./EditarCliente.module.css";
 
+const IMAGEM_USUARIO_PADRAO = `data:image/svg+xml;utf8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="240" viewBox="0 0 320 240">
+  <rect width="320" height="240" rx="18" fill="#f1f5f9"/>
+  <circle cx="160" cy="92" r="42" fill="#94a3b8"/>
+  <path d="M82 205c13-45 43-68 78-68s65 23 78 68" fill="#94a3b8"/>
+</svg>
+`)}`;
+
+function imagemUsuario(usuario) {
+    if (usuario?.imagem) return usuario.imagem;
+    if (usuario?.id_usuario) return `${API_URL}/uploads/Usuarios/${usuario.id_usuario}.jpg`;
+    return IMAGEM_USUARIO_PADRAO;
+}
+
 export default function EditarCliente() {
     const navigate = useNavigate();
     const { id_usuario } = useParams();
@@ -46,8 +60,12 @@ export default function EditarCliente() {
             setTelefone(usuario.telefone || "");
             setCpf(usuario.cpf || "");
 
-
-            setPreview(`${usuario.imagem}?v=${Date.now()}`);
+            const fotoUsuario = imagemUsuario(usuario);
+            setPreview(
+                fotoUsuario.startsWith("data:")
+                    ? fotoUsuario
+                    : `${fotoUsuario}?v=${Date.now()}`
+            );
 
         } catch {
             setMensagem("Erro ao carregar usuário.");

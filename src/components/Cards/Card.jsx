@@ -1,5 +1,6 @@
 import css from "./Cards.module.css";
 import { API_URL } from "../../App";
+import { useNavigate } from "react-router-dom";
 
 const IMAGEM_PADRAO = `data:image/svg+xml;utf8,${encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
@@ -33,6 +34,7 @@ function tentarProximaImagem(e, imagens) {
 }
 
 export default function Card({ idVeiculo, modelo, valor, combustivel, ano, nome, km, cambio }) {
+    const navigate = useNavigate();
     const imagens = imagensVeiculo(idVeiculo);
 
     function formatarPreco(valor) {
@@ -64,7 +66,18 @@ export default function Card({ idVeiculo, modelo, valor, combustivel, ano, nome,
     const cambioFormatado = textoCambio(cambio);
 
     return (
-        <div className={css.card}>
+        <div
+            className={css.card}
+            role="button"
+            tabIndex={0}
+            onClick={() => idVeiculo && navigate(`/Visualizar/${idVeiculo}`)}
+            onKeyDown={(e) => {
+                if ((e.key === "Enter" || e.key === " ") && idVeiculo) {
+                    e.preventDefault();
+                    navigate(`/Visualizar/${idVeiculo}`);
+                }
+            }}
+        >
             <img
                 src={imagens[0]}
                 data-indice="0"

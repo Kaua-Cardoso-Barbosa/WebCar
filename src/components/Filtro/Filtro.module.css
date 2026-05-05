@@ -43,12 +43,21 @@
     margin-bottom: 10px;
     color: #111827;
     cursor: pointer;
+    line-height: 1.2;
 }
 
 .check input {
     width: 17px;
     height: 17px;
+    margin: 0;
+    flex: 0 0 17px;
     cursor: pointer;
+}
+
+.check span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 17px;
 }
 
 .range {
