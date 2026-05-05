@@ -1,54 +1,87 @@
 import styles from "./SidebarMenu.module.css";
 import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
 
 export default function SidebarMenu() {
     const location = useLocation();
+    const [open, setOpen] = useState(false);
 
     return (
-        <aside className={styles.sidebar}>
-            <nav className={styles.menu}>
-                <Link
-                    to="/dashboard"
-                    className={`${styles.item} ${location.pathname === "/dashboard" ? styles.active : ""}`}
-                >
-                    <DashboardIcon />
-                    <span>Dashboard</span>
+        <>
+            {/* BOTÃO HAMBURGUER */}
+            <button className={styles.hamburger} onClick={() => setOpen(true)}>
+                ☰
+            </button>
+
+            {/* OVERLAY */}
+            {open && (
+                <div
+                    className={styles.overlay}
+                    onClick={() => setOpen(false)}
+                />
+            )}
+
+            <aside className={`${styles.sidebar} ${open ? styles.open : ""}`}>
+
+                {/* BOTÃO FECHAR */}
+                <button className={styles.close} onClick={() => setOpen(false)}>
+                    ✕
+                </button>
+
+                <nav className={styles.menu}>
+                    <Link
+                        to="/dashboard"
+                        className={`${styles.item} ${location.pathname === "/dashboard" ? styles.active : ""}`}
+                        onClick={() => setOpen(false)}
+                    >
+                        <DashboardIcon />
+                        <span>Dashboard</span>
+                    </Link>
+
+                    <Link
+                        to="/garagem"
+                        className={`${styles.item} ${location.pathname === "/garagem" ? styles.active : ""}`}
+                        onClick={() => setOpen(false)}
+                    >
+                        <GarageIcon />
+                        <span>Garagem</span>
+                    </Link>
+
+                    <Link
+                        to="/servicos"
+                        className={`${styles.item} ${location.pathname === "/servicos" ? styles.active : ""}`}
+                        onClick={() => setOpen(false)}
+                    >
+                        <ServicesIcon />
+                        <span>Serviços</span>
+                    </Link>
+
+                    <Link to="/" className={styles.item}>
+                        <SalesIcon />
+                        <span>Vendas</span>
+                    </Link>
+
+                    <Link to="/" className={styles.item}>
+                        <UserIcon />
+                        <span>Usuários</span>
+                    </Link>
+                </nav>
+
+                <Link to="/listarmarcas" className={styles.item}>
+                    <span className={styles.icon}>⊕</span>
+                    <span>Marcas</span>
                 </Link>
 
-                <Link
-                    to="/garagem"
-                    className={`${styles.item} ${location.pathname === "/garagem" ? styles.active : ""}`}
-                >
-                    <GarageIcon />
-                    <span>Garagem</span>
+                <Link to="/Cadastroveiculo" className={styles.botaoAdicionar}>
+                    <span>＋</span>
+                    Adicione veículos
                 </Link>
-
-                <Link
-                    to="/servicos"
-                    className={`${styles.item} ${location.pathname === "/servicos" ? styles.active : ""}`}
-                >
-                    <ServicesIcon />
-                    <span>Serviços</span>
-                </Link>
-
-                <Link to="/" className={styles.item}>
-                    <SalesIcon />
-                    <span>Vendas</span>
-                </Link>
-
-                <Link to="/listausuarios" className={styles.item}>
-                    <UserIcon />
-                    <span>Usuários</span>
-                </Link>
-            </nav>
-
-            <Link to="/listarmarcas" className={styles.item}>
-                <span className={styles.icon}>⊕</span>
-                <span>Marcas</span>
-            </Link>
-        </aside>
+            </aside>
+        </>
     );
 }
+
+/* ÍCONES (mantive os seus) */
 
 function DashboardIcon() {
     return (
