@@ -8,18 +8,30 @@ import Header from "../components/Header/Header.jsx";
 import Footer from "../components/Footer/Footer.jsx";
 
 const CORES_VEICULO = {
-    Preto: "#111111",
-    Branco: "#ffffff",
-    Prata: "#c0c0c0",
-    Cinza: "#6b7280",
-    Vermelho: "#dc2626",
-    Azul: "#2563eb",
-    Verde: "#16a34a",
-    Amarelo: "#facc15",
-    Marrom: "#7c2d12",
-    Bege: "#d6b98c",
-    Dourado: "#d4af37",
-    Champagne: "#f7e7ce",
+    BRANCO: "#ffffff",
+    PRETO: "#111111",
+    CINZA: "#6b7280",
+    PRATA: "#c0c0c0",
+    AZUL: "#2563eb",
+    VERMELHO: "#dc2626",
+    VERDE: "#16a34a",
+    BEGE: "#d6b98c",
+    MARROM: "#7c2d12",
+    AMARELO: "#facc15",
+    DOURADO: "#d4af37",
+    CHAMPAGNE: "#f7e7ce",
+    GRAFITE: "#374151",
+    "AZUL MARINHO": "#1e3a8a",
+    "AZUL CLARO": "#60a5fa",
+    "VERDE ESCURO": "#166534",
+    "VERDE OLIVA": "#4d7c0f",
+    LARANJA: "#f97316",
+    ROXO: "#7e22ce",
+    VIOLETA: "#8b5cf6",
+    BORDÔ: "#7f1d1d",
+    BRONZE: "#92400e",
+    COBRE: "#b45309",
+    PÉROLA: "#f8f4e3",
 };
 
 export default function NovoVeiculo() {
@@ -116,9 +128,11 @@ export default function NovoVeiculo() {
     }
 
     function handleCor(valor) {
-        setCor(valor);
+        // Mantem a cor digitada em maiusculo.
+        const corFormatada = valor.toUpperCase();
+        setCor(corFormatada);
 
-        const corEncontrada = CORES_VEICULO[valor.trim()];
+        const corEncontrada = CORES_VEICULO[corFormatada.trim()];
         if (corEncontrada) {
             setCodigoCor(corEncontrada);
         }
@@ -260,7 +274,7 @@ export default function NovoVeiculo() {
             formData.append("ano_modelo", anoModelo);
             formData.append("placa", placa);
             formData.append("km", apenasNumeros(km));
-            formData.append("cor", cor);
+            formData.append("cor", cor.trim().toUpperCase());
             formData.append("cambio", cambio);
             formData.append("combustivel", combustivel);
             formData.append("renavam", renavam);
@@ -466,18 +480,9 @@ export default function NovoVeiculo() {
                             </div>
 
                             <datalist id="cores-veiculo">
-                                <option value="Preto" />
-                                <option value="Branco" />
-                                <option value="Prata" />
-                                <option value="Cinza" />
-                                <option value="Vermelho" />
-                                <option value="Azul" />
-                                <option value="Verde" />
-                                <option value="Amarelo" />
-                                <option value="Marrom" />
-                                <option value="Bege" />
-                                <option value="Dourado" />
-                                <option value="Champagne" />
+                                {Object.keys(CORES_VEICULO).map((nomeCor) => (
+                                    <option key={nomeCor} value={nomeCor} />
+                                ))}
                             </datalist>
 
                             <input

@@ -100,13 +100,17 @@
     font-size: 14px;
 }
 
-.resumoLateralManutencao .cardManutencao,
-.resumoLateralManutencao .cabecalhoManutencao {
-    display: none;
+.resumoLateralManutencao .listaManutencoesCompacta {
+    grid-template-columns: 1fr;
 }
 
-.resumoLateralManutencao > p {
-    display: none;
+.resumoLateralManutencao .botaoManutencaoCompacta {
+    padding: 12px;
+    gap: 10px;
+}
+
+.resumoLateralManutencao .estadoVazioManutencao {
+    padding: 18px;
 }
 
 .secaoManutencoes {
@@ -227,6 +231,39 @@
 
 .resumoManutencaoCompacta strong {
     color: #1d4ed8;
+}
+
+.paginacaoManutencao {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.paginacaoManutencao button,
+.paginacaoManutencao span {
+    border: 1px solid #dbe4f0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    background: #ffffff;
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.paginacaoManutencao button {
+    cursor: pointer;
+}
+
+.paginacaoManutencao button:hover:not(:disabled) {
+    border-color: #2563eb;
+    color: #1d4ed8;
+}
+
+.paginacaoManutencao button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
 }
 
 .modalFundo {
