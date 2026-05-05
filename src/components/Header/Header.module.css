@@ -146,6 +146,7 @@
     .header :global(.navbar) {
         min-height: 66px;
         padding: 8px 10px;
+        justify-self: self-end;
     }
 
     .azul {
