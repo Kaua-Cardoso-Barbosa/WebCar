@@ -145,7 +145,6 @@
     background: #f8fafc;
     border: 1px solid #dfe5ef;
     border-radius: 8px;
-    padding: 12px 14px;
     display: flex;
     align-items: center;
 }
@@ -157,6 +156,7 @@
     width: 100%;
     font-size: 15px;
     color: #111827;
+    margin: 0;
 }
 
 .busca input::placeholder {

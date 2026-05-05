@@ -10,6 +10,7 @@
 .header :global(.navbar) {
     min-height: 72px;
     padding: 10px 18px;
+
 }
 
 .header :global(.navbar-brand) {
