@@ -1,5 +1,5 @@
 .layout {
-    display: flex;
+    display: flex !important;
     min-height: calc(100vh - 80px);
     background: #f5f7fb;
 }

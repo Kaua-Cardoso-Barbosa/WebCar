@@ -18,6 +18,9 @@ export default function ListaUsuario() {
     const totalPaginas = Math.max(1, Math.ceil(usuariosFiltrados.length / 15));
     const inicioPagina = (paginaAtual - 1) * 15;
     const usuariosPaginados = usuariosFiltrados.slice(inicioPagina, inicioPagina + 15);
+    const [modalBloquear, setModalBloquear] = useState(false);
+    const [usuarioBloquear, setUsuarioBloquear] = useState(null);
+
 
     async function buscarUsuarios(nomeBusca = "") {
         try {
@@ -165,7 +168,7 @@ export default function ListaUsuario() {
 
                                                 <button
                                                     className={`${css.icone} ${css.bloquear}`}
-                                                    onClick={() => bloquearUsuario(usuario)}
+                                                    onClick={() => abrirModalBloquear(usuario)}
                                                 >
                                                     Bloquear
                                                 </button>
@@ -203,6 +206,37 @@ export default function ListaUsuario() {
                     </div>
                 </main>
             </div>
+
+            {modalBloquear && (
+                <div className={css.modalFundo}>
+                    <div className={css.modal}>
+                        <h2>Confirmar bloqueio</h2>
+
+                        <p>
+                            Tem certeza que deseja bloquear o usuário{" "}
+                            <strong>{usuarioBloquear?.nome}</strong>?
+                        </p>
+
+                        <div className={css.modalBotoes}>
+                            <button
+                                type="button"
+                                className={css.cancelar}
+                                onClick={() => setModalBloquear(false)}
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                type="button"
+                                className={css.excluir}
+                                onClick={bloquearUsuario}
+                            >
+                                Bloquear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <Footer />
         </>
