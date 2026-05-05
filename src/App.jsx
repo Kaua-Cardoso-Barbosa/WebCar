@@ -31,6 +31,7 @@ import CadastrarMarca from "./pages/CadastrarMarca.jsx";
 import AtualizarValores from "./pages/AtualizarValores.jsx";
 import ListarMarcas from "./pages/ListarMarcas.jsx";
 import HistoricoServicos from "./pages/HistoricoServicos.jsx";
+import ListaUsuarios from "./pages/ListaUsuarios.jsx";
 
 export default function App() {
     return (
@@ -54,6 +55,16 @@ export default function App() {
                         </RotaProtegida>
                     }
                 />
+
+                <Route
+                    path="/ListaUsuarios"
+                    element={
+                    <RotaProtegida tiposPermitidos={[0]}>
+                        <ListaUsuarios />
+                    </RotaProtegida>
+                    }
+                />
+
                 <Route
                     path="/Agendar"
                     element={

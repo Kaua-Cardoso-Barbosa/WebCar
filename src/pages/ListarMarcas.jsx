@@ -36,7 +36,7 @@ export default function ListarMarcas() {
     }
 
     const totalPaginas = Math.max(1, Math.ceil(marcas.length / 15));
-    const inicioPagina = (paginaAtual - 1) * 15;
+    const inicioPagina = (paginaAtual - 1) * 15
     const marcasPaginadas = marcas.slice(inicioPagina, inicioPagina + 15);
 
     async function buscarMarcas(nomeBusca = "") {
