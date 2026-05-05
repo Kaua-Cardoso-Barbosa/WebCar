@@ -11,6 +11,7 @@ export default function EditarManutencao() {
 
     const manutencao = location.state?.manutencao;
     const carro = location.state?.carro;
+    const voltarParaModalManutencoes = location.state?.voltarParaModalManutencoes;
 
     const [data, setData] = useState(formatarDataParaInput(manutencao?.data));
     const [servicos, setServicos] = useState([]);
@@ -22,6 +23,20 @@ export default function EditarManutencao() {
     const [sucesso, setSucesso] = useState("");
     const [salvando, setSalvando] = useState(false);
     const hoje = new Date().toISOString().split("T")[0];
+
+    function voltarParaVisualizacao() {
+        if (voltarParaModalManutencoes && carro) {
+            navigate("/VisualizarAdm", {
+                state: {
+                    carro,
+                    abrirModalManutencoes: true,
+                },
+            });
+            return;
+        }
+
+        navigate(-1);
+    }
 
     useEffect(() => {
         buscarServicos();
@@ -492,7 +507,7 @@ export default function EditarManutencao() {
             setSucesso(result.mensagem || "Manutenção atualizada com sucesso.");
 
             setTimeout(() => {
-                navigate(-1);
+                voltarParaVisualizacao();
             }, 700);
         } catch (error) {
             console.error(error);
@@ -509,7 +524,7 @@ export default function EditarManutencao() {
                 <div className={css.container}>
                     <div className={css.card}>
                         <h2>Manutenção não encontrada</h2>
-                        <button className={css.cancelar} onClick={() => navigate(-1)}>
+                        <button className={css.cancelar} onClick={voltarParaVisualizacao}>
                             Voltar
                         </button>
                     </div>
@@ -637,7 +652,7 @@ export default function EditarManutencao() {
                         <button
                             type="button"
                             className={css.cancelar}
-                            onClick={() => navigate(-1)}
+                            onClick={voltarParaVisualizacao}
                         >
                             Voltar
                         </button>

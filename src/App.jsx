@@ -12,7 +12,6 @@ import TrocarSenha from "./pages/TrocarSenha.jsx";
 import VerificarEmailConta from "./pages/VerificarEmailConta.jsx";
 import RotaProtegida from "./components/RotaProtegida.jsx";
 import Restrita from "./pages/Restrita.jsx";
-import RestritaAdm from "./pages/RestritaAdm.jsx";
 import RestritaVendedor from "./pages/RestritaVendedor.jsx";
 import Not from "./pages/Not.jsx";
 import Visualizar from "./pages/Visualizar.jsx";
@@ -30,8 +29,8 @@ import Dashboard from "./pages/Dashboard.jsx";
 import CadastrarMarca from "./pages/CadastrarMarca.jsx";
 import AtualizarValores from "./pages/AtualizarValores.jsx";
 import ListarMarcas from "./pages/ListarMarcas.jsx";
-import HistoricoServicos from "./pages/HistoricoServicos.jsx";
 import EditarCliente from "./pages/EditarCliente.jsx";
+import ListaUsuarios from "./pages/ListaUsuarios.jsx";
 
 export default function App() {
     return (
@@ -55,6 +54,16 @@ export default function App() {
                         </RotaProtegida>
                     }
                 />
+
+                <Route
+                    path="/ListaUsuarios"
+                    element={
+                    <RotaProtegida tiposPermitidos={[0]}>
+                        <ListaUsuarios />
+                    </RotaProtegida>
+                    }
+                />
+
                 <Route
                     path="/Agendar"
                     element={
@@ -132,14 +141,6 @@ export default function App() {
                     element={
                         <RotaProtegida tiposPermitidos={[0]}>
                             <AtualizarValores />
-                        </RotaProtegida>
-                    }
-                />
-                <Route
-                    path="/historicoservicos"
-                    element={
-                        <RotaProtegida tiposPermitidos={[0]}>
-                            <HistoricoServicos />
                         </RotaProtegida>
                     }
                 />

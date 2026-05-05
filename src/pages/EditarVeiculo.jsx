@@ -85,7 +85,7 @@ export default function EditarVeiculo() {
     const [anoFabricacao, setAnoFabricacao] = useState(carro?.ANO_FABRICACAO || "");
     const [anoModelo, setAnoModelo] = useState(carro?.ANO_MODELO || "");
     const [documento, setDocumento] = useState(String(carro?.DOCUMENTACAO ?? ""));
-    const [km, setKm] = useState(carro?.KM || "");
+    const [km, setKm] = useState(() => formatarKm(carro?.KM ?? ""));
     const [combustivel, setCombustivel] = useState(String(carro?.COMBUSTIVEL ?? ""));
     const [cambio, setCambio] = useState(String(carro?.CAMBIO ?? ""));
     const [cor, setCor] = useState(carro?.COR?.toUpperCase() || "");

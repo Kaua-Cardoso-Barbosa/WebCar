@@ -77,6 +77,7 @@ export default function VisualizarCarroAdm() {
     const [itemExcluir, setItemExcluir] = useState(null);
     const [manutencaoAberta, setManutencaoAberta] = useState(null);
     const [manutencaoExcluir, setManutencaoExcluir] = useState(null);
+    const [modalListaManutencoes, setModalListaManutencoes] = useState(false);
     const [paginaManutencao, setPaginaManutencao] = useState(1);
 
     const manutencoes = agruparManutencoes(itens);
@@ -104,6 +105,21 @@ export default function VisualizarCarroAdm() {
             Math.min(paginaAtual, totalPaginasManutencao)
         );
     }, [totalPaginasManutencao]);
+
+    useEffect(() => {
+        if (location.state?.abrirModalManutencoes && manutencoes.length > 0) {
+            setModalListaManutencoes(true);
+        }
+    }, [location.state, manutencoes.length]);
+
+    useEffect(() => {
+        if (location.state?.mensagem) {
+            mostrarMensagem(
+                location.state.mensagem,
+                location.state.tipoMensagem || "sucesso"
+            );
+        }
+    }, [location.state]);
 
     async function carregarImagensDisponiveis() {
         if (!carro?.ID_VEICULO) {
@@ -692,7 +708,7 @@ export default function VisualizarCarroAdm() {
         return valor || "Não informado";
     }
 
-    function renderManutencoesDetalhadas() {
+    function renderEstadoVazioManutencao() {
         if (manutencoes.length === 0) {
             return (
                 <div className={css.estadoVazioManutencao}>
@@ -702,6 +718,10 @@ export default function VisualizarCarroAdm() {
             );
         }
 
+        return null;
+    }
+
+    function renderManutencoesDetalhadas() {
         return (
             <>
                 <div className={css.listaManutencoesCompacta}>
@@ -812,7 +832,11 @@ export default function VisualizarCarroAdm() {
                             className="btn btn-primary"
                             onClick={() =>
                                 navigate("/editarmanutencao", {
-                                    state: { carro, manutencao: manutencaoAtual },
+                                    state: {
+                                        carro,
+                                        manutencao: manutencaoAtual,
+                                        voltarParaModalManutencoes: true,
+                                    },
                                 })
                             }
                         >
@@ -983,15 +1007,27 @@ export default function VisualizarCarroAdm() {
                                 </strong>
                             </div>
 
-                            <button
-                                type="button"
-                                className="btn btn-primary w-100 mb-3"
-                                onClick={() => navigate("/adicionarmanutencao", { state: { carro } })}
-                            >
-                                Nova manutenção
-                            </button>
+                            {manutencoes.length === 0 ? (
+                                <>
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary w-100 mb-3"
+                                        onClick={() => navigate("/adicionarmanutencao", { state: { carro } })}
+                                    >
+                                        Nova manutenção
+                                    </button>
 
-                            {renderManutencoesDetalhadas()}
+                                    {renderEstadoVazioManutencao()}
+                                </>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="btn btn-primary w-100"
+                                    onClick={() => setModalListaManutencoes(true)}
+                                >
+                                    Ver manutenções
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -1010,6 +1046,46 @@ export default function VisualizarCarroAdm() {
                     </div>
                 </div>
             </div>
+
+            {modalListaManutencoes && (
+                <div className={css.modalFundo}>
+                    <div className={css.modalManutencao}>
+                        <div className={css.modalTopo}>
+                            <div>
+                                <span className={css.indiceManutencao}>
+                                    Histórico do veículo
+                                </span>
+                                <h3>Manutenções cadastradas</h3>
+                                <p>Clique em uma manutenção para ver os itens dela.</p>
+                            </div>
+
+                            <button
+                                type="button"
+                                className={css.fecharModal}
+                                onClick={() => setModalListaManutencoes(false)}
+                                aria-label="Fechar"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <div className={css.modalResumo}>
+                            <span>Total em manutenções</span>
+                            <strong>{formatarPreco(totalManutencoes)}</strong>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="btn btn-primary w-100 mb-3"
+                            onClick={() => navigate("/adicionarmanutencao", { state: { carro } })}
+                        >
+                            Adicionar manutenção
+                        </button>
+
+                        {renderManutencoesDetalhadas()}
+                    </div>
+                </div>
+            )}
 
             {renderModalManutencao()}
 
