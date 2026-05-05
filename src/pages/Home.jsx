@@ -102,7 +102,7 @@ export default function Home() {
                                 mais rápido com ferramentas de precificação inteligente.
                             </p>
 
-                            <Link to={"/Login"}>
+                            <Link to={"/catalogo"}>
                                 <button className={css.botao}>
                                     Compre Agora
                                 </button>

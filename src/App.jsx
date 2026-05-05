@@ -164,11 +164,7 @@ export default function App() {
 
                 <Route
                     path="/catalogo"
-                    element={
-                        <RotaProtegida>
-                            <Catalogo />
-                        </RotaProtegida>
-                    }
+                    element={<Catalogo />}
                 />
 
                 <Route
