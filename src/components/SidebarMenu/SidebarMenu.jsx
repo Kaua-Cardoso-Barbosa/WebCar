@@ -76,6 +76,14 @@ export default function SidebarMenu() {
                         <span className={styles.icon}>⊕</span>
                         <span>Marcas</span>
                     </Link>
+                    <Link
+                        to="/configuracoes"
+                        className={`${styles.item} ${location.pathname === "/configuracoes" ? styles.active : ""}`}
+                        onClick={fecharMenu}
+                    >
+                        <SettingsIcon />
+                        <span>Configurações</span>
+                    </Link>
                 </nav>
             </aside>
         </>
@@ -132,6 +140,15 @@ function UserIcon() {
             <circle cx="9.5" cy="7" r="3" />
             <path d="M20 21v-2a4 4 0 0 0-3-3.87" />
             <path d="M16 4.13a4 4 0 0 1 0 7.75" />
+        </svg>
+    );
+}
+
+function SettingsIcon() {
+    return (
+        <svg className={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19 12a7 7 0 0 0-.09-1.1l2.02-1.57-2-3.46-2.39.96a7.4 7.4 0 0 0-1.9-1.1L14.28 3h-4l-.36 2.73a7.4 7.4 0 0 0-1.9 1.1l-2.39-.96-2 3.46 2.02 1.57a7 7 0 0 0 0 2.2l-2.02 1.57 2 3.46 2.39-.96a7.4 7.4 0 0 0 1.9 1.1l.36 2.73h4l.36-2.73a7.4 7.4 0 0 0 1.9-1.1l2.39.96 2-3.46-2.02-1.57A7 7 0 0 0 19 12z" />
         </svg>
     );
 }

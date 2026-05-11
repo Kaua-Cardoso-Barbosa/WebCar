@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from "react";
 
 export const API_URL = "http://localhost:5000";
 
@@ -31,10 +32,87 @@ import AtualizarValores from "./pages/AtualizarValores.jsx";
 import ListarMarcas from "./pages/ListarMarcas.jsx";
 import EditarCliente from "./pages/EditarCliente.jsx";
 import ListaUsuarios from "./pages/ListaUsuarios.jsx";
+import ConfiguracoesSite from "./pages/ConfiguracoesSite.jsx";
+
+const CONFIG_SITE_PADRAO = {
+    corPrimaria: "#2563EB",
+    corSecundaria: "#1d4ed8",
+    corTerciaria: "#0f172a",
+    corFonte: "#111827",
+    fonte: "Inter, Arial, sans-serif",
+};
+
+function normalizarConfiguracoesSite(data = {}) {
+    return {
+        corPrimaria: data.corPrimaria || data.cor_primaria || data.COR_PRIMARIA || CONFIG_SITE_PADRAO.corPrimaria,
+        corSecundaria: data.corSecundaria || data.cor_secundaria || data.COR_SECUNDARIA || CONFIG_SITE_PADRAO.corSecundaria,
+        corTerciaria: data.corTerciaria || data.cor_terciaria || data.COR_TERCIARIA || CONFIG_SITE_PADRAO.corTerciaria,
+        corFonte: data.corFonte || data.cor_fonte || data.COR_FONTE || CONFIG_SITE_PADRAO.corFonte,
+        fonte: data.fonte || data.FONTE || CONFIG_SITE_PADRAO.fonte,
+    };
+}
+
+async function carregarConfiguracoesSite() {
+    const response = await fetch(`${API_URL}/configuracoes_site`, {
+        method: "GET",
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        return CONFIG_SITE_PADRAO;
+    }
+
+    const data = await response.json();
+    return normalizarConfiguracoesSite(data);
+}
+
+function aplicarConfiguracoesSite(configuracoes) {
+    const config = normalizarConfiguracoesSite(configuracoes);
+    const root = document.documentElement;
+
+    root.style.setProperty("--cor-primaria", config.corPrimaria);
+    root.style.setProperty("--cor-secundaria", config.corSecundaria);
+    root.style.setProperty("--cor-terciaria", config.corTerciaria);
+    root.style.setProperty("--cor-principal", config.corPrimaria);
+    root.style.setProperty("--cor-azul-menu", config.corPrimaria);
+    root.style.setProperty("--cor-azul-botao", config.corPrimaria);
+    root.style.setProperty("--cor-azul-acao", config.corSecundaria);
+    root.style.setProperty("--cor-azul-acao-hover", config.corSecundaria);
+    root.style.setProperty("--cor-azul-marinho", config.corSecundaria);
+    root.style.setProperty("--cor-texto-titulo-escuro", config.corTerciaria);
+    root.style.setProperty("--cor-texto-dashboard", config.corTerciaria);
+    root.style.setProperty("--cor-texto-principal", config.corFonte);
+    root.style.setProperty("--fonte-site", config.fonte);
+    document.body.style.fontFamily = config.fonte;
+}
+
+function ScrollToTop() {
+    const { pathname, search } = useLocation();
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }, [pathname, search]);
+
+    return null;
+}
 
 export default function App() {
+    useEffect(() => {
+        async function iniciarConfiguracoesSite() {
+            try {
+                const configuracoes = await carregarConfiguracoesSite();
+                aplicarConfiguracoesSite(configuracoes);
+            } catch {
+                aplicarConfiguracoesSite({});
+            }
+        }
+
+        iniciarConfiguracoesSite();
+    }, []);
+
     return (
         <BrowserRouter>
+            <ScrollToTop />
             <Routes>
 
                 <Route path="/" element={<Home />} />
@@ -166,6 +244,14 @@ export default function App() {
                     element={
                         <RotaProtegida tiposPermitidos={[0]}>
                             <ListarMarcas />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/configuracoes"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <ConfiguracoesSite />
                         </RotaProtegida>
                     }
                 />

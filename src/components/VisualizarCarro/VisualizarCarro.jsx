@@ -79,6 +79,30 @@ function formatarPreco(valor) {
     });
 }
 
+function normalizarDescontoAVista(data = {}) {
+    const valor =
+        data.DESCONTO_A_VISTA ??
+        data.desconto_a_vista ??
+        data.desconto ??
+        data.porcentagem ??
+        0;
+
+    const numero = Number(valor);
+
+    return Number.isFinite(numero) && numero > 0 ? numero : 0;
+}
+
+function calcularValorAVista(valor, descontoAVista) {
+    const preco = Number(valor || 0);
+    const desconto = Number(descontoAVista || 0);
+
+    if (!Number.isFinite(preco) || !Number.isFinite(desconto) || desconto <= 0) {
+        return preco;
+    }
+
+    return preco - (preco * desconto) / 100;
+}
+
 export default function VisualizarCarro() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -94,6 +118,8 @@ export default function VisualizarCarro() {
     const [erroCompra, setErroCompra] = useState("");
     const [gerandoQrCode, setGerandoQrCode] = useState(false);
     const [compraConcluida, setCompraConcluida] = useState(false);
+    const [tempoQrCode, setTempoQrCode] = useState(60);
+    const [descontoAVista, setDescontoAVista] = useState(0);
 
     async function carregarImagensDisponiveis(idVeiculo) {
         if (!idVeiculo) {
@@ -169,6 +195,16 @@ export default function VisualizarCarro() {
 
                 setCarro(veiculo);
                 carregarImagensDisponiveis(veiculo.ID_VEICULO);
+
+                const responseDesconto = await fetch(`${API_URL}/verporcentagem_desconto`, {
+                    method: "GET",
+                    credentials: "include",
+                });
+
+                if (responseDesconto.ok) {
+                    const dataDesconto = await responseDesconto.json();
+                    setDescontoAVista(normalizarDescontoAVista(dataDesconto));
+                }
             } catch {
                 setErro("Erro ao conectar com o servidor.");
             } finally {
@@ -187,12 +223,34 @@ export default function VisualizarCarro() {
         };
     }, [qrCodeUrl]);
 
+    useEffect(() => {
+        if (!modalCompraAberta || !qrCodeUrl || erroCompra || gerandoQrCode || compraConcluida) {
+            return;
+        }
+
+        setTempoQrCode(60);
+
+        const contador = setInterval(() => {
+            setTempoQrCode((tempoAtual) => Math.max(0, tempoAtual - 1));
+        }, 1000);
+
+        const expiracao = setTimeout(() => {
+            fecharCompra();
+        }, 60000);
+
+        return () => {
+            clearInterval(contador);
+            clearTimeout(expiracao);
+        };
+    }, [modalCompraAberta, qrCodeUrl, erroCompra, gerandoQrCode, compraConcluida]);
+
     async function abrirCompra() {
         if (!carro?.ID_VEICULO) return;
 
         try {
             setErroCompra("");
             setCompraConcluida(false);
+            setTempoQrCode(60);
             setGerandoQrCode(true);
             setModalCompraAberta(true);
 
@@ -234,10 +292,11 @@ export default function VisualizarCarro() {
         setModalCompraAberta(false);
         setErroCompra("");
         setCompraConcluida(false);
+        setTempoQrCode(60);
     }
 
     function concluirCompra() {
-        setCompraConcluida(true);
+        fecharCompra();
     }
 
     if (carregando) {
@@ -277,6 +336,8 @@ export default function VisualizarCarro() {
             value: carro.COR || "Nao informado",
         },
     ];
+    const valorAVista = calcularValorAVista(carro.PRECO_VENDA, descontoAVista);
+    const temDescontoAVista = Number(descontoAVista) > 0 && valorAVista < Number(carro.PRECO_VENDA || 0);
 
     return (
         <main className={css.pagina}>
@@ -287,7 +348,6 @@ export default function VisualizarCarro() {
                             Voltar ao catalogo
                         </button>
 
-                        <span className={css.codigo}>WebCar #{carro.ID_VEICULO}</span>
                     </div>
 
                     <div className={css.gridPrincipal}>
@@ -326,8 +386,14 @@ export default function VisualizarCarro() {
                             <h1>{carro.MARCA} {carro.MODELO}</h1>
 
                             <div className={css.precoBox}>
-                                <span>Preco anunciado</span>
-                                <strong>{formatarPreco(carro.PRECO_VENDA)}</strong>
+                                <span>Valor no Pix a vista</span>
+                                {temDescontoAVista && (
+                                    <del>{formatarPreco(carro.PRECO_VENDA)}</del>
+                                )}
+                                <strong>{formatarPreco(valorAVista)}</strong>
+                                {temDescontoAVista && (
+                                    <small>{descontoAVista}% de desconto aplicado</small>
+                                )}
                             </div>
 
                             <div className={css.resumoRapido}>
@@ -352,10 +418,6 @@ export default function VisualizarCarro() {
                             >
                                 Comprar
                             </button>
-
-                            <p className={css.avisoCompra}>
-                                Gere o QR Code Pix para simular a compra deste veiculo. Este fluxo e apenas para teste.
-                            </p>
 
                             <div className={css.garantias}>
                                 <span><i className="bi bi-qr-code"></i> Pagamento via Pix</span>
@@ -403,14 +465,11 @@ export default function VisualizarCarro() {
                                 <span className={css.etiquetaEscura}>Pagamento Pix</span>
                                 <h3>Finalize sua compra</h3>
                             </div>
-                            <button type="button" className={css.fecharIcone} onClick={fecharCompra}>
-                                ×
-                            </button>
                         </div>
 
                         <div className={css.resumoModal}>
                             <strong>{carro.MARCA} {carro.MODELO}</strong>
-                            <span>{formatarPreco(carro.PRECO_VENDA)}</span>
+                            <span>{formatarPreco(valorAVista)}</span>
                         </div>
 
                         <div className={css.qrCodeArea}>
@@ -421,7 +480,12 @@ export default function VisualizarCarro() {
                             )}
 
                             {!gerandoQrCode && qrCodeUrl && !erroCompra && (
-                                <img src={qrCodeUrl} alt="QR Code Pix para pagamento" />
+                                <>
+                                    <img src={qrCodeUrl} alt="QR Code Pix para pagamento" />
+                                    <p className={css.expiracaoQr}>
+                                        QR Code expira em {tempoQrCode}s
+                                    </p>
+                                </>
                             )}
 
                             {compraConcluida && (
@@ -432,9 +496,6 @@ export default function VisualizarCarro() {
                         </div>
 
                         <div className={css.modalAcoes}>
-                            <button type="button" className={css.botaoFechar} onClick={fecharCompra}>
-                                Fechar
-                            </button>
                             <button
                                 type="button"
                                 className={css.botaoConcluir}

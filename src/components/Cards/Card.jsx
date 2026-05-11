@@ -33,7 +33,18 @@ function tentarProximaImagem(e, imagens) {
     }
 }
 
-export default function Card({ idVeiculo, modelo, valor, combustivel, ano, nome, km, cambio }) {
+function calcularValorAVista(valor, descontoAVista) {
+    const preco = Number(valor || 0);
+    const desconto = Number(descontoAVista || 0);
+
+    if (!Number.isFinite(preco) || !Number.isFinite(desconto) || desconto <= 0) {
+        return preco;
+    }
+
+    return preco - (preco * desconto) / 100;
+}
+
+export default function Card({ idVeiculo, modelo, valor, combustivel, ano, nome, km, cambio, descontoAVista = 0 }) {
     const navigate = useNavigate();
     const imagens = imagensVeiculo(idVeiculo);
 
@@ -64,6 +75,8 @@ export default function Card({ idVeiculo, modelo, valor, combustivel, ano, nome,
 
     const combustivelFormatado = textoCombustivel(combustivel);
     const cambioFormatado = textoCambio(cambio);
+    const valorPix = calcularValorAVista(valor, descontoAVista);
+    const temDescontoAVista = Number(descontoAVista) > 0 && valorPix < Number(valor || 0);
 
     return (
         <div
@@ -88,7 +101,13 @@ export default function Card({ idVeiculo, modelo, valor, combustivel, ano, nome,
 
             <div className={css.topo}>
                 <h3>{nome} {modelo}</h3>
-                <span className={css.preco}>{formatarPreco(valor)}</span>
+                {temDescontoAVista && (
+                    <span className={css.precoOriginal}>{formatarPreco(valor)}</span>
+                )}
+                <span className={css.preco}>{formatarPreco(valorPix)}</span>
+                {temDescontoAVista && (
+                    <span className={css.precoPix}>no Pix à vista</span>
+                )}
             </div>
 
             <p className={css.info}>

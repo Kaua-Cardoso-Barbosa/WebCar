@@ -1,5 +1,9 @@
 :root {
+  --cor-primaria: #2563EB;
+  --cor-secundaria: #1d4ed8;
+  --cor-terciaria: #0f172a;
   --cor-principal: #2563EB;
+  --fonte-site: Inter, Arial, sans-serif;
   --cor-logo-web: #0069B2;
   --cor-logo2-web: #696D72;
   --cor-fundo: #f6f6f8;
@@ -214,4 +218,5 @@ a {
 }
 body {
   overflow-x: hidden;
+  font-family: var(--fonte-site);
 }

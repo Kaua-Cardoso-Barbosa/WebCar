@@ -46,9 +46,7 @@
     margin-bottom: 28px;
     padding: 30px;
     border-radius: 8px;
-    background:
-        linear-gradient(90deg, var(--overlay-escuro-96), var(--overlay-azul-90)),
-        url("/Section.png") right center / auto 100% no-repeat;
+    background: linear-gradient(90deg, var(--overlay-escuro-96), var(--overlay-azul-90));
     box-shadow: 0 18px 44px var(--sombra-escura-14);
 }
 

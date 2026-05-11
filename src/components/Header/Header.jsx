@@ -1,6 +1,32 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import css from "./Header.module.css";
+import { API_URL } from "../../App";
+
+const LOGO_PADRAO = "/Logo.png";
+
+function urlArquivo(valor, fallback) {
+    if (!valor) return fallback;
+    if (valor.startsWith("http") || valor.startsWith("data:") || valor.startsWith("blob:") || valor.startsWith("/")) {
+        return valor;
+    }
+
+    return `${API_URL}/${valor.replace(/^\/+/, "")}`;
+}
+
+async function carregarLogoSite() {
+    const response = await fetch(`${API_URL}/configuracoes_site`, {
+        method: "GET",
+        credentials: "include",
+    });
+
+    if (!response.ok) {
+        return LOGO_PADRAO;
+    }
+
+    const data = await response.json();
+    return urlArquivo(data.logo_url || data.LOGO_URL || data.logo || data.LOGO, LOGO_PADRAO);
+}
 
 export default function Header({ busca = "", setBusca = null }) {
     const location = useLocation();
@@ -13,6 +39,7 @@ export default function Header({ busca = "", setBusca = null }) {
     const usuarioInterno = tipoNumero === 0 || tipoNumero === 1;
     const linkLogo = tipoNumero === 0 ? "/dashboard" : tipoNumero === 1 ? "/restrita-vendedor" : "/";
     const [buscaLocal, setBuscaLocal] = useState("");
+    const [logoUrl, setLogoUrl] = useState(LOGO_PADRAO);
     const valorBusca = setBusca ? busca : buscaLocal;
 
     function handleBuscaChange(e) {
@@ -41,6 +68,25 @@ export default function Header({ busca = "", setBusca = null }) {
 
         navigate("/login");
     };
+
+    useEffect(() => {
+        async function buscarLogo() {
+            try {
+                setLogoUrl(await carregarLogoSite());
+            } catch {
+                setLogoUrl(LOGO_PADRAO);
+            }
+        }
+
+        buscarLogo();
+
+        function atualizar(e) {
+            setLogoUrl(e.detail?.logoUrl || LOGO_PADRAO);
+        }
+
+        window.addEventListener("webcar:configuracoes-site", atualizar);
+        return () => window.removeEventListener("webcar:configuracoes-site", atualizar);
+    }, []);
 
     useEffect(() => {
         const offcanvasElement = document.getElementById("offcanvasNavbar");
@@ -73,7 +119,7 @@ export default function Header({ busca = "", setBusca = null }) {
                             to={linkLogo}
                         >
                             <img
-                                src="/Logo.png"
+                                src={logoUrl}
                                 alt="Logo"
                                 width="60"
                                 height="40"
@@ -104,7 +150,7 @@ export default function Header({ busca = "", setBusca = null }) {
                                         to={linkLogo}
                                     >
                                         <img
-                                            src="/Logo.png"
+                                            src={logoUrl}
                                             alt="Logo"
                                             width="60"
                                             height="40"

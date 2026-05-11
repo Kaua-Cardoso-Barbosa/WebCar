@@ -7,9 +7,50 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { API_URL } from "../App";
 
+function veiculoEstaDisponivel(carro) {
+    if (!carro) return false;
+
+    const status = carro.STATUS ?? carro.status ?? carro.SITUACAO ?? carro.situacao;
+    const vendido = carro.VENDIDO ?? carro.vendido ?? carro.ID_VENDA ?? carro.id_venda;
+    const disponibilidade = carro.DISPONIBILIDADE ?? carro.disponibilidade ?? carro.ESTADO ?? carro.estado;
+
+    if (vendido !== undefined && vendido !== null && String(vendido) !== "0" && String(vendido) !== "") {
+        return false;
+    }
+
+    const textoStatus = String(status ?? disponibilidade ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
+    if (textoStatus.includes("vend") || textoStatus.includes("inativo") || textoStatus.includes("indisponivel")) {
+        return false;
+    }
+
+    if (status !== undefined && status !== null && status !== "") {
+        return Number(status) === 0;
+    }
+
+    return true;
+}
+
+function normalizarDescontoAVista(data = {}) {
+    const valor =
+        data.DESCONTO_A_VISTA ??
+        data.desconto_a_vista ??
+        data.desconto ??
+        data.porcentagem ??
+        0;
+
+    const numero = Number(valor);
+
+    return Number.isFinite(numero) && numero > 0 ? numero : 0;
+}
+
 export default function Home() {
     const [carros, setCarros] = useState([]);
     const [erro, setErro] = useState("");
+    const [descontoAVista, setDescontoAVista] = useState(0);
 
     useEffect(() => {
         async function buscarDados() {
@@ -30,9 +71,19 @@ export default function Home() {
                 }
 
                 const data = await response.json();
-                const lista = data.veiculos || data;
+                const lista = (data.veiculos || data).filter(veiculoEstaDisponivel);
 
                 setCarros(lista.slice(0, 4));
+
+                const responseDesconto = await fetch(`${API_URL}/verporcentagem_desconto`, {
+                    method: "GET",
+                    credentials: "include",
+                });
+
+                if (responseDesconto.ok) {
+                    const dataDesconto = await responseDesconto.json();
+                    setDescontoAVista(normalizarDescontoAVista(dataDesconto));
+                }
             } catch (error) {
                 setErro("Erro ao conectar com o servidor.");
                 console.log(error);
@@ -80,6 +131,7 @@ export default function Home() {
                                 nome={carro.MARCA}
                                 km={carro.KM}
                                 cambio={carro.CAMBIO}
+                                descontoAVista={descontoAVista}
                             />
                         ))}
                     </div>
