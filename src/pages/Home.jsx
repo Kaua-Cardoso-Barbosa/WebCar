@@ -3,7 +3,7 @@ import Footer from "../components/Footer/Footer.jsx";
 import Banner from "../components/Banner/Banner.jsx";
 import css from "./Home.module.css";
 import Card from "../components/Cards/Card.jsx";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { API_URL } from "../App";
 
@@ -46,29 +46,32 @@ export default function Home() {
         <>
             <Header />
 
-            <Banner />
+            <main className={css.home}>
+                <Banner />
 
-            <div style={{ marginTop: "70px" }} className="container align-content-center">
-                <div className="mb-4">
-                    <h4 className="fw-bold">Veículos em destaque</h4>
-                    <p className="text-muted">
-                        Descubra os carros de maior destaque do nosso catálogo.
-                    </p>
-                </div>
+                <section className={css.destaques}>
+                    <div className={css.cabecalhoSecao}>
+                        <div>
+                            <span className={css.kicker}>Selecionados para você</span>
+                            <h2>Veículos em destaque</h2>
+                            <p>Confira opções com fotos, dados essenciais e agendamento direto para visita.</p>
+                        </div>
 
+                        <Link to="/catalogo" className={css.linkCatalogo}>
+                            Ver todos
+                        </Link>
+                    </div>
 
-                <div style={{ marginBottom: "70px" }} className="row g-4 justify-content-center">
-                    {erro && <p className="text-center text-danger fw-semibold">{erro}</p>}
+                    {erro && <p className={css.erro}>{erro}</p>}
 
                     {!erro && carros.length === 0 && (
-                        <p className="text-center text-muted fw-semibold">
-                            Nenhum veículo em destaque no momento.
-                        </p>
+                        <p className={css.vazio}>Nenhum veículo em destaque no momento.</p>
                     )}
 
-                    {carros.map((carro) => (
-                        <div className="col-12 col-sm-6 col-md-3" key={carro.ID_VEICULO || carro.id}>
+                    <div className={css.gridDestaques}>
+                        {carros.map((carro) => (
                             <Card
+                                key={carro.ID_VEICULO || carro.id}
                                 idVeiculo={carro.ID_VEICULO}
                                 modelo={carro.MODELO}
                                 valor={carro.PRECO_VENDA}
@@ -78,77 +81,43 @@ export default function Home() {
                                 km={carro.KM}
                                 cambio={carro.CAMBIO}
                             />
-                        </div>
-                    ))}
+                        ))}
+                    </div>
+                </section>
 
-                </div>
-            </div>
+                <section className={css.confianca}>
+                    <div className={css.confiancaTexto}>
+                        <span className={css.kickerClaro}>Por que comprar pela WebCar</span>
+                        <h2>Uma experiência pensada para comprar sem pressa e sem dúvida.</h2>
+                        <p>
+                            Veja informações importantes antes da visita, compare os veículos com calma e fale com a equipe para confirmar disponibilidade, condições e próximos passos.
+                        </p>
 
-            <section className={css.azul}>
-                <img className={css.imagem} src="/Container.png" />
-
-                <div className={"cta mt-5 " + css.azul}>
-
-                    <div className="row align-items-center pt-5 m-5">
-
-                        <div className="col-md-6 pt-5 text-start mb-3">
-                            <h2 style={{ fontWeight: "bold" }}>
-                                Pronto para comprar seu carro?
-                            </h2>
-
-                            <p className={css.letrafina}>
-                                Mais de 2.500 concessionárias e vendedores utilizam o
-                                WebCar para gerenciar seus estoques e fechar negócios
-                                mais rápido com ferramentas de precificação inteligente.
-                            </p>
-
-                            <Link to={"/catalogo"}>
-                                <button className={css.botao}>
-                                    Compre Agora
-                                </button>
-                            </Link>
-                        </div>
-
-                        <div className="col-md-6 pt-5">
-
-                            <div className="row g-3">
-
-                                <div className="col-12 col-md-6">
-                                    <div className={"stat-card " + css.fundobranquinho}>
-                                        <h4 style={{marginTop:"15px"}}>45%</h4>
-                                        <p style={{marginTop:"15px"}}>Vendas mais rápidas</p>
-                                    </div>
-                                </div>
-
-                                <div className="col-12 col-md-6">
-                                    <div className={"stat-card " + css.fundobranquinho}>
-                                        <h4 style={{marginTop:"15px"}}>24/7</h4>
-                                        <p style={{marginTop:"15px"}}>Monitoramento</p>
-                                    </div>
-                                </div>
-
-                                <div className="col-12 col-md-6">
-                                    <div className={"stat-card " + css.fundobranquinho}>
-                                        <h4 style={{marginTop:"15px"}}>Ilimitado</h4>
-                                        <p style={{marginTop:"15px"}}>Anúncios</p>
-                                    </div>
-                                </div>
-
-                                <div className="col-12 col-md-6">
-                                    <div className={"stat-card " + css.fundobranquinho}>
-                                        <h4 style={{marginTop:"15px"}}>Seguro</h4>
-                                        <p style={{marginTop:"15px"}}>Proteção de dados</p>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                        </div>
-
+                        <Link to="/catalogo" className={css.botaoClaro}>
+                            Encontrar meu veículo
+                        </Link>
                     </div>
 
-                </div>
-            </section>
+                    <div className={css.metricas}>
+                        <div>
+                            <strong>Fotos reais</strong>
+                            <span>Anúncios com imagem e dados do estoque.</span>
+                        </div>
+                        <div>
+                            <strong>Visita marcada</strong>
+                            <span>Agende antes de ir até a loja.</span>
+                        </div>
+                        <div>
+                            <strong>Compra assistida</strong>
+                            <span>Atendimento para tirar dúvidas.</span>
+                        </div>
+                        <div>
+                            <strong>Catálogo claro</strong>
+                            <span>Filtros e detalhes para decidir melhor.</span>
+                        </div>
+                    </div>
+                </section>
+            </main>
 
             <Footer />
         </>

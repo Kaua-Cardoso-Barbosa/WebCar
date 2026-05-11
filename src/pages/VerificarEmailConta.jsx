@@ -2,7 +2,7 @@ import css from './Login.module.css';
 import Header from "../components/Header/Header.jsx";
 import Footer from "../components/Footer/Footer.jsx";
 import { useState} from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Sucesso from "../components/Sucesso/Sucesso.jsx";
 import { API_URL } from "../App";
 
@@ -14,16 +14,16 @@ export default function VerificarEmailConta() {
     const [mensagemSucesso, setMensagemSucesso] = useState("");
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     async function avancar(e) {
         e.preventDefault();
         setErro("");
 
-        const email = localStorage.getItem("emailVerificacao");
+        const email = localStorage.getItem("emailVerificacao") || location.state?.email;
 
         if (!email) {
             setErro("Email não encontrado. Faça o cadastro novamente.");
-            navigate("/cadastro");
             return;
         }
 
@@ -98,7 +98,7 @@ export default function VerificarEmailConta() {
 
                         {erro && (
                             <p style={{
-                                color: "#ff4d4f",
+                                color: "var(--cor-erro-alerta)",
                                 marginTop: "10px",
                                 textAlign: "center",
                                 fontWeight: "500"

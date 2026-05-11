@@ -284,7 +284,7 @@ export default function VisualizarCarro() {
                                 className={css.comprar}
                                 onClick={() => navigate("/Agendar", { state: { carro } })}
                             >
-                                Comprar
+                                Agendar visita
                             </button>
 
                             <p className={css.avisoCompra}>

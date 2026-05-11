@@ -6,33 +6,35 @@ export default function SidebarMenu() {
     const location = useLocation();
     const [open, setOpen] = useState(false);
 
+    function fecharMenu() {
+        setOpen(false);
+    }
+
     return (
         <>
-            {/* BOTÃO HAMBURGUER */}
-            <button className={styles.hamburger} onClick={() => setOpen(true)}>
+            <button
+                type="button"
+                className={styles.hamburger}
+                onClick={() => setOpen(true)}
+                aria-label="Abrir menu"
+            >
                 ☰
             </button>
 
-            {/* OVERLAY */}
             {open && (
                 <div
                     className={styles.overlay}
-                    onClick={() => setOpen(false)}
+                    onClick={fecharMenu}
+                    aria-hidden="true"
                 />
             )}
 
             <aside className={`${styles.sidebar} ${open ? styles.open : ""}`}>
-
-                {/* BOTÃO FECHAR */}
-                <button className={styles.close} onClick={() => setOpen(false)}>
-                    ✕
-                </button>
-
                 <nav className={styles.menu}>
                     <Link
                         to="/dashboard"
                         className={`${styles.item} ${location.pathname === "/dashboard" ? styles.active : ""}`}
-                        onClick={() => setOpen(false)}
+                        onClick={fecharMenu}
                     >
                         <DashboardIcon />
                         <span>Dashboard</span>
@@ -41,7 +43,7 @@ export default function SidebarMenu() {
                     <Link
                         to="/garagem"
                         className={`${styles.item} ${location.pathname === "/garagem" ? styles.active : ""}`}
-                        onClick={() => setOpen(false)}
+                        onClick={fecharMenu}
                     >
                         <GarageIcon />
                         <span>Garagem</span>
@@ -50,38 +52,35 @@ export default function SidebarMenu() {
                     <Link
                         to="/servicos"
                         className={`${styles.item} ${location.pathname === "/servicos" ? styles.active : ""}`}
-                        onClick={() => setOpen(false)}
+                        onClick={fecharMenu}
                     >
                         <ServicesIcon />
                         <span>Serviços</span>
                     </Link>
 
-                    <Link to="/" className={styles.item}>
+                    <Link to="/" className={styles.item} onClick={fecharMenu}>
                         <SalesIcon />
                         <span>Vendas</span>
                     </Link>
 
-                    <Link to="/" className={styles.item}>
+                    <Link
+                        to="/ListaUsuarios"
+                        className={`${styles.item} ${location.pathname === "/ListaUsuarios" ? styles.active : ""}`}
+                        onClick={fecharMenu}
+                    >
                         <UserIcon />
                         <span>Usuários</span>
                     </Link>
+
+                    <Link to="/listarmarcas" className={styles.item} onClick={fecharMenu}>
+                        <span className={styles.icon}>⊕</span>
+                        <span>Marcas</span>
+                    </Link>
                 </nav>
-
-                <Link to="/listarmarcas" className={styles.item}>
-                    <span className={styles.icon}>⊕</span>
-                    <span>Marcas</span>
-                </Link>
-
-                <Link to="/Cadastroveiculo" className={styles.botaoAdicionar}>
-                    <span>＋</span>
-                    Adicione veículos
-                </Link>
             </aside>
         </>
     );
 }
-
-/* ÍCONES (mantive os seus) */
 
 function DashboardIcon() {
     return (

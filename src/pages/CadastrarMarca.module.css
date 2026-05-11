@@ -1,13 +1,13 @@
 .layout {
     display: flex;
     min-height: calc(100vh - 80px);
-    background: #f5f7fb;
+    background: var(--cor-fundo-admin);
 }
 
 .paginaCadastro {
     flex: 1;
     padding: 24px;
-    color: #111827;
+    color: var(--cor-texto-principal);
 }
 
 .areaCadastro {
@@ -22,23 +22,23 @@
 .tituloCadastro {
     font-size: 30px;
     font-weight: 800;
-    color: #111827;
+    color: var(--cor-texto-principal);
     margin: 0;
 }
 
 .subtituloCadastro {
     font-size: 15px;
-    color: #64748b;
+    color: var(--cor-texto-muted);
     margin: 6px 0 0;
     line-height: 1.5;
 }
 
 .cardCadastro {
-    background: #ffffff;
-    border: 1px solid #dfe5ef;
+    background: var(--cor-superficie);
+    border: 1px solid var(--cor-borda-painel);
     border-radius: 10px;
     padding: 28px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px var(--sombra-preta-05);
 }
 
 .formularioCadastro {
@@ -55,32 +55,32 @@
 .grupoCampo label {
     font-weight: 700;
     margin-bottom: 8px;
-    color: #111827;
+    color: var(--cor-texto-principal);
 }
 
 .inputCadastro {
     width: 100%;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--cor-borda-cinza);
     border-radius: 8px;
     padding: 13px 14px;
     font-size: 15px;
-    color: #111827;
+    color: var(--cor-texto-principal);
     outline: none;
-    background: #ffffff;
+    background: var(--cor-superficie);
 }
 
 .inputCadastro::placeholder {
-    color: #9ca3af;
+    color: var(--cor-placeholder-claro);
 }
 
 .inputCadastro:focus {
-    border-color: #2563eb;
+    border-color: var(--cor-principal);
 }
 
 .uploadArea {
-    border: 2px dashed #cbd5e1;
+    border: 2px dashed var(--cor-borda-azulada);
     border-radius: 10px;
-    background: #f8fafc;
+    background: var(--cor-fundo-input);
     width: 100%;
     height: 180px;
     position: relative;
@@ -91,8 +91,8 @@
 }
 
 .uploadArea:hover {
-    border-color: #2563eb;
-    background: #f3f7ff;
+    border-color: var(--cor-principal);
+    background: var(--cor-azul-fundo-extra-claro);
 }
 
 .containerPreview {
@@ -105,7 +105,7 @@
 }
 
 .uploadTexto {
-    color: #475569;
+    color: var(--cor-texto-neutro-600);
     font-size: 14px;
     font-weight: 700;
 }
@@ -146,27 +146,27 @@
 }
 
 .cancelar {
-    background: #f1f5f9;
-    color: #111827;
+    background: var(--cor-fundo-neutro);
+    color: var(--cor-texto-principal);
 }
 
 .cancelar:hover {
-    background: #e2e8f0;
+    background: var(--cor-borda-suave);
 }
 
 .botaoCadastro {
-    background: #2563eb;
-    color: #ffffff;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+    background: var(--cor-principal);
+    color: var(--cor-superficie);
+    box-shadow: 0 4px 10px var(--sombra-principal-25);
 }
 
 .botaoCadastro:hover {
-    background: #1d4ed8;
+    background: var(--cor-azul-acao);
 }
 
 .erro {
-    background: #fee2e2;
-    color: #991b1b;
+    background: var(--cor-erro-fundo);
+    color: var(--cor-erro-texto);
     font-weight: 700;
     padding: 12px 14px;
     border-radius: 8px;

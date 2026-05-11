@@ -4,7 +4,7 @@
     justify-content: center;
     align-items: center;
     padding: 40px 20px;
-    background-color: #f8f9fa;
+    background-color: var(--cor-fundo-bootstrap);
 }
 
 .card {
@@ -25,12 +25,12 @@
     font-size: 32px;
     margin-top: 10px;
     margin-bottom: 15px;
-    color: #212529;
+    color: var(--cor-texto-bootstrap);
 }
 
 .texto {
     font-size: 17px;
-    color: #6c757d;
+    color: var(--cor-texto-bootstrap-muted);
     margin-bottom: 30px;
     line-height: 1.5;
 }
@@ -39,7 +39,7 @@
     display: inline-block;
     text-decoration: none;
     background-color: blue;
-    color: white;
+    color: var(--cor-superficie);
     padding: 12px 24px;
     border-radius: 10px;
     font-size: 16px;

@@ -1,44 +1,198 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
-
-.fonte{
-    font-family: 'Inter', regular;
-}
-
 .banner {
-    height: 330px;
-    min-height: 330px;
+    width: min(1180px, calc(100% - 32px));
+    margin: 28px auto 0;
 }
 
-.banner-img {
+.bannerMedia {
+    min-height: 430px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--cor-texto-titulo-escuro);
+    box-shadow: 0 24px 60px var(--sombra-escura-18);
+}
+
+.bannerImg {
     width: 100%;
     height: 100%;
+    min-height: 430px;
     object-fit: cover;
     display: block;
 }
 
-.banner-overlay {
+.bannerOverlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-            to right,
-            rgba(0, 0, 0, 0.8),
-            rgba(0, 0, 0, 0.35)
-    );
+    background:
+        linear-gradient(90deg, var(--overlay-hero-94) 0%, var(--overlay-hero-76) 42%, var(--overlay-hero-22) 100%),
+        linear-gradient(0deg, var(--overlay-escuro-36), var(--sombra-escura-08));
 }
 
-.banner-content {
-    max-width: 700px;
+.bannerContent {
+    position: absolute;
+    top: 50%;
+    left: clamp(22px, 5vw, 64px);
+    transform: translateY(-50%);
+    max-width: 620px;
+    color: var(--cor-superficie);
     z-index: 2;
 }
 
-.banner-text {
-    max-width: 650px;
-    color: #e9ecef;
+.selo {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: var(--sombra-principal-18);
+    border: 1px solid var(--borda-azul-clara-transparente);
+    color: var(--cor-azul-texto-claro);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
 }
 
-@media (max-width: 765px) {
-    .tiratexto{
-        display: none;
+.bannerContent h1 {
+    margin: 18px 0 16px;
+    max-width: 580px;
+    color: var(--cor-superficie);
+    font-size: clamp(36px, 5vw, 62px);
+    line-height: 1.02;
+    font-weight: 900;
+}
+
+.bannerContent p {
+    margin: 0;
+    max-width: 540px;
+    color: var(--cor-azul-fundo);
+    font-size: 18px;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+.acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.primario,
+.secundario {
+    min-height: 48px;
+    padding: 0 20px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.primario {
+    background: var(--cor-principal);
+    color: var(--cor-superficie);
+    box-shadow: 0 14px 28px var(--sombra-principal-34);
+}
+
+.secundario {
+    border: 1px solid var(--branco-transparente-34);
+    color: var(--cor-superficie);
+    background: var(--branco-transparente-08);
+}
+
+.provas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.provas span {
+    color: var(--cor-azul-fundo-ciano);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.provas span::before {
+    content: "";
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 8px;
+    border-radius: 999px;
+    background: var(--cor-sucesso-claro);
+}
+
+.painel {
+    position: absolute;
+    right: 28px;
+    bottom: 28px;
+    z-index: 2;
+    width: min(310px, calc(100% - 56px));
+    padding: 18px;
+    border-radius: 8px;
+    background: var(--branco-transparente-94);
+    border: 1px solid var(--branco-transparente-72);
+    box-shadow: 0 18px 34px var(--sombra-escura-18);
+}
+
+.painel strong {
+    display: block;
+    color: var(--cor-texto-titulo-escuro);
+    font-size: 16px;
+    font-weight: 900;
+    margin-bottom: 6px;
+}
+
+.painel span {
+    display: block;
+    color: var(--cor-texto-neutro-600);
+    font-size: 13px;
+    line-height: 1.5;
+    font-weight: 600;
+}
+
+@media (max-width: 760px) {
+    .banner {
+        width: min(100% - 20px, 1180px);
+        margin-top: 18px;
+    }
+
+    .bannerMedia,
+    .bannerImg {
+        min-height: 540px;
+    }
+
+    .bannerOverlay {
+        background: linear-gradient(180deg, var(--overlay-hero-92) 0%, var(--overlay-hero-68) 58%, var(--overlay-hero-90) 100%);
+    }
+
+    .bannerContent {
+        top: 34px;
+        left: 20px;
+        right: 20px;
+        transform: none;
+    }
+
+    .bannerContent p {
+        font-size: 16px;
+    }
+
+    .acoes {
+        width: 100%;
+    }
+
+    .primario,
+    .secundario {
+        flex: 1 1 150px;
+    }
+
+    .painel {
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+        width: auto;
     }
 }

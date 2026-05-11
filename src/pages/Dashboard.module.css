@@ -1,7 +1,7 @@
 .layout {
     display: flex;
     min-height: calc(100vh - 70px);
-    background: #f6f7fb;
+    background: var(--cor-fundo-dashboard);
 }
 
 .dashboard {
@@ -12,7 +12,7 @@
 .titulo {
     font-size: 24px;
     font-weight: 800;
-    color: #111827;
+    color: var(--cor-texto-principal);
     margin-bottom: 55px;
 }
 
@@ -25,16 +25,16 @@
 
 .card {
     height: 132px;
-    background: #fff;
-    border: 1px solid #dfe5ef;
+    background: var(--cor-superficie);
+    border: 1px solid var(--cor-borda-painel);
     border-radius: 12px;
     padding: 26px 24px;
-    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04);
+    box-shadow: 0 2px 4px var(--sombra-escura-04);
 }
 
 .card p {
     margin: 0 0 12px;
-    color: #667085;
+    color: var(--cor-texto-muted-forte);
     font-size: 15px;
 }
 
@@ -42,7 +42,7 @@
     margin: 0;
     font-size: 26px;
     font-weight: 800;
-    color: #111827;
+    color: var(--cor-texto-principal);
 }
 
 .cardTop {
@@ -56,8 +56,8 @@
     height: 38px;
     border: none;
     border-radius: 9px;
-    background: #e8efff;
-    color: #2563eb;
+    background: var(--cor-azul-fundo-botao);
+    color: var(--cor-principal);
     font-size: 28px;
     line-height: 1;
     cursor: pointer;
@@ -66,8 +66,8 @@
 .chartSection {
     width: 632px;
     height: 378px;
-    background: #fff;
-    border: 1px solid #dfe5ef;
+    background: var(--cor-superficie);
+    border: 1px solid var(--cor-borda-painel);
     border-radius: 12px;
     padding: 28px 24px 20px;
     margin: 0 auto 28px;
@@ -77,7 +77,7 @@
     margin: 0;
     font-size: 18px;
     font-weight: 800;
-    color: #111827;
+    color: var(--cor-texto-principal);
 }
 
 .chart {
@@ -97,14 +97,14 @@
 
 .barGroup span {
     margin-top: 10px;
-    color: #667085;
+    color: var(--cor-texto-muted-forte);
     font-size: 11px;
     font-weight: 700;
 }
 
 .bar {
     width: 78px;
-    background: #cfdaf6;
+    background: var(--cor-azul-grafico);
     border-radius: 8px 8px 0 0;
 }
 
@@ -113,14 +113,14 @@
 .bar3 { height: 193px; }
 .bar4 {
     height: 232px;
-    background: #3867eb;
+    background: var(--cor-azul-menu);
 }
 .bar5 { height: 116px; }
 .bar6 { height: 204px; }
 
 .tableSection {
-    background: white;
-    border: 1px solid #dfe5ef;
+    background: var(--cor-superficie);
+    border: 1px solid var(--cor-borda-painel);
     border-radius: 12px;
     overflow: hidden;
 }
@@ -131,12 +131,12 @@
 }
 
 .tableSection thead {
-    background: #f8fafc;
+    background: var(--cor-fundo-input);
 }
 
 .tableSection th {
     padding: 18px 24px;
-    color: #667085;
+    color: var(--cor-texto-muted-forte);
     font-size: 12px;
     font-weight: 800;
     text-align: left;
@@ -144,15 +144,15 @@
 
 .tableSection td {
     padding: 18px 24px;
-    border-top: 1px solid #edf1f7;
-    color: #111827;
+    border-top: 1px solid var(--cor-divisor);
+    color: var(--cor-texto-principal);
     font-size: 15px;
     font-weight: 700;
 }
 
 .actionBtn {
     border: none;
-    background: transparent;
+    background: var(--cor-transparente);
     cursor: pointer;
 }
 

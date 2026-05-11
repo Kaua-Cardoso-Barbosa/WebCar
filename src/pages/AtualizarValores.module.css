@@ -1,13 +1,13 @@
 .layout {
     display: flex;
     min-height: calc(100vh - 80px);
-    background: #f5f7fb;
+    background: var(--cor-fundo-admin);
 }
 
 .main {
     flex: 1;
     padding: 24px;
-    color: #111827;
+    color: var(--cor-texto-principal);
 }
 
 .topo {
@@ -18,28 +18,28 @@
     font-size: 30px;
     font-weight: 800;
     margin: 0;
-    color: #111827;
+    color: var(--cor-texto-principal);
 }
 
 .topo p {
     margin-top: 6px;
-    color: #64748b;
+    color: var(--cor-texto-muted);
     font-size: 15px;
 }
 
 .card {
-    background: white;
-    border: 1px solid #dfe5ef;
+    background: var(--cor-superficie);
+    border: 1px solid var(--cor-borda-painel);
     border-radius: 10px;
     padding: 28px;
     max-width: 720px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px var(--sombra-preta-05);
 }
 
 .card h2 {
     font-size: 20px;
     margin-bottom: 22px;
-    color: #111827;
+    color: var(--cor-texto-principal);
 }
 
 .campo {
@@ -51,28 +51,28 @@
 .campo label {
     font-weight: 700;
     margin-bottom: 8px;
-    color: #111827;
+    color: var(--cor-texto-principal);
 }
 
 .campo input,
 .campo select {
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--cor-borda-cinza);
     border-radius: 8px;
     padding: 13px 14px;
     font-size: 15px;
     outline: none;
-    background: white;
-    color: #111827;
+    background: var(--cor-superficie);
+    color: var(--cor-texto-principal);
 }
 
 .campo input:focus,
 .campo select:focus {
-    border-color: #2563eb;
+    border-color: var(--cor-principal);
 }
 
 .aviso {
-    background: #eff6ff;
-    color: #1d4ed8;
+    background: var(--cor-azul-fundo-claro);
+    color: var(--cor-azul-acao);
     padding: 13px 15px;
     border-radius: 8px;
     font-weight: 600;
@@ -88,8 +88,8 @@
 
 .cancelar {
     border: none;
-    background: #f1f5f9;
-    color: #111827;
+    background: var(--cor-fundo-neutro);
+    color: var(--cor-texto-principal);
     padding: 12px 22px;
     border-radius: 8px;
     font-weight: 700;
@@ -98,8 +98,8 @@
 
 .salvar {
     border: none;
-    background: #2563eb;
-    color: white;
+    background: var(--cor-principal);
+    color: var(--cor-superficie);
     padding: 12px 22px;
     border-radius: 8px;
     font-weight: 700;
@@ -120,11 +120,11 @@
 }
 
 .sucesso {
-    background: #dcfce7;
-    color: #166534;
+    background: var(--cor-sucesso-fundo);
+    color: var(--cor-sucesso-texto);
 }
 
 .erro {
-    background: #fee2e2;
-    color: #991b1b;
+    background: var(--cor-erro-fundo);
+    color: var(--cor-erro-texto);
 }

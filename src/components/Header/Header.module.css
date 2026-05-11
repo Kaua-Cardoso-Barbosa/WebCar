@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 .header {
-    background: #ffffff;
-    border-bottom: 1px solid #e6eaf0;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    background: var(--cor-superficie);
+    border-bottom: 1px solid var(--cor-borda-card-suave);
+    box-shadow: 0 1px 2px var(--sombra-escura-04);
     font-family: "Inter", sans-serif;
 }
 
@@ -19,7 +19,7 @@
 }
 
 .header :global(.nav-link) {
-    color: #475569;
+    color: var(--cor-texto-neutro-600);
     font-size: 14px;
     font-weight: 700;
     padding: 8px 4px;
@@ -27,22 +27,22 @@
 }
 
 .header :global(.nav-link:hover) {
-    color: #2563eb;
+    color: var(--cor-principal);
 }
 
 .corFundo {
-    background: #2563eb !important;
+    background: var(--cor-principal) !important;
     border: none !important;
-    color: #ffffff !important;
+    color: var(--cor-superficie) !important;
     padding: 10px 18px;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 700;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.22);
+    box-shadow: 0 4px 10px var(--sombra-principal-22);
 }
 
 .corFundo:hover {
-    background: #1d4ed8 !important;
+    background: var(--cor-azul-acao) !important;
 }
 
 .textoFonte {
@@ -72,7 +72,7 @@
 
 .corrigir {
     margin-left: 18px;
-    border: 1px solid #dfe5ef;
+    border: 1px solid var(--cor-borda-painel);
     border-radius: 8px;
     padding: 8px 10px;
 }
@@ -86,17 +86,17 @@
 
 .buscaDesktop :global(.form-control),
 .buscaMobile :global(.form-control) {
-    border: 1px solid #dfe5ef;
+    border: 1px solid var(--cor-borda-painel);
     border-radius: 8px;
-    color: #111827;
+    color: var(--cor-texto-principal);
     font-size: 14px;
     padding: 11px 14px;
 }
 
 .buscaDesktop :global(.form-control:focus),
 .buscaMobile :global(.form-control:focus) {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    border-color: var(--cor-principal);
+    box-shadow: 0 0 0 3px var(--sombra-principal-12);
 }
 
 .buscaMobile {
@@ -107,8 +107,8 @@
 
 .botaoBuscar {
     border: none;
-    background: #2563eb;
-    color: #ffffff;
+    background: var(--cor-principal);
+    color: var(--cor-superficie);
     padding: 10px 14px;
     border-radius: 8px;
     font-size: 14px;
@@ -117,7 +117,7 @@
 }
 
 .botaoBuscar:hover {
-    background: #1d4ed8;
+    background: var(--cor-azul-acao);
 }
 
 .oculto {

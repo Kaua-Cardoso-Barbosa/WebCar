@@ -1,5 +1,5 @@
 .filtro {
-    background: #fff;
+    background: var(--cor-superficie);
     width: 100%;
 }
 
@@ -11,28 +11,31 @@
 }
 
 .topo h3 {
-    font-size: 18px;
-    font-weight: 700;
-    color: #111827;
+    font-size: 17px;
+    font-weight: 900;
+    color: var(--cor-texto-principal);
+    margin: 0;
 }
 
 .topo button {
-    border: none;
-    background: transparent;
-    color: #2563eb;
+    border: 1px solid var(--cor-borda-moderna);
+    background: var(--cor-fundo-input);
+    color: var(--cor-principal);
     cursor: pointer;
     font-size: 14px;
+    font-weight: 800;
+    border-radius: 8px;
+    padding: 7px 10px;
 }
 
 .grupo {
-    margin-bottom: 28px;
+    margin-bottom: 24px;
 }
 
 .grupo h4 {
     font-size: 13px;
-    color: #667085;
-    font-weight: 800;
-    letter-spacing: 0.5px;
+    color: var(--cor-texto-neutro-600);
+    font-weight: 900;
     margin-bottom: 12px;
 }
 
@@ -41,9 +44,10 @@
     align-items: center;
     gap: 9px;
     margin-bottom: 10px;
-    color: #111827;
+    color: var(--cor-texto-principal);
     cursor: pointer;
     line-height: 1.2;
+    font-weight: 700;
 }
 
 .check input {
@@ -63,12 +67,13 @@
 .range {
     width: 100%;
     cursor: pointer;
+    accent-color: var(--cor-principal);
 }
 
 .precoLinha {
     display: flex;
     justify-content: space-between;
-    color: #667085;
+    color: var(--cor-texto-muted-forte);
     font-size: 13px;
     margin-top: 8px;
 }
@@ -76,11 +81,13 @@
 .grupo select,
 .ano input {
     width: 100%;
-    border: 1px solid #dbe3ef;
+    border: 1px solid var(--cor-borda-moderna);
     border-radius: 8px;
     padding: 11px 12px;
     outline: none;
-    color: #111827;
+    color: var(--cor-texto-principal);
+    background: var(--cor-superficie);
+    font-weight: 700;
 }
 
 .ano {
@@ -90,6 +97,6 @@
 .valorPreco {
     font-size: 15px;
     font-weight: 700;
-    color: #2563eb;
+    color: var(--cor-principal);
     margin-bottom: 8px;
 }

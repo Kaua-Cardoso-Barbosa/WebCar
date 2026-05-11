@@ -3,14 +3,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #f5f5f5;
+    background-color: var(--cor-fundo-restrita);
 }
 
 .card {
-    background-color: #ffffff;
+    background-color: var(--cor-superficie);
     padding: 40px;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px var(--sombra-preta-15);
     text-align: center;
     min-width: 320px;
 }
@@ -19,12 +19,12 @@
     font-size: 26px;
     font-weight: bold;
     margin-bottom: 20px;
-    color: #333;
+    color: var(--cor-texto-neutro-900);
 }
 
 .botao {
-    background-color: #dc3545;
-    color: white;
+    background-color: var(--cor-erro-bootstrap);
+    color: var(--cor-superficie);
     border: none;
     padding: 10px 20px;
     border-radius: 8px;
@@ -34,5 +34,5 @@
 }
 
 .botao:hover {
-    background-color: #bb2d3b;
+    background-color: var(--cor-erro-bootstrap-hover);
 }

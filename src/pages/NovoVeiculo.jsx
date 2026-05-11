@@ -28,10 +28,10 @@ const CORES_VEICULO = {
     LARANJA: "#f97316",
     ROXO: "#7e22ce",
     VIOLETA: "#8b5cf6",
-    BORDÔ: "#7f1d1d",
+    BORDO: "#7f1d1d",
     BRONZE: "#92400e",
     COBRE: "#b45309",
-    PÉROLA: "#f8f4e3",
+    PEROLA: "#f8f4e3",
 };
 
 export default function NovoVeiculo() {

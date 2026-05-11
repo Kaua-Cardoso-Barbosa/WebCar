@@ -7,7 +7,7 @@
 .main {
     flex: 1;
     padding: 38px 42px 95px;
-    background-color: white;
+    background-color: var(--cor-superficie);
     min-height: 100vh;
 }
 
@@ -31,10 +31,10 @@
 .card {
     height: 100%;
     background-color: var(--cor-fundo);
-    border: 1px solid rgba(105, 109, 114, 0.15);
+    border: 1px solid var(--sombra-logo-15);
     border-radius: 20px;
     padding: 26px;
-    box-shadow: 0 10px 26px rgba(105, 109, 114, 0.09);
+    box-shadow: 0 10px 26px var(--sombra-logo-09);
 }
 
 .cardHeader {
@@ -63,22 +63,22 @@
 .input {
     height: 48px;
     border-radius: 12px;
-    border: 1px solid rgba(105, 109, 114, 0.35);
+    border: 1px solid var(--sombra-logo-35);
     color: var(--cor-logo-web);
     font-size: 14px;
 }
 
 .input:focus {
     border-color: var(--cor-principal);
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    box-shadow: 0 0 0 4px var(--sombra-principal-12);
 }
 
 .uploadBox {
     width: 100%;
     min-height: 260px;
-    border: 2px dashed rgba(105, 109, 114, 0.45);
+    border: 2px dashed var(--sombra-logo-45);
     border-radius: 18px;
-    background-color: rgba(37, 99, 235, 0.035);
+    background-color: var(--sombra-principal-035);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -89,7 +89,7 @@
 
 .uploadBox:hover {
     border-color: var(--cor-principal);
-    background-color: rgba(37, 99, 235, 0.07);
+    background-color: var(--sombra-principal-07);
 }
 
 .uploadBox input {
@@ -123,7 +123,7 @@
     border-radius: 50%;
     object-fit: cover;
     border: 4px solid var(--cor-principal);
-    box-shadow: 0 8px 22px rgba(105, 109, 114, 0.25);
+    box-shadow: 0 8px 22px var(--sombra-logo-25);
 }
 
 .actions {
@@ -143,14 +143,14 @@
 }
 
 .cancelar {
-    background-color: rgba(105, 109, 114, 0.14);
+    background-color: var(--sombra-logo-14);
     color: var(--cor-logo-web);
 }
 
 .salvar {
     background-color: var(--cor-principal);
-    color: white;
-    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.24);
+    color: var(--cor-superficie);
+    box-shadow: 0 8px 18px var(--sombra-principal-24);
 }
 
 .salvar:disabled {
@@ -167,12 +167,12 @@
 }
 
 .sucesso {
-    background-color: rgba(37, 99, 235, 0.11);
+    background-color: var(--sombra-principal-11);
     color: var(--cor-principal);
 }
 
 .erroMensagem {
-    background-color: rgba(105, 109, 114, 0.13);
+    background-color: var(--sombra-logo-13);
     color: var(--cor-logo-web);
 }
 

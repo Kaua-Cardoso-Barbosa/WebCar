@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import { API_URL } from "../App";
 
 export default function Catalogo() {
-
     const [carros, setCarros] = useState([]);
     const [carrosFiltrados, setCarrosFiltrados] = useState([]);
     const [erro, setErro] = useState("");
@@ -31,19 +30,15 @@ export default function Catalogo() {
 
                 if (!response.ok) {
                     const erroApi = await response.json();
-                    console.log("ERRO BACKEND:", erroApi);
                     setErro(erroApi.mensagem || "Erro na API");
                     return;
                 }
 
                 const data = await response.json();
-                console.log("VEICULOS DO BACK:", data);
-
                 const lista = data.veiculos || data;
 
                 setCarros(lista);
                 setCarrosFiltrados(lista);
-
             } catch (error) {
                 setErro("Erro ao conectar com o servidor");
                 console.log(error);
@@ -71,24 +66,35 @@ export default function Catalogo() {
             <Header busca={busca} setBusca={setBusca} />
 
             <main className={css.catalogo}>
-
-                {/* SIDEBAR FILTRO */}
                 <aside className={css.sidebar}>
+                    <div className={css.sidebarTopo}>
+                        <span>Filtros</span>
+                        <strong>Refine sua busca</strong>
+                    </div>
+
                     <Filtro
                         carros={carros}
                         setCarrosFiltrados={setCarrosFiltrados}
                     />
                 </aside>
 
-                {/* CONTEÚDO */}
                 <section className={css.conteudo}>
+                    <div className={css.heroCatalogo}>
+                        <div>
+                            <span className={css.kicker}>Catálogo WebCar</span>
+                            <h1>Encontre o veículo certo com mais segurança.</h1>
+                            <p className={css.subtitulo}>
+                                Pesquise por modelo, compare informações essenciais e agende uma visita para conhecer o carro de perto.
+                            </p>
+                        </div>
 
-                    <h1>Catálogo</h1>
-                    <p className={css.subtitulo}>
-                        Pesquise e agende uma visita para o seu preferido!
-                    </p>
+                        <div className={css.resumoCatalogo}>
+                            <strong>{carrosVisiveis.length}</strong>
+                            <span>veículos encontrados</span>
+                        </div>
+                    </div>
 
-                    {erro && <p>{erro}</p>}
+                    {erro && <p className={css.erro}>{erro}</p>}
 
                     {carrosVisiveis.length === 0 ? (
                         <p className={css.vazio}>Nenhum veículo encontrado.</p>
@@ -127,7 +133,6 @@ export default function Catalogo() {
                             Próxima
                         </button>
                     </div>
-
                 </section>
             </main>
 

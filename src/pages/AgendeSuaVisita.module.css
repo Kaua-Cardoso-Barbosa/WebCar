@@ -1,7 +1,7 @@
 /* Fundo da tela */
 .container {
     height: 100vh;
-    background-color: #f3f4f6;
+    background-color: var(--cor-fundo-cinza);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -10,23 +10,23 @@
 /* Card central */
 .card {
     width: 420px;
-    background: #ffffff;
+    background: var(--cor-superficie);
     border-radius: 12px;
     padding: 25px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 20px var(--sombra-preta-08);
 }
 
 /* Título */
 .card h2 {
     margin: 0;
     font-size: 22px;
-    color: #1f2937;
+    color: var(--cor-texto-secundario-escuro);
 }
 
 /* Subtítulo */
 .subtitulo {
     font-size: 14px;
-    color: #6b7280;
+    color: var(--cor-texto-cinza);
     margin-top: 5px;
     margin-bottom: 20px;
 }
@@ -47,23 +47,23 @@
 .input-group label {
     font-size: 13px;
     margin-bottom: 5px;
-    color: #374151;
+    color: var(--cor-texto-neutro-650);
 }
 
 /* Inputs */
 .input-group input {
     padding: 12px;
     border-radius: 8px;
-    border: 1px solid #d1d5db;
-    background: #f9fafb;
+    border: 1px solid var(--cor-borda-cinza);
+    background: var(--cor-fundo-login);
     font-size: 14px;
     outline: none;
     transition: 0.2s;
 }
 
 .input-group input:focus {
-    border-color: #2563eb;
-    background: #ffffff;
+    border-color: var(--cor-principal);
+    background: var(--cor-superficie);
 }
 
 /* Botão */
@@ -72,8 +72,8 @@
     padding: 14px;
     border: none;
     border-radius: 10px;
-    background: linear-gradient(90deg, #2563eb, #3b82f6);
-    color: white;
+    background: linear-gradient(90deg, var(--cor-principal), var(--cor-azul-claro));
+    color: var(--cor-superficie);
     font-size: 15px;
     font-weight: bold;
     cursor: pointer;
@@ -92,7 +92,7 @@
 .seeelect{
     height: 46px;
     border-radius: 5px;
-    color: #94A3B8;
-    background-color: #F8FAFC;
-    border: #E2E8F0;
+    color: var(--cor-placeholder);
+    background-color: var(--cor-fundo-input);
+    border: var(--cor-borda-suave);
 }

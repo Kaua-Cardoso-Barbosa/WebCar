@@ -1,34 +1,44 @@
-
-import css from "./Banner.module.css"
-import {Link} from "react-router-dom";
+import css from "./Banner.module.css";
+import { Link } from "react-router-dom";
 
 export default function Banner() {
     return (
-        <section className="container my-4">
-            <div className="banner rounded-4 overflow-hidden position-relative">
+        <section className={css.banner}>
+            <div className={css.bannerMedia}>
                 <img
-                    src="/Banner.png" alt="Banner" className="banner-img"
+                    src="/Banner.png"
+                    alt="Carro em destaque"
+                    className={css.bannerImg}
                 />
 
-                <div className="banner-overlay"></div>
+                <div className={css.bannerOverlay}></div>
 
-                <div className={"banner-content position-absolute top-50 start-0 translate-middle-y text-white px-4 px-md-5" + css.fonte}>
-                    <h1 className="fw-bold display-5 mb-3">
-                        Escolha Com <span className="text-primary">Confiança</span>
-                        <br />
-                        Compre Com <span className="text-primary">Segurança</span>
-                    </h1>
+                <div className={css.bannerContent}>
+                    <h1>Escolha com confiança. Compre com segurança.</h1>
 
-                    <p className={"fs-5 mb-4 banner-text " + (css.tiratexto )} >
-                        A plataforma ideal para vendedores e compradores. Com a WebCar você tem a praticidade de
-                        conectar oportunidades, encontrar as melhores ofertas e fechar negócios com total confiança.
+                    <p>
+                        Veículos anunciados com dados claros, fotos reais e agendamento direto para você conhecer antes de fechar negócio.
                     </p>
 
-                    <Link to={"/Login"}>
-                        <button className="btn btn-primary btn-lg px-4 py-2 fw-semibold">
-                            Comece agora
-                        </button>
-                    </Link>
+                    <div className={css.acoes}>
+                        <Link to="/catalogo" className={css.primario}>
+                            Ver catálogo
+                        </Link>
+                        <Link to="/Login" className={css.secundario}>
+                            Entrar
+                        </Link>
+                    </div>
+
+                    <div className={css.provas}>
+                        <span>Atendimento consultivo</span>
+                        <span>Visita agendada</span>
+                        <span>Dados conferidos</span>
+                    </div>
+                </div>
+
+                <div className={css.painel}>
+                    <strong>Compra mais tranquila</strong>
+                    <span>Compare modelos, veja detalhes e fale com a loja em poucos cliques.</span>
                 </div>
             </div>
         </section>

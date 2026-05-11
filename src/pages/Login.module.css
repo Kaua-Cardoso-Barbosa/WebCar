@@ -1,5 +1,5 @@
 .loginFundo{
-    background-color: #f9fafb;
+    background-color: var(--cor-fundo-login);
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -15,9 +15,9 @@
 }
 
 .cartao{
-    background-color: white;
+    background-color: var(--cor-superficie);
     border-radius: 16px;
-    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px -5px var(--sombra-preta-10);
     padding: 40px;
     width: 100%;
     max-width: 400px;
@@ -30,7 +30,7 @@
 }
 
 .logo{
-    color: #001f3f;
+    color: var(--cor-azul-noite);
     font-size: 28px;
     font-weight: 900;
     letter-spacing: 0.1em;
@@ -46,7 +46,7 @@
 .input span{
     border: none;
     outline: none;
-    background-color: #ffffff;
+    background-color: var(--cor-superficie);
 }
 
 .label{
@@ -55,18 +55,18 @@
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #6b7280;
+    color: var(--cor-texto-cinza);
     margin: 8px;
 }
 
 .input{
     width: 100%;
     padding: 14px 16px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--cor-borda);
     border-radius: 8px;
     font-size: 14px;
     outline: none;
-    color: #374151;
+    color: var(--cor-texto-neutro-650);
     transition: border-color 0.3s;
     display: flex;
     justify-content: flex-start;
@@ -85,13 +85,13 @@
 }
 
 .input:focus{
-    border-color: #001f3f;
+    border-color: var(--cor-azul-noite);
 }
 
 .botao{
     width: 100%;
-    background-color: #001f3f;
-    color: white;
+    background-color: var(--cor-azul-noite);
+    color: var(--cor-superficie);
     border: none;
     padding: 16px;
     border-radius: 8px;
@@ -105,7 +105,7 @@
 }
 
 .botao:hover{
-    background-color: #1e3a8a;
+    background-color: var(--cor-azul-marinho);
     transform: translateY(-2px);
 }
 
@@ -117,7 +117,7 @@
 }
 
 .verificacaoFundo {
-    background-color: #f9fafb;
+    background-color: var(--cor-fundo-login);
     min-height: calc(100vh - 160px);
     display: flex;
     align-items: center;
@@ -126,9 +126,9 @@
 }
 
 .cartaoVerificacao {
-    background-color: white;
+    background-color: var(--cor-superficie);
     border-radius: 16px;
-    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px -5px var(--sombra-preta-10);
     padding: 28px;
     width: 100%;
     max-width: 380px;

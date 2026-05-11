@@ -99,7 +99,7 @@ export default function VerificarEmailSenha() {
 
                         {erro && (
                             <p style={{
-                                color: "#ff4d4f",
+                                color: "var(--cor-erro-alerta)",
                                 marginTop: "10px",
                                 textAlign: "center",
                                 fontWeight: "500"

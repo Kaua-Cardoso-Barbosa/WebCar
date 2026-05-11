@@ -937,7 +937,7 @@ export default function VisualizarCarroAdm() {
                 <div className="row g-4">
                     <div className="col-lg-8">
                         <div className="card border-0 shadow-sm p-3">
-                            <div style={{ height: "420px", background: "#f8f9fa" }}>
+                            <div style={{ height: "420px", background: "var(--cor-fundo-bootstrap)" }}>
                                 <img
                                     src={imagemPrincipal.urls[0]}
                                     data-indice="0"
@@ -965,8 +965,8 @@ export default function VisualizarCarroAdm() {
                                                 cursor: "pointer",
                                                 border:
                                                     imagemPrincipal.numero === img.numero
-                                                        ? "2px solid #0d6efd"
-                                                        : "2px solid transparent",
+                                                        ? "2px solid var(--cor-azul-bootstrap)"
+                                                        : "2px solid var(--cor-transparente)",
                                             }}
                                             alt={`Imagem ${index + 1}`}
                                         />
@@ -1127,7 +1127,7 @@ export default function VisualizarCarroAdm() {
                     style={{
                         position: "fixed",
                         inset: 0,
-                        background: "rgba(15, 23, 42, 0.45)",
+                        background: "var(--overlay-escuro-45)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -1136,8 +1136,8 @@ export default function VisualizarCarroAdm() {
                     }}
                 >
                     <div
-                        className="bg-white rounded shadow p-4"
-                        style={{ width: "100%", maxWidth: "460px" }}
+                        className="rounded shadow p-4"
+                        style={{ width: "100%", maxWidth: "460px", background: "var(--cor-superficie)" }}
                     >
                         <h4 className="fw-bold mb-2">Excluir manutenção</h4>
 
@@ -1169,7 +1169,7 @@ export default function VisualizarCarroAdm() {
                     style={{
                         position: "fixed",
                         inset: 0,
-                        background: "rgba(15, 23, 42, 0.45)",
+                        background: "var(--overlay-escuro-45)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -1177,8 +1177,8 @@ export default function VisualizarCarroAdm() {
                     }}
                 >
                     <div
-                        className="bg-white rounded shadow p-4"
-                        style={{ width: "100%", maxWidth: "440px" }}
+                        className="rounded shadow p-4"
+                        style={{ width: "100%", maxWidth: "440px", background: "var(--cor-superficie)" }}
                     >
                         <h4 className="fw-bold mb-2">Excluir item</h4>
 

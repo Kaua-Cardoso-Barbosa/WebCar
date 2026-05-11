@@ -1,6 +1,6 @@
 .paginaCadastro {
     min-height: 100vh;
-    background-color: #f5f5f7;
+    background-color: var(--cor-fundo-cadastro);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -16,22 +16,22 @@
 .tituloCadastro {
     font-size: 42px;
     font-weight: 700;
-    color: #111827;
+    color: var(--cor-texto-principal);
     margin-bottom: 10px;
 }
 
 .subtituloCadastro {
     font-size: 14px;
-    color: #6b7280;
+    color: var(--cor-texto-cinza);
     margin-bottom: 32px;
     line-height: 1.5;
 }
 
 .cardCadastro {
-    background-color: #ffffff;
+    background-color: var(--cor-superficie);
     border-radius: 14px;
     padding: 28px 24px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 24px var(--sombra-preta-12);
     text-align: left;
 }
 
@@ -49,28 +49,28 @@
 .rotuloCampo {
     font-size: 13px;
     font-weight: 600;
-    color: #374151;
+    color: var(--cor-texto-neutro-650);
     margin-bottom: 8px;
 }
 
 .inputCadastro {
     width: 100%;
     height: 44px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--cor-borda-cinza);
     border-radius: 8px;
     padding: 0 12px;
     font-size: 14px;
-    color: #111827;
+    color: var(--cor-texto-principal);
     outline: none;
-    background-color: #ffffff;
+    background-color: var(--cor-superficie);
 }
 
 .inputCadastro::placeholder {
-    color: #9ca3af;
+    color: var(--cor-placeholder-claro);
 }
 
 .inputCadastro:focus {
-    border-color: #2563eb;
+    border-color: var(--cor-principal);
 }
 
 .linhaSenha {
@@ -85,34 +85,34 @@
 .botaoCadastro {
     width: 100%;
     height: 46px;
-    background-color: #2563eb;
-    color: white;
+    background-color: var(--cor-principal);
+    color: var(--cor-superficie);
     border: none;
     border-radius: 8px;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     margin-top: 8px;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    box-shadow: 0 4px 12px var(--sombra-principal-25);
 }
 
 .botaoCadastro Link{
-    color: white;
+    color: var(--cor-superficie);
 }
 
 .botaoCadastro:hover {
-    background-color: #1d4ed8;
+    background-color: var(--cor-azul-acao);
 }
 
 .textoLogin {
     text-align: center;
     font-size: 13px;
-    color: #6b7280;
+    color: var(--cor-texto-cinza);
     margin-top: 8px;
 }
 
 .textoLogin a {
-    color: #2563eb;
+    color: var(--cor-principal);
     text-decoration: none;
     font-weight: 500;
 }
@@ -124,7 +124,7 @@
 }
 
 .erro {
-    color: #ff4d4f;
+    color: var(--cor-erro-alerta);
     font-weight: 500;
     text-align: center;
     margin-top: 10px;
@@ -150,9 +150,9 @@
 }
 
 .uploadArea {
-    border: 3px dashed #d9dee7;
+    border: 3px dashed var(--cor-borda-upload);
     border-radius: 18px;
-    background-color: #f8fafc;
+    background-color: var(--cor-fundo-input);
     width: 100%;
     max-width: 376px;
     height: 200px;

@@ -1,66 +1,107 @@
 .card {
-    background: white;
-    border-radius: 16px;
+    height: 100%;
+    background: var(--cor-superficie);
+    border: 1px solid var(--cor-borda-moderna);
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    transition: 0.2s;
+    box-shadow: 0 12px 30px var(--sombra-escura-08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
 }
 
 .card:hover,
 .card:focus-visible {
-    transform: translateY(-5px);
+    transform: translateY(-4px);
+    border-color: var(--cor-azul-texto-claro);
+    box-shadow: 0 18px 42px var(--sombra-escura-14);
 }
 
 .card:focus-visible {
-    outline: 3px solid rgba(37, 99, 235, 0.25);
+    outline: 3px solid var(--sombra-principal-25);
     outline-offset: 3px;
 }
 
 .imagem {
     width: 100%;
-    height: 180px;
+    aspect-ratio: 16 / 10;
     object-fit: cover;
+    background: var(--cor-fundo-neutro);
+    display: block;
 }
 
 .topo {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 16px 0;
 }
 
 .topo h3 {
+    min-height: 44px;
+    margin: 0;
+    color: var(--cor-texto-titulo-escuro);
     font-size: 18px;
-    font-weight: 600;
-    color: #111827;
+    line-height: 1.22;
+    font-weight: 900;
+    overflow-wrap: anywhere;
 }
 
 .preco {
-    color: #2563EB;
-    font-weight: bold;
+    color: var(--cor-azul-acao);
+    font-size: 22px;
+    line-height: 1.1;
+    font-weight: 900;
 }
 
 .info {
-    padding: 0 16px;
-    color: #6b7280;
-    font-size: 14px;
+    margin: 10px 16px 14px;
+    color: var(--cor-texto-muted);
+    font-size: 13px;
+    line-height: 1.45;
+    font-weight: 700;
 }
 
 .rodape {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 16px 16px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: auto;
+    padding: 14px 16px 16px;
+    border-top: 1px solid var(--cor-divisor-claro);
 }
 
 .rodape div {
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 14px;
-    color: #374151;
+    color: var(--cor-texto-neutro-700);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.rodape span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .rodape img {
     width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    opacity: 0.72;
+}
+
+@media (max-width: 420px) {
+    .rodape {
+        grid-template-columns: 1fr;
+    }
+
+    .topo h3 {
+        min-height: 0;
+    }
 }
