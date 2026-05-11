@@ -349,6 +349,160 @@
     font-weight: 800;
 }
 
+.modalFundo {
+    position: fixed;
+    inset: 0;
+    z-index: 11000;
+    background: var(--overlay-escuro-45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+}
+
+.modalCompra {
+    width: min(460px, 100%);
+    max-height: calc(100vh - 36px);
+    overflow-y: auto;
+    background: var(--cor-superficie);
+    border: 1px solid var(--cor-borda-moderna);
+    border-radius: 8px;
+    padding: 22px;
+    box-shadow: 0 24px 60px var(--sombra-preta-22);
+}
+
+.modalTopo {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.modalTopo h3 {
+    margin: 10px 0 0;
+    color: var(--cor-texto-titulo-escuro);
+    font-size: 24px;
+    line-height: 1.15;
+    font-weight: 900;
+}
+
+.fecharIcone {
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--cor-borda-suave);
+    border-radius: 8px;
+    background: var(--cor-fundo-input);
+    color: var(--cor-texto-muted);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.resumoModal {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px;
+    border-radius: 8px;
+    background: var(--cor-fundo-input);
+    border: 1px solid var(--cor-divisor-claro);
+    margin-bottom: 16px;
+}
+
+.resumoModal strong {
+    color: var(--cor-texto-principal);
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.resumoModal span {
+    flex-shrink: 0;
+    color: var(--cor-azul-acao);
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.qrCodeArea {
+    min-height: 260px;
+    border: 1px dashed var(--cor-borda-azulada);
+    border-radius: 8px;
+    background: var(--cor-fundo-neutro);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 18px;
+    text-align: center;
+}
+
+.qrCodeArea img {
+    width: min(260px, 100%);
+    height: auto;
+    border-radius: 8px;
+    background: var(--cor-superficie);
+    padding: 10px;
+    border: 1px solid var(--cor-borda-suave);
+}
+
+.qrCodeArea p {
+    margin: 0;
+    color: var(--cor-texto-muted);
+    font-weight: 800;
+}
+
+.erroCompra,
+.sucessoCompra {
+    width: 100%;
+    border-radius: 8px;
+    padding: 12px;
+    font-weight: 800;
+}
+
+.erroCompra {
+    background: var(--cor-erro-fundo);
+    color: var(--cor-erro-texto) !important;
+}
+
+.sucessoCompra {
+    margin-top: 14px !important;
+    background: var(--cor-sucesso-fundo);
+    color: var(--cor-sucesso-texto) !important;
+}
+
+.modalAcoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.botaoFechar,
+.botaoConcluir {
+    min-height: 42px;
+    border: none;
+    border-radius: 8px;
+    padding: 0 16px;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.botaoFechar {
+    background: var(--cor-fundo-neutro);
+    color: var(--cor-texto-principal);
+}
+
+.botaoConcluir {
+    background: var(--cor-azul-acao);
+    color: var(--cor-superficie);
+}
+
+.botaoConcluir:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
 @media (max-width: 1000px) {
     .hero {
         background: linear-gradient(180deg, var(--overlay-escuro-96) 0%, var(--overlay-escuro-90) 36%, var(--cor-fundo-frio) 36%, var(--cor-fundo-frio) 100%);
@@ -391,5 +545,14 @@
 
     .detalheCard {
         min-height: 86px;
+    }
+
+    .modalAcoes {
+        flex-direction: column-reverse;
+    }
+
+    .botaoFechar,
+    .botaoConcluir {
+        width: 100%;
     }
 }

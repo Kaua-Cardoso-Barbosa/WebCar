@@ -89,6 +89,11 @@ export default function VisualizarCarro() {
     const [imagemSelecionada, setImagemSelecionada] = useState(imagemSemFoto);
     const [erro, setErro] = useState("");
     const [carregando, setCarregando] = useState(true);
+    const [modalCompraAberta, setModalCompraAberta] = useState(false);
+    const [qrCodeUrl, setQrCodeUrl] = useState("");
+    const [erroCompra, setErroCompra] = useState("");
+    const [gerandoQrCode, setGerandoQrCode] = useState(false);
+    const [compraConcluida, setCompraConcluida] = useState(false);
 
     async function carregarImagensDisponiveis(idVeiculo) {
         if (!idVeiculo) {
@@ -173,6 +178,67 @@ export default function VisualizarCarro() {
 
         buscarVeiculo();
     }, [id]);
+
+    useEffect(() => {
+        return () => {
+            if (qrCodeUrl) {
+                URL.revokeObjectURL(qrCodeUrl);
+            }
+        };
+    }, [qrCodeUrl]);
+
+    async function abrirCompra() {
+        if (!carro?.ID_VEICULO) return;
+
+        try {
+            setErroCompra("");
+            setCompraConcluida(false);
+            setGerandoQrCode(true);
+            setModalCompraAberta(true);
+
+            if (qrCodeUrl) {
+                URL.revokeObjectURL(qrCodeUrl);
+                setQrCodeUrl("");
+            }
+
+            const response = await fetch(`${API_URL}/adicionar_venda`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    id_veiculo: carro.ID_VEICULO,
+                    forma_pagamento: 0,
+                }),
+            });
+
+            const tipoResposta = response.headers.get("content-type") || "";
+
+            if (!response.ok || tipoResposta.includes("application/json")) {
+                const data = tipoResposta.includes("application/json") ? await response.json() : null;
+                setErroCompra(data?.mensagem || "Não foi possível gerar o QR Code da compra.");
+                return;
+            }
+
+            const imagemQrCode = await response.blob();
+            setQrCodeUrl(URL.createObjectURL(imagemQrCode));
+        } catch {
+            setErroCompra("Erro ao conectar com o servidor para gerar o QR Code.");
+        } finally {
+            setGerandoQrCode(false);
+        }
+    }
+
+    function fecharCompra() {
+        setModalCompraAberta(false);
+        setErroCompra("");
+        setCompraConcluida(false);
+    }
+
+    function concluirCompra() {
+        setCompraConcluida(true);
+    }
 
     if (carregando) {
         return <div className={css.carregando}>Carregando...</div>;
@@ -282,19 +348,19 @@ export default function VisualizarCarro() {
                             <button
                                 type="button"
                                 className={css.comprar}
-                                onClick={() => navigate("/Agendar", { state: { carro } })}
+                                onClick={abrirCompra}
                             >
-                                Agendar visita
+                                Comprar
                             </button>
 
                             <p className={css.avisoCompra}>
-                                Agende sua visita para conhecer o veiculo, confirmar disponibilidade e falar com a equipe.
+                                Gere o QR Code Pix para simular a compra deste veiculo. Este fluxo e apenas para teste.
                             </p>
 
                             <div className={css.garantias}>
-                                <span><i className="bi bi-check2-circle"></i> Atendimento especializado</span>
+                                <span><i className="bi bi-qr-code"></i> Pagamento via Pix</span>
                                 <span><i className="bi bi-shield-check"></i> Dados do veiculo conferidos</span>
-                                <span><i className="bi bi-calendar2-check"></i> Visita com horario marcado</span>
+                                <span><i className="bi bi-check2-circle"></i> Compra simulada para teste</span>
                             </div>
                         </aside>
                     </div>
@@ -328,6 +394,59 @@ export default function VisualizarCarro() {
                     </div>
                 </div>
             </section>
+
+            {modalCompraAberta && (
+                <div className={css.modalFundo}>
+                    <div className={css.modalCompra}>
+                        <div className={css.modalTopo}>
+                            <div>
+                                <span className={css.etiquetaEscura}>Pagamento Pix</span>
+                                <h3>Finalize sua compra</h3>
+                            </div>
+                            <button type="button" className={css.fecharIcone} onClick={fecharCompra}>
+                                ×
+                            </button>
+                        </div>
+
+                        <div className={css.resumoModal}>
+                            <strong>{carro.MARCA} {carro.MODELO}</strong>
+                            <span>{formatarPreco(carro.PRECO_VENDA)}</span>
+                        </div>
+
+                        <div className={css.qrCodeArea}>
+                            {gerandoQrCode && <p>Gerando QR Code...</p>}
+
+                            {!gerandoQrCode && erroCompra && (
+                                <p className={css.erroCompra}>{erroCompra}</p>
+                            )}
+
+                            {!gerandoQrCode && qrCodeUrl && !erroCompra && (
+                                <img src={qrCodeUrl} alt="QR Code Pix para pagamento" />
+                            )}
+
+                            {compraConcluida && (
+                                <p className={css.sucessoCompra}>
+                                    Compra concluida com sucesso. Pagamento simulado como aprovado.
+                                </p>
+                            )}
+                        </div>
+
+                        <div className={css.modalAcoes}>
+                            <button type="button" className={css.botaoFechar} onClick={fecharCompra}>
+                                Fechar
+                            </button>
+                            <button
+                                type="button"
+                                className={css.botaoConcluir}
+                                onClick={concluirCompra}
+                                disabled={!qrCodeUrl || gerandoQrCode || compraConcluida}
+                            >
+                                Concluir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }
