@@ -186,6 +186,7 @@
     width: 100%;
     font-size: 15px;
     color: var(--cor-texto-principal);
+    margin: 0;
 }
 
 .busca input::placeholder {
