@@ -225,95 +225,45 @@ export default function Garagem() {
                     </div>
 
                     <section className={css.tabelaBox}>
-                        <table className={css.tabela}>
-                            <thead>
-                            <tr>
-                                <th>MODELO</th>
-                                <th>ANO</th>
-                                <th>KM</th>
-                                <th>PREÇO</th>
-                                <th>AÇÕES</th>
-                            </tr>
-                            </thead>
+                        <div className={css.tableResponsive}>
+                            <table className={css.tabela}>
+                                <thead>
+                                <tr>
+                                    <th>MODELO</th>
+                                    <th>ANO</th>
+                                    <th>KM</th>
+                                    <th>PREÇO</th>
+                                    <th className="text-end">AÇÕES</th>
+                                </tr>
+                                </thead>
 
-                            <tbody>
-                            {veiculosPaginados.length > 0 ? (
-                                veiculosPaginados.map((carro, index) => (
-                                    <tr key={carro.ID_VEICULO || carro.RENAVAM || index}>
-                                        <td
-                                            onClick={() => navigate("/VisualizarAdm", { state: { carro } })}
-                                            style={{ cursor: "pointer" }}
-                                        >
+                                {/* O segredo está na classe aplicada aqui ou no container superior */}
+                                <tbody className={css.corpoCarrossel}>
+                                {veiculosPaginados.map((carro, index) => (
+                                    <tr key={carro.ID_VEICULO || index} className={css.cardVeiculo}>
+                                        <td data-label="MODELO" onClick={() => navigate("/VisualizarAdm", { state: { carro } })}>
                                             <div className={css.modeloCell}>
                                                 <img
                                                     src={imagensVeiculo(carro.ID_VEICULO)[0]}
-                                                    data-indice="0"
                                                     onError={(e) => tentarProximaImagem(e, imagensVeiculo(carro.ID_VEICULO))}
-                                                    alt={`${carro.MARCA} ${carro.MODELO}`}
+                                                    alt="veiculo"
                                                 />
                                                 <span>{carro.MARCA} {carro.MODELO}</span>
                                             </div>
                                         </td>
 
-                                        <td>{carro.ANO_MODELO}</td>
+                                        <td data-label="ANO">{carro.ANO_MODELO}</td>
+                                        <td data-label="KM">{Number(carro.KM || 0).toLocaleString("pt-BR")} km</td>
+                                        <td data-label="PREÇO" className={css.preco}>{formatarPreco(carro.PRECO_VENDA)}</td>
 
-                                        <td>
-                                            {Number(carro.KM || 0).toLocaleString("pt-BR")} km
-                                        </td>
-
-                                        <td className={css.preco}>
-                                            {formatarPreco(carro.PRECO_VENDA)}
-                                        </td>
-
-                                        <td className={css.acoes}>
-                                            <button
-                                                type="button"
-                                                className={css.btnAcao}
-                                                onClick={() => navigate("/EdicaoVeiculo", { state: { carro } })}
-                                            >
-                                                Editar
-                                            </button>
-
-                                            <button
-                                                type="button"
-                                                className={css.btnAcaoDelete}
-                                                onClick={() => abrirModalDelete(carro)}
-                                            >
-                                                Excluir
-                                            </button>
+                                        <td data-label="AÇÕES" className={css.acoes}>
+                                            <button className={css.btnAcao} onClick={() => navigate("/EdicaoVeiculo", { state: { carro } })}>Editar</button>
+                                            <button className={css.btnAcaoDelete} onClick={() => abrirModalDelete(carro)}>Excluir</button>
                                         </td>
                                     </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="5" className={css.vazio}>
-                                        {busca ? "Nenhum resultado encontrado." : "Nenhum veículo cadastrado."}
-                                    </td>
-                                </tr>
-                            )}
-                            </tbody>
-                        </table>
-
-                        <div className={css.paginacao}>
-                            <button
-                                type="button"
-                                className={css.paginaSeta}
-                                disabled={paginaAtual === 1}
-                                onClick={() => setPaginaAtual((pagina) => Math.max(1, pagina - 1))}
-                            >
-                                Anterior
-                            </button>
-                            <button className={`${css.pagina} ${css.ativa}`}>
-                                {paginaAtual} / {totalPaginas}
-                            </button>
-                            <button
-                                type="button"
-                                className={css.paginaSeta}
-                                disabled={paginaAtual === totalPaginas}
-                                onClick={() => setPaginaAtual((pagina) => Math.min(totalPaginas, pagina + 1))}
-                            >
-                                Próxima
-                            </button>
+                                ))}
+                                </tbody>
+                            </table>
                         </div>
                     </section>
                 </main>

@@ -86,6 +86,7 @@
     .hamburger {
         display: block;
         padding: 8px;
+        position: absolute;
     }
 
     .sidebar {

@@ -5,6 +5,8 @@
     background-color: var(--cor-fundo-dashboard);
 }
 
+
+
 .garagem {
     flex: 1;
     min-height: 100vh;
@@ -364,4 +366,48 @@
     font-weight: 800;
     margin: 0;
     color: var(--cor-texto-principal);
+}
+
+/* No topo do arquivo ou após as classes principais */
+
+.layout {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    /* Remova overflow se houver, deixe o Bootstrap gerenciar */
+}
+
+.garagem {
+    padding: 20px; /* Reduzido o padding fixo de 36px */
+    width: 100%;
+}
+
+/* Ajuste nos cards para não forçar largura fixa que quebra o grid */
+.card {
+    max-width: none;
+    min-width: 0;
+    width: 100%;
+}
+
+/* Esconder imagem da tabela em telas muito pequenas se necessário */
+@media (max-width: 576px) {
+    .garagem {
+        padding: 15px;
+    }
+
+    .topo h1 {
+        font-size: 24px;
+    }
+
+    .tabela td {
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+}
+
+/* Modal responsivo */
+.modal {
+    width: 90% !important;
+    max-width: 400px;
+    padding: 20px;
 }
