@@ -374,38 +374,40 @@ export default function Servicos() {
                                         Carregando dados...
                                     </td>
                                 </tr>
-            ) : servicos.length > 0 ? (
+                            ) : servicos.length > 0 ? (
                                 servicosPaginados.map((servico) => (
                                     <tr key={servico.id_servico}>
-                                        <td>{servico.descricao}</td>
+                                        <td data-label="DESCRIÇÃO">
+                                            {servico.descricao}
+                                        </td>
 
-                                        <td>
+                                        <td data-label="PREÇO">
                                             R${Number(servico.valor_unitario).toLocaleString("pt-BR", {
                                             minimumFractionDigits: 2,
                                             maximumFractionDigits: 2,
                                         })}
                                         </td>
 
-                                        <td>
-                                                <span
-                                                    className={
-                                                        servico.valor_porcentagem > 0
-                                                            ? css.positivo
-                                                            : servico.valor_porcentagem < 0
-                                                                ? css.negativo
-                                                                : css.neutro
-                                                    }
-                                                >
-                                                    {servico.valor_porcentagem > 0 && "+"}
-                                                    {Number(servico.valor_porcentagem || 0).toLocaleString("pt-BR", {
-                                                        minimumFractionDigits: 4,
-                                                        maximumFractionDigits: 4,
-                                                    })}
-                                                    %
-                                                </span>
+                                        <td data-label="VARIAÇÃO">
+                <span
+                    className={
+                        servico.valor_porcentagem > 0
+                            ? css.positivo
+                            : servico.valor_porcentagem < 0
+                                ? css.negativo
+                                : css.neutro
+                    }
+                >
+                    {servico.valor_porcentagem > 0 && "+"}
+                    {Number(servico.valor_porcentagem || 0).toLocaleString("pt-BR", {
+                        minimumFractionDigits: 4,
+                        maximumFractionDigits: 4,
+                    })}
+                    %
+                </span>
                                         </td>
 
-                                        <td>
+                                        <td data-label="AÇÕES">
                                             <div className={css.acoes}>
                                                 {servicoTemHistorico(servico) && (
                                                     <button

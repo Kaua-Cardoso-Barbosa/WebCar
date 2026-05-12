@@ -80,6 +80,7 @@
     width: 100%;
     font-size: 15px;
     color: var(--cor-texto-principal);
+    margin: 0;
 }
 
 .busca input::placeholder {
@@ -435,5 +436,202 @@
 @media (max-width: 720px) {
     .resumoHistorico {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .main {
+        padding: 16px;
+    }
+
+    .topo {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .topo h1 {
+        font-size: 26px;
+    }
+
+    .botoes {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .botaoAzul,
+    .botaoNeutro {
+        width: 100%;
+        text-align: center;
+    }
+
+    .tabelaCard {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        overflow: visible;
+    }
+
+    .tabelaCard table,
+    .tabelaCard thead,
+    .tabelaCard tbody,
+    .tabelaCard th,
+    .tabelaCard td,
+    .tabelaCard tr {
+        display: block;
+        width: 100%;
+    }
+
+    .tabelaCard thead {
+        display: none;
+    }
+
+    .tabelaCard tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .tabelaCard tr {
+        background: var(--cor-superficie);
+        border: 1px solid var(--cor-divisor);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .tabelaCard td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 0;
+        border: none;
+        border-bottom: 1px solid var(--cor-divisor);
+        text-align: right !important;
+        font-size: 14px;
+    }
+
+    .tabelaCard td:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .tabelaCard td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--cor-texto-muted);
+        text-align: left;
+    }
+
+    .acoes {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .icone {
+        width: 100%;
+        text-align: center;
+        padding: 12px;
+    }
+
+    .paginacao {
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        gap: 12px;
+    }
+
+    .paginacao button {
+        flex: 1;
+        min-width: 120px;
+        padding: 12px;
+    }
+
+    .paginacao span {
+        width: 100%;
+        text-align: center;
+        background: transparent;
+    }
+
+    .modal {
+        width: calc(100% - 24px);
+        padding: 22px 18px;
+    }
+
+    .modalHistorico {
+        width: calc(100% - 24px);
+    }
+
+    .modalBotoes {
+        flex-direction: column;
+    }
+
+    .cancelar,
+    .salvar,
+    .excluir {
+        width: 100%;
+    }
+
+    .tabelaHistorico {
+        overflow-x: auto;
+    }
+
+    .toast {
+        right: 12px;
+        left: 12px;
+        top: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .main {
+        padding: 12px;
+    }
+
+    .topo h1 {
+        font-size: 22px;
+    }
+
+    .busca {
+        padding: 10px 12px;
+    }
+
+    .busca input {
+        font-size: 14px;
+    }
+
+    .tabelaCard tr {
+        padding: 14px;
+    }
+
+    .tabelaCard td {
+        font-size: 13px;
+    }
+
+    .icone {
+        font-size: 13px;
+    }
+
+    .modal h2 {
+        font-size: 20px;
+    }
+
+    .modalTopoHistorico {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .fecharHistorico {
+        align-self: flex-end;
+    }
+
+    .resumoHistorico strong {
+        font-size: 18px;
     }
 }

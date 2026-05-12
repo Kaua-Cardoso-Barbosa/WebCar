@@ -27,9 +27,7 @@ async function carregarLogoSite() {
         credentials: "include",
     });
 
-    if (!response.ok) {
-        return LOGO_PADRAO;
-    }
+    if (!response.ok) return LOGO_PADRAO;
 
     const data = await response.json();
     const empresa = data.empresas?.[0] || {};
@@ -67,13 +65,14 @@ export default function Header({ busca = "", setBusca = null }) {
     const location = useLocation();
     const navigate = useNavigate();
 
-    // agora usamos usuario_tipo e não token
     const tipoUsuario = localStorage.getItem("usuario_tipo");
     const estaLogado = !!tipoUsuario;
     const tipoNumero = Number(tipoUsuario);
     const usuarioInterno = tipoNumero === 0 || tipoNumero === 1;
     const usuarioCliente = tipoNumero === 2;
     const linkLogo = tipoNumero === 0 ? "/dashboard" : tipoNumero === 1 ? "/restrita-vendedor" : "/";
+    const idUsuario = localStorage.getItem("usuario_id");
+
     const [buscaLocal, setBuscaLocal] = useState("");
     const [logoUrl, setLogoUrl] = useState(LOGO_PADRAO);
     const [modalDadosAberta, setModalDadosAberta] = useState(false);
@@ -89,8 +88,8 @@ export default function Header({ busca = "", setBusca = null }) {
     const [salvandoCliente, setSalvandoCliente] = useState(false);
     const [mensagemCliente, setMensagemCliente] = useState("");
     const [erroCliente, setErroCliente] = useState("");
+
     const valorBusca = setBusca ? busca : buscaLocal;
-    const idUsuario = localStorage.getItem("usuario_id");
 
     function handleBuscaChange(e) {
         if (setBusca) {
@@ -109,7 +108,7 @@ export default function Header({ busca = "", setBusca = null }) {
         }
     }
 
-    const handleLogout = () => {
+    function handleLogout() {
         localStorage.removeItem("usuario_id");
         localStorage.removeItem("usuario_nome");
         localStorage.removeItem("usuario_email");
@@ -117,7 +116,7 @@ export default function Header({ busca = "", setBusca = null }) {
         localStorage.removeItem("token");
 
         navigate("/login");
-    };
+    }
 
     function atualizarDadosCliente(campo, valor) {
         const normalizadores = {
@@ -206,7 +205,7 @@ export default function Header({ busca = "", setBusca = null }) {
         e.preventDefault();
 
         if (!idUsuario) {
-            setErroCliente("Usuario nao encontrado. Faca login novamente.");
+            setErroCliente("Usuário não encontrado. Faça login novamente.");
             return;
         }
 
@@ -240,7 +239,7 @@ export default function Header({ busca = "", setBusca = null }) {
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                setErroCliente(data.mensagem || "Nao foi possivel salvar seus dados.");
+                setErroCliente(data.mensagem || "Não foi possível salvar seus dados.");
                 return;
             }
 
@@ -251,7 +250,7 @@ export default function Header({ busca = "", setBusca = null }) {
             setPreviewCliente(`${API_URL}/uploads/Usuarios/${idUsuario}.jpg?v=${Date.now()}`);
             setMensagemCliente(data.mensagem || "Dados atualizados com sucesso.");
         } catch {
-            setErroCliente("Nao foi possivel conectar com o servidor.");
+            setErroCliente("Não foi possível conectar com o servidor.");
         } finally {
             setSalvandoCliente(false);
         }
@@ -299,25 +298,24 @@ export default function Header({ busca = "", setBusca = null }) {
         if (backdrop) {
             backdrop.remove();
         }
-
     }, [location]);
+
+    const linksCliente = (
+        <>
+            <Link className="nav-link" to="/minhas-compras">Minhas compras</Link>
+            <button type="button" className={css.linkBotao} onClick={abrirModalDados}>
+                Meus dados
+            </button>
+        </>
+    );
 
     return (
         <header className={"top-0 z-50 " + css.header}>
             <nav className="navbar">
                 <div className="container-fluid d-flex align-items-center">
-
                     <div className={css.juntar}>
-                        <Link
-                            className="navbar-brand d-flex align-items-center gap-2"
-                            to={linkLogo}
-                        >
-                            <img
-                                src={logoUrl}
-                                alt="Logo"
-                                width="60"
-                                height="40"
-                            />
+                        <Link className="navbar-brand d-flex align-items-center gap-2" to={linkLogo}>
+                            <img src={logoUrl} alt="Logo" width="60" height="40" />
                         </Link>
 
                         <div className={"container-fluid " + css.mobile}>
@@ -330,34 +328,17 @@ export default function Header({ busca = "", setBusca = null }) {
                                 <span className="navbar-toggler-icon"></span>
                             </button>
 
-                            <div
-                                className="offcanvas offcanvas-end"
-                                tabIndex="-1"
-                                id="offcanvasNavbar"
-                            >
+                            <div className="offcanvas offcanvas-end" tabIndex="-1" id="offcanvasNavbar">
                                 <div className="offcanvas-header">
-                                    <Link
-                                        className="navbar-brand d-flex align-items-center gap-2"
-                                        to={linkLogo}
-                                    >
-                                        <img
-                                            src={logoUrl}
-                                            alt="Logo"
-                                            width="60"
-                                            height="40"
-                                        />
+                                    <Link className="navbar-brand d-flex align-items-center gap-2" to={linkLogo}>
+                                        <img src={logoUrl} alt="Logo" width="60" height="40" />
                                     </Link>
 
-                                    <button
-                                        type="button"
-                                        className="btn-close"
-                                        data-bs-dismiss="offcanvas"
-                                    ></button>
+                                    <button type="button" className="btn-close" data-bs-dismiss="offcanvas"></button>
                                 </div>
 
                                 <div className="offcanvas-body">
                                     <ul className="navbar-nav flex-grow-1">
-
                                         {!usuarioInterno && (
                                             <>
                                                 <li className="nav-item">
@@ -386,45 +367,25 @@ export default function Header({ busca = "", setBusca = null }) {
                                         {!estaLogado ? (
                                             <>
                                                 <li className="nav-item">
-                                                    <Link
-                                                        className="nav-link"
-                                                        to="/login"
-                                                    >
-                                                        Entrar
-                                                    </Link>
+                                                    <Link className="nav-link" to="/login">Entrar</Link>
                                                 </li>
 
                                                 <li className="nav-item">
-                                                    <Link
-                                                        className={
-                                                            "btn btn-primary " +
-                                                            css.corFundo
-                                                        }
-                                                        to="/cadastro"
-                                                    >
+                                                    <Link className={"btn btn-primary " + css.corFundo} to="/cadastro">
                                                         Cadastrar
                                                     </Link>
                                                 </li>
                                             </>
                                         ) : (
                                             <li className="nav-item">
-                                                <button
-                                                    className={
-                                                        "btn btn-primary " +
-                                                        css.corFundo
-                                                    }
-                                                    onClick={handleLogout}
-                                                >
+                                                <button className={"btn btn-primary " + css.corFundo} onClick={handleLogout}>
                                                     Logout
                                                 </button>
                                             </li>
                                         )}
                                     </ul>
 
-                                    <form
-                                        className={usuarioInterno ? css.oculto : css.buscaMobile}
-                                        onSubmit={handleBuscar}
-                                    >
+                                    <form className={usuarioInterno ? css.oculto : css.buscaMobile} onSubmit={handleBuscar}>
                                         <input
                                             className="form-control"
                                             type="search"
@@ -432,19 +393,14 @@ export default function Header({ busca = "", setBusca = null }) {
                                             value={valorBusca}
                                             onChange={handleBuscaChange}
                                         />
-                                        <button type="submit" className={css.botaoBuscar}>
-                                            Buscar
-                                        </button>
+                                        <button type="submit" className={css.botaoBuscar}>Buscar</button>
                                     </form>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <form
-                        className={usuarioInterno ? css.oculto : css.buscaDesktop}
-                        onSubmit={handleBuscar}
-                    >
+                    <form className={usuarioInterno ? css.oculto : css.buscaDesktop} onSubmit={handleBuscar}>
                         <input
                             className="form-control"
                             type="search"
@@ -456,51 +412,25 @@ export default function Header({ busca = "", setBusca = null }) {
 
                     <div className={css.sumir}>
                         <div className="d-flex align-items-center gap-3">
-
                             {!usuarioInterno && (
                                 <>
                                     <Link className="nav-link" to="/catalogo">Comprar</Link>
-                                    {usuarioCliente && estaLogado ? (
-                                        <>
-                                            <Link className="nav-link" to="/minhas-compras">Minhas compras</Link>
-                                            <button type="button" className={css.linkBotao} onClick={abrirModalDados}>
-                                                Meus dados
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <Link className="nav-link" to="/">Sobre nós</Link>
-                                    )}
+                                    {usuarioCliente && estaLogado ? linksCliente : <Link className="nav-link" to="/">Sobre nós</Link>}
                                 </>
                             )}
 
                             {!estaLogado ? (
                                 <>
-                                    <Link className="nav-link" to="/login">
-                                        Entrar
-                                    </Link>
-
-                                    <Link
-                                        className={
-                                            "btn btn-primary " + css.corFundo
-                                        }
-                                        to="/cadastro"
-                                    >
-                                        Cadastrar
-                                    </Link>
+                                    <Link className="nav-link" to="/login">Entrar</Link>
+                                    <Link className={"btn btn-primary " + css.corFundo} to="/cadastro">Cadastrar</Link>
                                 </>
                             ) : (
-                                <button
-                                    className={
-                                        "btn btn-primary " + css.corFundo
-                                    }
-                                    onClick={handleLogout}
-                                >
+                                <button className={"btn btn-primary " + css.corFundo} onClick={handleLogout}>
                                     Logout
                                 </button>
                             )}
                         </div>
                     </div>
-
                 </div>
             </nav>
 
@@ -562,9 +492,7 @@ export default function Header({ busca = "", setBusca = null }) {
                             </section>
 
                             <div className={css.acoesModal}>
-                                <button type="button" className={css.cancelarModal} onClick={fecharModalDados}>
-                                    Cancelar
-                                </button>
+                                <button type="button" className={css.cancelarModal} onClick={fecharModalDados}>Cancelar</button>
                                 <button type="submit" className={css.salvarModal} disabled={salvandoCliente}>
                                     {salvandoCliente ? "Salvando..." : "Salvar dados"}
                                 </button>

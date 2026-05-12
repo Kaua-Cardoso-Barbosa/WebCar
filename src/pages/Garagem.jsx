@@ -98,9 +98,14 @@ export default function Garagem() {
             .toLowerCase()
             .includes(busca.toLowerCase())
     );
+
     const totalPaginas = Math.max(1, Math.ceil(veiculosFiltrados.length / 15));
     const inicioPagina = (paginaAtual - 1) * 15;
-    const veiculosPaginados = veiculosFiltrados.slice(inicioPagina, inicioPagina + 15);
+
+    const veiculosPaginados = veiculosFiltrados.slice(
+        inicioPagina,
+        inicioPagina + 15
+    );
 
     function formatarPreco(valor) {
         return Number(valor || 0).toLocaleString("pt-BR", {
@@ -145,10 +150,13 @@ export default function Garagem() {
             }
 
             setVeiculos((atuais) =>
-                atuais.filter((carro) => carro.ID_VEICULO !== veiculoParaDeletar.ID_VEICULO)
+                atuais.filter(
+                    (carro) =>
+                        carro.ID_VEICULO !== veiculoParaDeletar.ID_VEICULO
+                )
             );
 
-            setSucesso(data.mensagem || "VeÃ­culo excluÃ­do com sucesso.");
+            setSucesso(data.mensagem || "Veículo excluído com sucesso.");
             fecharModalDelete();
         } catch (error) {
             setErro("Não foi possível excluir este item. Tente novamente.");
@@ -182,9 +190,15 @@ export default function Garagem() {
                             <div className={`${css.iconeBox} ${css.azul}`}>
                                 <span>Qtd</span>
                             </div>
+
                             <div>
-                                <p className={css.cardLabel}>Estoque total</p>
-                                <h2 className={css.cardValor}>{veiculos.length}</h2>
+                                <p className={css.cardLabel}>
+                                    Estoque total
+                                </p>
+
+                                <h2 className={css.cardValor}>
+                                    {veiculos.length}
+                                </h2>
                             </div>
                         </div>
 
@@ -192,9 +206,15 @@ export default function Garagem() {
                             <div className={`${css.iconeBox} ${css.verde}`}>
                                 <span>R$</span>
                             </div>
+
                             <div>
-                                <p className={css.cardLabel}>Valor da garagem</p>
-                                <h2 className={css.cardValor}>{formatarPreco(valorGaragem)}</h2>
+                                <p className={css.cardLabel}>
+                                    Valor da garagem
+                                </p>
+
+                                <h2 className={css.cardValor}>
+                                    {formatarPreco(valorGaragem)}
+                                </h2>
                             </div>
                         </div>
 
@@ -202,15 +222,30 @@ export default function Garagem() {
                             <div className={`${css.iconeBox} ${css.laranja}`}>
                                 <span>Ativos</span>
                             </div>
+
                             <div>
-                                <p className={css.cardLabel}>Veículos ativos</p>
-                                <h2 className={css.cardValor}>{veiculos.length}</h2>
+                                <p className={css.cardLabel}>
+                                    Veículos ativos
+                                </p>
+
+                                <h2 className={css.cardValor}>
+                                    {veiculos.length}
+                                </h2>
                             </div>
                         </div>
                     </section>
 
-                    {erro && <p className={css.erro}>{erro}</p>}
-                    {sucesso && <p className={css.sucesso}>{sucesso}</p>}
+                    {erro && (
+                        <p className={css.erro}>
+                            {erro}
+                        </p>
+                    )}
+
+                    {sucesso && (
+                        <p className={css.sucesso}>
+                            {sucesso}
+                        </p>
+                    )}
 
                     <div className={css.busca}>
                         <input
@@ -225,97 +260,156 @@ export default function Garagem() {
                     </div>
 
                     <section className={css.tabelaBox}>
-                        <table className={css.tabela}>
-                            <thead>
-                            <tr>
-                                <th>MODELO</th>
-                                <th>ANO</th>
-                                <th>KM</th>
-                                <th>PREÇO</th>
-                                <th>AÇÕES</th>
-                            </tr>
-                            </thead>
+                        <div className={css.tableResponsive}>
+                            <table className={css.tabela}>
+                                <thead>
+                                <tr>
+                                    <th>MODELO</th>
+                                    <th>ANO</th>
+                                    <th>KM</th>
+                                    <th>PREÇO</th>
+                                    <th>AÇÕES</th>
+                                </tr>
+                                </thead>
 
-                            <tbody>
-                            {veiculosPaginados.length > 0 ? (
-                                veiculosPaginados.map((carro, index) => (
-                                    <tr key={carro.ID_VEICULO || carro.RENAVAM || index}>
+                                <tbody className={css.corpoCarrossel}>
+                                {veiculosPaginados.map((carro, index) => (
+                                    <tr
+                                        key={carro.ID_VEICULO || index}
+                                        className={css.cardVeiculo}
+                                    >
                                         <td
-                                            onClick={() => navigate("/VisualizarAdm", { state: { carro } })}
-                                            style={{ cursor: "pointer" }}
+                                            data-label="MODELO"
+                                            onClick={() =>
+                                                navigate("/VisualizarAdm", {
+                                                    state: { carro },
+                                                })
+                                            }
                                         >
                                             <div className={css.modeloCell}>
                                                 <img
-                                                    src={imagensVeiculo(carro.ID_VEICULO)[0]}
-                                                    data-indice="0"
-                                                    onError={(e) => tentarProximaImagem(e, imagensVeiculo(carro.ID_VEICULO))}
-                                                    alt={`${carro.MARCA} ${carro.MODELO}`}
+                                                    src={
+                                                        imagensVeiculo(
+                                                            carro.ID_VEICULO
+                                                        )[0]
+                                                    }
+                                                    onError={(e) =>
+                                                        tentarProximaImagem(
+                                                            e,
+                                                            imagensVeiculo(
+                                                                carro.ID_VEICULO
+                                                            )
+                                                        )
+                                                    }
+                                                    alt="veiculo"
                                                 />
-                                                <span>{carro.MARCA} {carro.MODELO}</span>
+
+                                                <span>
+                                                        {carro.MARCA}{" "}
+                                                    {carro.MODELO}
+                                                    </span>
                                             </div>
                                         </td>
 
-                                        <td>{carro.ANO_MODELO}</td>
-
-                                        <td>
-                                            {Number(carro.KM || 0).toLocaleString("pt-BR")} km
+                                        <td data-label="ANO">
+                                            {carro.ANO_MODELO}
                                         </td>
 
-                                        <td className={css.preco}>
-                                            {formatarPreco(carro.PRECO_VENDA)}
+                                        <td data-label="KM">
+                                            {Number(
+                                                carro.KM || 0
+                                            ).toLocaleString("pt-BR")} km
                                         </td>
 
-                                        <td className={css.acoes}>
+                                        <td
+                                            data-label="PREÇO"
+                                            className={css.preco}
+                                        >
+                                            {formatarPreco(
+                                                carro.PRECO_VENDA
+                                            )}
+                                        </td>
+
+                                        <td
+                                            data-label="AÇÕES"
+                                            className={css.acoes}
+                                        >
                                             <button
-                                                type="button"
                                                 className={css.btnAcao}
-                                                onClick={() => navigate("/EdicaoVeiculo", { state: { carro } })}
+                                                onClick={() =>
+                                                    navigate(
+                                                        "/EdicaoVeiculo",
+                                                        {
+                                                            state: {
+                                                                carro,
+                                                            },
+                                                        }
+                                                    )
+                                                }
                                             >
                                                 Editar
                                             </button>
 
                                             <button
-                                                type="button"
-                                                className={css.btnAcaoDelete}
-                                                onClick={() => abrirModalDelete(carro)}
+                                                className={
+                                                    css.btnAcaoDelete
+                                                }
+                                                onClick={() =>
+                                                    abrirModalDelete(carro)
+                                                }
                                             >
                                                 Excluir
                                             </button>
                                         </td>
                                     </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="5" className={css.vazio}>
-                                        {busca ? "Nenhum resultado encontrado." : "Nenhum veículo cadastrado."}
-                                    </td>
-                                </tr>
-                            )}
-                            </tbody>
-                        </table>
-
-                        <div className={css.paginacao}>
-                            <button
-                                type="button"
-                                className={css.paginaSeta}
-                                disabled={paginaAtual === 1}
-                                onClick={() => setPaginaAtual((pagina) => Math.max(1, pagina - 1))}
-                            >
-                                Anterior
-                            </button>
-                            <button className={`${css.pagina} ${css.ativa}`}>
-                                {paginaAtual} / {totalPaginas}
-                            </button>
-                            <button
-                                type="button"
-                                className={css.paginaSeta}
-                                disabled={paginaAtual === totalPaginas}
-                                onClick={() => setPaginaAtual((pagina) => Math.min(totalPaginas, pagina + 1))}
-                            >
-                                Próxima
-                            </button>
+                                ))}
+                                </tbody>
+                            </table>
                         </div>
                     </section>
+
+                    <div className={css.paginacao}>
+                        <button
+                            className={css.paginaSeta}
+                            disabled={paginaAtual === 1}
+                            onClick={() =>
+                                setPaginaAtual((prev) => prev - 1)
+                            }
+                        >
+                            ←
+                        </button>
+
+                        {Array.from(
+                            { length: totalPaginas },
+                            (_, index) => (
+                                <button
+                                    key={index}
+                                    className={`${css.pagina} ${
+                                        paginaAtual === index + 1
+                                            ? css.ativa
+                                            : ""
+                                    }`}
+                                    onClick={() =>
+                                        setPaginaAtual(index + 1)
+                                    }
+                                >
+                                    {index + 1}
+                                </button>
+                            )
+                        )}
+
+                        <button
+                            className={css.paginaSeta}
+                            disabled={
+                                paginaAtual === totalPaginas
+                            }
+                            onClick={() =>
+                                setPaginaAtual((prev) => prev + 1)
+                            }
+                        >
+                            →
+                        </button>
+                    </div>
                 </main>
             </div>
 
@@ -327,7 +421,8 @@ export default function Garagem() {
                         <p>
                             Tem certeza que deseja excluir este item?{" "}
                             <strong>
-                                {veiculoParaDeletar?.MARCA} {veiculoParaDeletar?.MODELO}
+                                {veiculoParaDeletar?.MARCA}{" "}
+                                {veiculoParaDeletar?.MODELO}
                             </strong>
                         </p>
 
