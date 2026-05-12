@@ -71,11 +71,11 @@ export default function Login() {
                 }
             }, 1000);
 
-        } 
+        }
         catch (error) {
             console.log("ERRO REAL:", error);
             setErro("Erro ao conectar com o servidor");
-}
+        }
     }
 
     function fecharPopup() {
@@ -93,8 +93,10 @@ export default function Login() {
                     <form onSubmit={fazerLogin}>
                         <div className={css.grupoInput}>
                             <label className={css.label}>E-mail</label>
+
                             <div className={css.input}>
                                 <img src="/email.png" alt="Ícone do email" />
+
                                 <input
                                     type="email"
                                     placeholder="User@gmail.com"
@@ -107,8 +109,10 @@ export default function Login() {
 
                         <div className={css.grupoInput}>
                             <label className={css.label}>Senha</label>
+
                             <div className={css.input}>
                                 <img src="/cadeado.png" alt="Cadeado" />
+
                                 <input
                                     type={mostrarSenha ? "text" : "password"}
                                     placeholder="*******"
@@ -116,11 +120,12 @@ export default function Login() {
                                     onChange={(e) => setSenha(e.target.value)}
                                     required
                                 />
+
                                 <span
                                     onClick={toggleSenha}
                                     style={{ cursor: "pointer" }}
                                 >
-                                    <i className={mostrarSenha ? "bi bi-eye-slash" : "bi bi-eye"}></i>
+                                    <i className={mostrarSenha ? "bi bi-eye" : "bi bi-eye-slash"}></i>
                                 </span>
                             </div>
                         </div>
@@ -145,12 +150,17 @@ export default function Login() {
                         )}
 
                         <div className={css.senha}>
-                            <Link to="/recuperarsenhaemail">Esqueceu a senha?</Link>
+                            <Link to="/recuperarsenhaemail">
+                                Esqueceu a senha?
+                            </Link>
                         </div>
 
                         <div className={css.cadastro}>
                             <p>
-                                Não tem uma conta ainda? <Link to="/cadastro">Cadastre-se</Link>
+                                Não tem uma conta ainda?{" "}
+                                <Link to="/cadastro">
+                                    Cadastre-se
+                                </Link>
                             </p>
                         </div>
                     </form>
