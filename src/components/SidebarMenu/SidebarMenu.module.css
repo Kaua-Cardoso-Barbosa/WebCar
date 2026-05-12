@@ -78,6 +78,7 @@
 @media (max-width: 768px) {
     .hamburger {
         display: flex;
+        position: absolute;
     }
 
     .sidebar {
