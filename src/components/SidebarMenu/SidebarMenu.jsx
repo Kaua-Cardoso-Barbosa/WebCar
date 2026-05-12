@@ -31,14 +31,22 @@ export default function SidebarMenu() {
 
             <aside className={`${styles.sidebar} ${open ? styles.open : ""}`}>
                 <nav className={styles.menu}>
+
+                    {/* BOTÃO FECHAR */}
+                    <button className={styles.close} onClick={() => setOpen(false)}>
+                        ✕
+                    </button>
+
                     <Link
                         to="/dashboard"
                         className={`${styles.item} ${location.pathname === "/dashboard" ? styles.active : ""}`}
                         onClick={fecharMenu}
                     >
+
                         <DashboardIcon />
                         <span>Dashboard</span>
                     </Link>
+
 
                     <Link
                         to="/garagem"
