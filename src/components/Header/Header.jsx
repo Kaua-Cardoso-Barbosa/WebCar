@@ -112,6 +112,8 @@ export default function Header({ busca = "", setBusca = null }) {
         localStorage.removeItem("usuario_id");
         localStorage.removeItem("usuario_nome");
         localStorage.removeItem("usuario_email");
+        localStorage.removeItem("usuario_telefone");
+        localStorage.removeItem("usuario_cpf");
         localStorage.removeItem("usuario_tipo");
         localStorage.removeItem("token");
 
@@ -136,8 +138,8 @@ export default function Header({ busca = "", setBusca = null }) {
         const dadosLocais = {
             nome: localStorage.getItem("usuario_nome") || "",
             email: localStorage.getItem("usuario_email") || "",
-            telefone: "",
-            cpf: "",
+            telefone: formatarTelefone(localStorage.getItem("usuario_telefone") || ""),
+            cpf: formatarCpf(localStorage.getItem("usuario_cpf") || ""),
             senha: "",
         };
 
@@ -210,7 +212,7 @@ export default function Header({ busca = "", setBusca = null }) {
         }
 
         if (!dadosCliente.nome.trim() || !dadosCliente.email.trim() || !dadosCliente.telefone.trim() || !dadosCliente.cpf.trim() || !dadosCliente.senha.trim()) {
-            setErroCliente("Preencha nome, email, telefone, CPF e senha para salvar.");
+            setErroCliente("Preencha nome, email, telefone, CPF e nova senha para salvar.");
             return;
         }
 
@@ -245,6 +247,8 @@ export default function Header({ busca = "", setBusca = null }) {
 
             localStorage.setItem("usuario_nome", dadosCliente.nome);
             localStorage.setItem("usuario_email", dadosCliente.email);
+            localStorage.setItem("usuario_telefone", apenasNumeros(dadosCliente.telefone));
+            localStorage.setItem("usuario_cpf", apenasNumeros(dadosCliente.cpf));
             setDadosCliente((dados) => ({ ...dados, senha: "" }));
             setFotoCliente(null);
             setPreviewCliente(`${API_URL}/uploads/Usuarios/${idUsuario}.jpg?v=${Date.now()}`);
@@ -481,12 +485,12 @@ export default function Header({ busca = "", setBusca = null }) {
                                 </label>
 
                                 <label className={css.campoInteiro}>
-                                    Senha para salvar
+                                    Nova senha
                                     <input
                                         type="password"
                                         value={dadosCliente.senha}
                                         onChange={(e) => atualizarDadosCliente("senha", e.target.value)}
-                                        placeholder="Obrigatória para confirmar alterações"
+                                        placeholder="Digite uma nova senha"
                                     />
                                 </label>
                             </section>

@@ -13,9 +13,9 @@ import TrocarSenha from "./pages/TrocarSenha.jsx";
 import VerificarEmailConta from "./pages/VerificarEmailConta.jsx";
 import RotaProtegida from "./components/RotaProtegida.jsx";
 import Restrita from "./pages/Restrita.jsx";
-import RestritaVendedor from "./pages/RestritaVendedor.jsx";
 import Not from "./pages/Not.jsx";
 import Visualizar from "./pages/Visualizar.jsx";
+import VisualizarVendedor from "./pages/VisualizarVendedor.jsx";
 import Catalogo from "./pages/Catalogo.jsx";
 import AdicionarManutencao from "./pages/AdicionarManutencao.jsx";
 import VisualizarAdm from "./pages/VisualizarAdm.jsx";
@@ -30,7 +30,6 @@ import Dashboard from "./pages/Dashboard.jsx";
 import CadastrarMarca from "./pages/CadastrarMarca.jsx";
 import AtualizarValores from "./pages/AtualizarValores.jsx";
 import ListarMarcas from "./pages/ListarMarcas.jsx";
-import EditarCliente from "./pages/EditarCliente.jsx";
 import ListaUsuarios from "./pages/ListaUsuarios.jsx";
 import ConfiguracoesSite from "./pages/ConfiguracoesSite.jsx";
 
@@ -123,6 +122,14 @@ export default function App() {
                 <Route path="/trocarSenha" element={<TrocarSenha />} />
                 <Route path="/verificarEmailConta" element={<VerificarEmailConta />} />
                 <Route path="/Visualizar/:id" element={<Visualizar />} />
+                <Route
+                    path="/VisualizarVendedor/:id"
+                    element={
+                        <RotaProtegida tiposPermitidos={[1]}>
+                            <VisualizarVendedor />
+                        </RotaProtegida>
+                    }
+                />
                 <Route path="/not" element={<Not />} />
                 <Route
                     path="/VisualizarAdm"
@@ -232,14 +239,6 @@ export default function App() {
                 />
 
                 <Route
-                    path="/editarcliente/:id_usuario"
-                    element={
-                        <RotaProtegida tiposPermitidos={[0]}>
-                            <EditarCliente />
-                        </RotaProtegida>
-                    }
-                />
-                <Route
                     path="/listarmarcas"
                     element={
                         <RotaProtegida tiposPermitidos={[0]}>
@@ -277,15 +276,6 @@ export default function App() {
                     element={
                         <RotaProtegida tiposPermitidos={[0]}>
                             <Dashboard />
-                        </RotaProtegida>
-                    }
-                />
-
-                <Route
-                    path="/restrita-vendedor"
-                    element={
-                        <RotaProtegida>
-                            <RestritaVendedor />
                         </RotaProtegida>
                     }
                 />

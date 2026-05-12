@@ -47,6 +47,8 @@ function calcularValorAVista(valor, descontoAVista) {
 export default function Card({ idVeiculo, modelo, valor, combustivel, ano, nome, km, cambio, descontoAVista = 0 }) {
     const navigate = useNavigate();
     const imagens = imagensVeiculo(idVeiculo);
+    const usuarioTipo = Number(localStorage.getItem("usuario_tipo"));
+    const rotaVisualizar = usuarioTipo === 1 ? `/VisualizarVendedor/${idVeiculo}` : `/Visualizar/${idVeiculo}`;
 
     function formatarPreco(valor) {
         return Number(valor || 0).toLocaleString("pt-BR", {
@@ -83,11 +85,11 @@ export default function Card({ idVeiculo, modelo, valor, combustivel, ano, nome,
             className={css.card}
             role="button"
             tabIndex={0}
-            onClick={() => idVeiculo && navigate(`/Visualizar/${idVeiculo}`)}
+            onClick={() => idVeiculo && navigate(rotaVisualizar)}
             onKeyDown={(e) => {
                 if ((e.key === "Enter" || e.key === " ") && idVeiculo) {
                     e.preventDefault();
-                    navigate(`/Visualizar/${idVeiculo}`);
+                    navigate(rotaVisualizar);
                 }
             }}
         >

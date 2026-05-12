@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { API_URL } from "../App";
 import Header from "../components/Header/Header";
 import SidebarMenu from "../components/SidebarMenu/SidebarMenu";
@@ -62,8 +62,24 @@ export default function ListaUsuario() {
     const [previewCadastro, setPreviewCadastro] = useState(null);
     const [salvandoCadastro, setSalvandoCadastro] = useState(false);
     const [erroCadastro, setErroCadastro] = useState("");
+    const [modalEdicao, setModalEdicao] = useState(false);
+    const [usuarioEdicao, setUsuarioEdicao] = useState(null);
+    const [edicao, setEdicao] = useState({
+        nome: "",
+        telefone: "",
+        email: "",
+        cpf: "",
+        senha: "",
+        tipo: "2",
+    });
+    const [imagemEdicao, setImagemEdicao] = useState(null);
+    const [previewEdicao, setPreviewEdicao] = useState(null);
+    const [salvandoEdicao, setSalvandoEdicao] = useState(false);
+    const [erroEdicao, setErroEdicao] = useState("");
+    const [alterarSenhaEdicao, setAlterarSenhaEdicao] = useState(false);
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     function apenasNumeros(valor) {
         return String(valor).replace(/\D/g, "");
@@ -171,6 +187,13 @@ export default function ListaUsuario() {
     }, []);
 
     useEffect(() => {
+        if (location.state?.mensagem) {
+            setSucesso(location.state.mensagem);
+            navigate(location.pathname, { replace: true, state: null });
+        }
+    }, [location, navigate]);
+
+    useEffect(() => {
         setPaginaAtual(1);
     }, [busca, tiposSelecionados]);
 
@@ -183,7 +206,7 @@ export default function ListaUsuario() {
     }, [previewCadastro]);
 
     function editarUsuario(usuario) {
-        navigate(`/editarcliente/${usuario.id_usuario}`);
+        abrirModalEdicao(usuario);
     }
 
     function alternarTipo(tipo) {
@@ -222,6 +245,14 @@ export default function ListaUsuario() {
         }));
     }
 
+    function atualizarEdicao(campo, valor) {
+        setErroEdicao("");
+        setEdicao((dadosAtuais) => ({
+            ...dadosAtuais,
+            [campo]: valor,
+        }));
+    }
+
     function abrirModalCadastro() {
         setErro("");
         setSucesso("");
@@ -248,6 +279,35 @@ export default function ListaUsuario() {
         setErroCadastro("");
     }
 
+    function abrirModalEdicao(usuario) {
+        setErro("");
+        setSucesso("");
+        setUsuarioEdicao(usuario);
+        setEdicao({
+            nome: usuario.nome || "",
+            telefone: formatarTelefone(usuario.telefone || ""),
+            email: usuario.email || "",
+            cpf: formatarCpf(usuario.cpf || ""),
+            senha: "",
+            tipo: String(usuario.tipo ?? "2"),
+        });
+        setImagemEdicao(null);
+        setPreviewEdicao(imagensUsuario(usuario)[0]);
+        setErroEdicao("");
+        setAlterarSenhaEdicao(false);
+        setModalEdicao(true);
+    }
+
+    function fecharModalEdicao() {
+        setModalEdicao(false);
+        setUsuarioEdicao(null);
+        setImagemEdicao(null);
+        setPreviewEdicao(null);
+        setSalvandoEdicao(false);
+        setErroEdicao("");
+        setAlterarSenhaEdicao(false);
+    }
+
     function selecionarImagemCadastro(e) {
         const arquivo = e.target.files[0];
 
@@ -261,6 +321,21 @@ export default function ListaUsuario() {
 
         setImagemCadastro(arquivo);
         setPreviewCadastro(URL.createObjectURL(arquivo));
+    }
+
+    function selecionarImagemEdicao(e) {
+        const arquivo = e.target.files[0];
+
+        if (!arquivo) return;
+
+        setErroEdicao("");
+
+        if (previewEdicao?.startsWith("blob:")) {
+            URL.revokeObjectURL(previewEdicao);
+        }
+
+        setImagemEdicao(arquivo);
+        setPreviewEdicao(URL.createObjectURL(arquivo));
     }
 
     async function alterarSituacaoUsuario() {
@@ -354,6 +429,59 @@ export default function ListaUsuario() {
             setErroCadastro("Nao foi possivel cadastrar o usuario.");
         } finally {
             setSalvandoCadastro(false);
+        }
+    }
+
+    async function salvarEdicaoUsuario(e) {
+        e.preventDefault();
+
+        if (!usuarioEdicao?.id_usuario || salvandoEdicao) return;
+
+        if (!edicao.nome.trim() || !edicao.email.trim() || !edicao.telefone.trim() || !edicao.cpf.trim()) {
+            setErroEdicao("Preencha nome, email, telefone e CPF.");
+            return;
+        }
+
+        try {
+            setErroEdicao("");
+            setSucesso("");
+            setSalvandoEdicao(true);
+
+            const formData = new FormData();
+            formData.append("nome", edicao.nome);
+            formData.append("telefone", apenasNumeros(edicao.telefone));
+            formData.append("email", edicao.email);
+            formData.append("cpf", apenasNumeros(edicao.cpf));
+            formData.append("tipo", edicao.tipo);
+
+            if (alterarSenhaEdicao && edicao.senha.trim()) {
+                formData.append("senha", edicao.senha);
+            }
+
+            if (imagemEdicao) {
+                formData.append("imagem", imagemEdicao);
+            }
+
+            const response = await fetch(`${API_URL}/edicao_usuario/${usuarioEdicao.id_usuario}`, {
+                method: "PUT",
+                credentials: "include",
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setErroEdicao(data.mensagem || "Nao foi possivel editar o usuario.");
+                return;
+            }
+
+            setSucesso(data.mensagem || "Usuario atualizado com sucesso.");
+            fecharModalEdicao();
+            buscarUsuarios();
+        } catch {
+            setErroEdicao("Nao foi possivel editar o usuario.");
+        } finally {
+            setSalvandoEdicao(false);
         }
     }
 
@@ -748,6 +876,170 @@ export default function ListaUsuario() {
                                     disabled={salvandoCadastro}
                                 >
                                     {salvandoCadastro ? "Cadastrando..." : "Cadastrar"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {modalEdicao && (
+                <div className={css.modalFundo}>
+                    <div className={css.modalCadastro}>
+                        <div className={css.modalTopo}>
+                            <div>
+                                <h2>Editar usuario</h2>
+                                <p>Atualize os dados cadastrais e o tipo de acesso.</p>
+                            </div>
+
+                            <button
+                                type="button"
+                                className={css.fecharModal}
+                                onClick={fecharModalEdicao}
+                                aria-label="Fechar"
+                            >
+                                x
+                            </button>
+                        </div>
+
+                        <form className={css.formCadastro} onSubmit={salvarEdicaoUsuario}>
+                            <div className={css.tipoCadastro}>
+                                <button
+                                    type="button"
+                                    className={`${css.tipoCadastroBotao} ${edicao.tipo === "2" ? css.tipoCadastroAtivo : ""}`}
+                                    onClick={() => atualizarEdicao("tipo", "2")}
+                                >
+                                    Cliente
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className={`${css.tipoCadastroBotao} ${edicao.tipo === "1" ? css.tipoCadastroAtivo : ""}`}
+                                    onClick={() => atualizarEdicao("tipo", "1")}
+                                >
+                                    Vendedor
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className={`${css.tipoCadastroBotao} ${edicao.tipo === "0" ? css.tipoCadastroAtivo : ""}`}
+                                    onClick={() => atualizarEdicao("tipo", "0")}
+                                >
+                                    Administrador
+                                </button>
+                            </div>
+
+                            <label className={css.uploadCadastro}>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={selecionarImagemEdicao}
+                                />
+
+                                {previewEdicao ? (
+                                    <img src={previewEdicao} alt="Preview" />
+                                ) : (
+                                    <span>Alterar imagem</span>
+                                )}
+                            </label>
+
+                            {erroEdicao && (
+                                <p className={css.erroCadastro}>
+                                    {erroEdicao}
+                                </p>
+                            )}
+
+                            <div className={css.campo}>
+                                <label>Nome completo</label>
+                                <input
+                                    type="text"
+                                    placeholder="Digite o nome completo"
+                                    value={edicao.nome}
+                                    onChange={(e) => atualizarEdicao("nome", e.target.value)}
+                                />
+                            </div>
+
+                            <div className={css.gradeCampos}>
+                                <div className={css.campo}>
+                                    <label>Telefone</label>
+                                    <input
+                                        type="text"
+                                        placeholder="(11) 99999-9999"
+                                        inputMode="numeric"
+                                        maxLength={15}
+                                        value={edicao.telefone}
+                                        onChange={(e) =>
+                                            atualizarEdicao("telefone", formatarTelefone(e.target.value))
+                                        }
+                                    />
+                                </div>
+
+                                <div className={css.campo}>
+                                    <label>CPF</label>
+                                    <input
+                                        type="text"
+                                        placeholder="000.000.000-00"
+                                        inputMode="numeric"
+                                        maxLength={14}
+                                        value={edicao.cpf}
+                                        onChange={(e) =>
+                                            atualizarEdicao("cpf", formatarCpf(e.target.value))
+                                        }
+                                    />
+                                </div>
+                            </div>
+
+                            <div className={css.campo}>
+                                <label>Email</label>
+                                <input
+                                    type="email"
+                                    placeholder="email@exemplo.com"
+                                    value={edicao.email}
+                                    onChange={(e) => atualizarEdicao("email", e.target.value)}
+                                />
+                            </div>
+
+                            <div className={css.campoSenhaOpcional}>
+                                <button
+                                    type="button"
+                                    className={css.botaoSenhaOpcional}
+                                    onClick={() => {
+                                        setAlterarSenhaEdicao((valorAtual) => !valorAtual);
+                                        atualizarEdicao("senha", "");
+                                    }}
+                                >
+                                    {alterarSenhaEdicao ? "Manter senha atual" : "Alterar senha"}
+                                </button>
+
+                                {alterarSenhaEdicao && (
+                                    <div className={css.campo}>
+                                        <label>Nova senha</label>
+                                        <input
+                                            type="password"
+                                            placeholder="Digite a nova senha"
+                                            autoComplete="new-password"
+                                            value={edicao.senha}
+                                            onChange={(e) => atualizarEdicao("senha", e.target.value)}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className={css.modalBotoes}>
+                                <button
+                                    type="button"
+                                    className={css.cancelar}
+                                    onClick={fecharModalEdicao}
+                                >
+                                    Cancelar
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    className={css.confirmar}
+                                    disabled={salvandoEdicao}
+                                >
+                                    {salvandoEdicao ? "Salvando..." : "Salvar alteracoes"}
                                 </button>
                             </div>
                         </form>

@@ -517,7 +517,7 @@
 
 .tipoCadastro {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
 }
 
@@ -627,6 +627,29 @@
 .campo input:focus {
     border-color: var(--cor-principal);
     box-shadow: none;
+}
+
+.campoSenhaOpcional {
+    display: grid;
+    gap: 12px;
+}
+
+.botaoSenhaOpcional {
+    width: fit-content;
+    border: 1px solid var(--cor-borda-cinza);
+    background: var(--cor-fundo-input);
+    color: var(--cor-texto-neutro-700);
+    min-height: 40px;
+    border-radius: 8px;
+    padding: 0 14px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.botaoSenhaOpcional:hover {
+    border-color: var(--cor-azul-botao);
+    color: var(--cor-azul-acao);
 }
 
 .modal h2 {
@@ -1233,7 +1256,7 @@
 
 .tipoCadastro {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
 }
 

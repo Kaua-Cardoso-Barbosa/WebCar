@@ -50,6 +50,14 @@ export default function Login() {
                 localStorage.setItem("usuario_email", data.usuario.email);
                 localStorage.setItem("usuario_tipo", data.usuario.tipo);
 
+                if (data.usuario.telefone) {
+                    localStorage.setItem("usuario_telefone", data.usuario.telefone);
+                }
+
+                if (data.usuario.cpf) {
+                    localStorage.setItem("usuario_cpf", data.usuario.cpf);
+                }
+
                 if (data.token) {
                     localStorage.setItem("token", data.token);
                 }
@@ -63,7 +71,7 @@ export default function Login() {
                 if (tipo === 0) {
                     navigate("/dashboard");
                 } else if (tipo === 1) {
-                    navigate("/restrita-vendedor");
+                    navigate("/catalogo");
                 } else if (tipo === 2) {
                     navigate("/catalogo");
                 } else {

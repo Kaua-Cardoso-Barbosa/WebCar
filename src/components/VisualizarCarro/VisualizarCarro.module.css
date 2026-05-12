@@ -45,6 +45,17 @@
     font-weight: 800;
 }
 
+.alertaSucesso {
+    margin-bottom: 18px;
+    border: 1px solid var(--cor-sucesso-borda);
+    border-radius: 8px;
+    background: var(--cor-sucesso-fundo);
+    color: var(--cor-sucesso-texto);
+    padding: 12px 14px;
+    font-size: 14px;
+    font-weight: 900;
+}
+
 .gridPrincipal {
     display: grid;
     grid-template-columns: minmax(0, 1.72fr) minmax(340px, 0.82fr);
@@ -382,7 +393,7 @@
 }
 
 .modalCompra {
-    width: min(460px, 100%);
+    width: min(540px, 100%);
     max-height: calc(100vh - 36px);
     overflow-y: auto;
     background: var(--cor-superficie);
@@ -445,7 +456,7 @@
 }
 
 .qrCodeArea {
-    min-height: 260px;
+    min-height: 220px;
     border: 1px dashed var(--cor-borda-azulada);
     border-radius: 8px;
     background: var(--cor-fundo-neutro);
@@ -455,6 +466,115 @@
     flex-direction: column;
     padding: 18px;
     text-align: center;
+}
+
+.formaPagamento {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.campoVenda {
+    display: grid;
+    gap: 7px;
+}
+
+.campoVenda span {
+    color: var(--cor-texto-muted);
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.campoVenda input,
+.campoVenda select {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid var(--cor-borda-suave);
+    border-radius: 8px;
+    background: var(--cor-fundo-input);
+    color: var(--cor-texto-principal);
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 800;
+    outline: none;
+}
+
+.campoVenda input:focus,
+.campoVenda select:focus {
+    border-color: var(--cor-azul-acao);
+    box-shadow: 0 0 0 3px var(--sombra-principal-12);
+}
+
+.campoVenda select:disabled {
+    color: var(--cor-texto-muted);
+    cursor: wait;
+}
+
+.avisoTaxa {
+    color: var(--cor-texto-muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.opcoesPagamento {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.opcoesPagamento button {
+    min-height: 44px;
+    border: 1px solid var(--cor-borda-suave);
+    border-radius: 8px;
+    background: var(--cor-superficie);
+    color: var(--cor-texto-neutro-700);
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.opcoesPagamento .opcaoAtiva {
+    border-color: var(--cor-azul-acao);
+    background: var(--cor-azul-fundo-claro);
+    color: var(--cor-azul-acao);
+}
+
+.resumoPagamento {
+    display: grid;
+    gap: 8px;
+    border: 1px solid var(--cor-divisor-claro);
+    border-radius: 8px;
+    background: var(--cor-fundo-input);
+    padding: 12px;
+}
+
+.resumoPagamento div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.resumoPagamento span {
+    color: var(--cor-texto-muted);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.resumoPagamento strong {
+    color: var(--cor-texto-principal);
+    font-size: 14px;
+    font-weight: 900;
+    text-align: right;
+}
+
+.valorRiscado {
+    color: var(--cor-texto-muted) !important;
+    text-decoration: line-through;
+}
+
+.valorDesconto {
+    color: var(--cor-sucesso-texto) !important;
 }
 
 .qrCodeArea img {
@@ -475,6 +595,12 @@
 .expiracaoQr {
     margin-top: 12px !important;
     color: var(--cor-texto-muted) !important;
+    font-size: 13px;
+}
+
+.mensagemQr {
+    margin-top: 12px !important;
+    color: var(--cor-sucesso-texto) !important;
     font-size: 13px;
 }
 

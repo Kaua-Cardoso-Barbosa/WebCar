@@ -80,16 +80,32 @@ function formatarPreco(valor) {
 }
 
 function normalizarDescontoAVista(data = {}) {
+    const empresa = data.empresas?.[0] || data.empresa?.[0] || data.empresa || data[0] || data;
     const valor =
-        data.DESCONTO_A_VISTA ??
-        data.desconto_a_vista ??
-        data.desconto ??
-        data.porcentagem ??
+        empresa.DESCONTO_A_VISTA ??
+        empresa.desconto_a_vista ??
+        empresa.descontoAVista ??
+        empresa.desconto ??
+        empresa.porcentagem ??
         0;
 
     const numero = Number(valor);
 
     return Number.isFinite(numero) && numero > 0 ? numero : 0;
+}
+
+function normalizarPorcentagemJuro(data = {}) {
+    const empresa = data.empresas?.[0] || data.empresa?.[0] || data.empresa || data[0] || data;
+    const valor =
+        empresa.PORCENTAGEM_JURO ??
+        empresa.porcentagem_juro ??
+        empresa.porcentagemJuro ??
+        empresa.juro ??
+        empresa.JURO;
+
+    const numero = Number(valor);
+
+    return Number.isFinite(numero) && numero >= 0 ? numero : null;
 }
 
 function calcularValorAVista(valor, descontoAVista) {
@@ -103,7 +119,31 @@ function calcularValorAVista(valor, descontoAVista) {
     return preco - (preco * desconto) / 100;
 }
 
-export default function VisualizarCarro() {
+function calcularFinanciamento(valor, porcentagemJuro, parcelas) {
+    const preco = Number(valor || 0);
+    const juro = Number(porcentagemJuro || 0) / 100;
+    const quantidadeParcelas = Number(parcelas || 0);
+
+    if (!Number.isFinite(preco) || preco <= 0 || quantidadeParcelas <= 0) {
+        return { parcelaMensal: 0, valorTotal: 0 };
+    }
+
+    if (!Number.isFinite(juro) || juro <= 0) {
+        return {
+            parcelaMensal: preco / quantidadeParcelas,
+            valorTotal: preco,
+        };
+    }
+
+    const parcelaMensal = preco * juro / (1 - (1 + juro) ** -quantidadeParcelas);
+
+    return {
+        parcelaMensal,
+        valorTotal: parcelaMensal * quantidadeParcelas,
+    };
+}
+
+export default function VisualizarCarro({ modoVendedor = false }) {
     const { id } = useParams();
     const navigate = useNavigate();
 
@@ -120,6 +160,13 @@ export default function VisualizarCarro() {
     const [compraConcluida, setCompraConcluida] = useState(false);
     const [tempoQrCode, setTempoQrCode] = useState(60);
     const [descontoAVista, setDescontoAVista] = useState(0);
+    const [porcentagemJuro, setPorcentagemJuro] = useState(null);
+    const [carregandoJuro, setCarregandoJuro] = useState(false);
+    const [formaPagamento, setFormaPagamento] = useState(0);
+    const [parcelas, setParcelas] = useState(12);
+    const [idClienteVenda, setIdClienteVenda] = useState("");
+    const [mensagemVenda, setMensagemVenda] = useState("");
+    const [mensagemSucessoPagina, setMensagemSucessoPagina] = useState("");
 
     async function carregarImagensDisponiveis(idVeiculo) {
         if (!idVeiculo) {
@@ -196,14 +243,9 @@ export default function VisualizarCarro() {
                 setCarro(veiculo);
                 carregarImagensDisponiveis(veiculo.ID_VEICULO);
 
-                const responseDesconto = await fetch(`${API_URL}/verporcentagem_desconto`, {
-                    method: "GET",
-                    credentials: "include",
-                });
-
-                if (responseDesconto.ok) {
-                    const dataDesconto = await responseDesconto.json();
-                    setDescontoAVista(normalizarDescontoAVista(dataDesconto));
+                await carregarDescontoAVistaEmpresa();
+                if (modoVendedor) {
+                    await carregarTaxaJuroEmpresa();
                 }
             } catch {
                 setErro("Erro ao conectar com o servidor.");
@@ -213,7 +255,69 @@ export default function VisualizarCarro() {
         }
 
         buscarVeiculo();
-    }, [id]);
+    }, [id, modoVendedor]);
+
+    async function carregarDescontoAVistaEmpresa() {
+        try {
+            const rotas = ["/verporcentagem_desconto", "/verdadosempresa"];
+
+            for (const rota of rotas) {
+                const responseDesconto = await fetch(`${API_URL}${rota}`, {
+                    method: "GET",
+                    credentials: "include",
+                });
+
+                if (responseDesconto.ok) {
+                    const dataDesconto = await responseDesconto.json();
+                    const desconto = normalizarDescontoAVista(dataDesconto);
+
+                    if (desconto > 0) {
+                        setDescontoAVista(desconto);
+                        return desconto;
+                    }
+                }
+            }
+
+            setDescontoAVista(0);
+            return 0;
+        } catch {
+            setDescontoAVista(0);
+            return 0;
+        }
+    }
+
+    async function carregarTaxaJuroEmpresa() {
+        try {
+            setCarregandoJuro(true);
+
+            const rotas = ["/verdadosempresa", "/verporcentagem_juro"];
+
+            for (const rota of rotas) {
+                const responseEmpresa = await fetch(`${API_URL}${rota}`, {
+                    method: "GET",
+                    credentials: "include",
+                });
+
+                if (responseEmpresa.ok) {
+                    const dataEmpresa = await responseEmpresa.json();
+                    const taxa = normalizarPorcentagemJuro(dataEmpresa);
+
+                    if (taxa !== null) {
+                        setPorcentagemJuro(taxa);
+                        return taxa;
+                    }
+                }
+            }
+
+            setPorcentagemJuro(null);
+            return null;
+        } catch {
+            setPorcentagemJuro(null);
+            return null;
+        } finally {
+            setCarregandoJuro(false);
+        }
+    }
 
     useEffect(() => {
         return () => {
@@ -235,7 +339,7 @@ export default function VisualizarCarro() {
         }, 1000);
 
         const expiracao = setTimeout(() => {
-            fecharCompra();
+            finalizarCompraPix();
         }, 60000);
 
         return () => {
@@ -246,6 +350,23 @@ export default function VisualizarCarro() {
 
     async function abrirCompra() {
         if (!carro?.ID_VEICULO) return;
+
+        if (modoVendedor) {
+            setErroCompra("");
+            setMensagemVenda("");
+            setMensagemSucessoPagina("");
+            setCompraConcluida(false);
+            setTempoQrCode(60);
+            setFormaPagamento(0);
+            setParcelas(12);
+            setIdClienteVenda("");
+            if (qrCodeUrl) {
+                URL.revokeObjectURL(qrCodeUrl);
+                setQrCodeUrl("");
+            }
+            setModalCompraAberta(true);
+            return;
+        }
 
         try {
             setErroCompra("");
@@ -292,11 +413,105 @@ export default function VisualizarCarro() {
         setModalCompraAberta(false);
         setErroCompra("");
         setCompraConcluida(false);
+        setMensagemVenda("");
         setTempoQrCode(60);
     }
 
+    function finalizarCompraPix() {
+        setModalCompraAberta(false);
+        setErroCompra("");
+        setCompraConcluida(false);
+        setMensagemVenda("");
+        setTempoQrCode(60);
+
+        if (qrCodeUrl) {
+            URL.revokeObjectURL(qrCodeUrl);
+            setQrCodeUrl("");
+        }
+
+        setMensagemSucessoPagina(
+            modoVendedor
+                ? "Venda a vista concluida com sucesso."
+                : "Carro comprado com sucesso."
+        );
+    }
+
+    async function registrarVenda() {
+        if (!carro?.ID_VEICULO || gerandoQrCode) return;
+
+        if (!idClienteVenda.trim()) {
+            setErroCompra("Informe o ID do cliente para registrar a venda.");
+            return;
+        }
+
+        try {
+            setErroCompra("");
+            setMensagemVenda("");
+            setMensagemSucessoPagina("");
+            setCompraConcluida(false);
+            setGerandoQrCode(true);
+            setTempoQrCode(60);
+
+            if (Number(formaPagamento) === 1 && porcentagemJuro === null) {
+                const taxa = await carregarTaxaJuroEmpresa();
+
+                if (taxa === null) {
+                    setErroCompra("Nao foi possivel carregar a taxa de juros cadastrada pela empresa.");
+                    return;
+                }
+            }
+
+            if (qrCodeUrl) {
+                URL.revokeObjectURL(qrCodeUrl);
+                setQrCodeUrl("");
+            }
+
+            const payload = {
+                id_veiculo: carro.ID_VEICULO,
+                id_usuario_cliente: Number(idClienteVenda),
+                forma_pagamento: Number(formaPagamento),
+            };
+
+            if (Number(formaPagamento) === 1) {
+                payload.parcela = Number(parcelas);
+            }
+
+            const response = await fetch(`${API_URL}/adicionar_venda`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify(payload),
+            });
+
+            const tipoResposta = response.headers.get("content-type") || "";
+
+            if (!response.ok || tipoResposta.includes("application/json")) {
+                const data = tipoResposta.includes("application/json") ? await response.json() : null;
+
+                if (!response.ok) {
+                    setErroCompra(data?.mensagem || "Nao foi possivel registrar a venda.");
+                    return;
+                }
+
+                setModalCompraAberta(false);
+                setMensagemSucessoPagina(data?.mensagem || "Venda concluida com sucesso.");
+                return;
+            }
+
+            const imagemQrCode = await response.blob();
+            setQrCodeUrl(URL.createObjectURL(imagemQrCode));
+            setMensagemVenda("Venda a vista registrada. Use o QR Code Pix para o pagamento.");
+        } catch {
+            setErroCompra("Erro ao conectar com o servidor para registrar a venda.");
+        } finally {
+            setGerandoQrCode(false);
+        }
+    }
+
     function concluirCompra() {
-        fecharCompra();
+        finalizarCompraPix();
     }
 
     if (carregando) {
@@ -338,6 +553,13 @@ export default function VisualizarCarro() {
     ];
     const valorAVista = calcularValorAVista(carro.PRECO_VENDA, descontoAVista);
     const temDescontoAVista = Number(descontoAVista) > 0 && valorAVista < Number(carro.PRECO_VENDA || 0);
+    const taxaJuroCarregada = porcentagemJuro !== null;
+    const financiamento = taxaJuroCarregada
+        ? calcularFinanciamento(carro.PRECO_VENDA, porcentagemJuro, parcelas)
+        : { parcelaMensal: 0, valorTotal: Number(carro.PRECO_VENDA || 0) };
+    const valorModal = Number(formaPagamento) === 0 ? valorAVista : financiamento.valorTotal;
+    const deveMostrarRetornoVenda = gerandoQrCode || Boolean(erroCompra) || Boolean(qrCodeUrl) || compraConcluida;
+    const parceladoSemTaxa = Number(formaPagamento) === 1 && (!taxaJuroCarregada || carregandoJuro);
 
     return (
         <main className={css.pagina}>
@@ -349,6 +571,12 @@ export default function VisualizarCarro() {
                         </button>
 
                     </div>
+
+                    {mensagemSucessoPagina && (
+                        <div className={css.alertaSucesso}>
+                            {mensagemSucessoPagina}
+                        </div>
+                    )}
 
                     <div className={css.gridPrincipal}>
                         <div className={css.galeria}>
@@ -416,13 +644,18 @@ export default function VisualizarCarro() {
                                 className={css.comprar}
                                 onClick={abrirCompra}
                             >
-                                Comprar
+                                {modoVendedor ? "Vender" : "Comprar"}
                             </button>
 
                             <div className={css.garantias}>
                                 <span><i className="bi bi-qr-code"></i> Pagamento via Pix</span>
+                                {modoVendedor && (
+                                    <span><i className="bi bi-credit-card"></i> Venda a vista ou parcelada</span>
+                                )}
                                 <span><i className="bi bi-shield-check"></i> Dados do veiculo conferidos</span>
-                                <span><i className="bi bi-check2-circle"></i> Compra simulada para teste</span>
+                                {!modoVendedor && (
+                                    <span><i className="bi bi-check2-circle"></i> Compra simulada para teste</span>
+                                )}
                             </div>
                         </aside>
                     </div>
@@ -462,47 +695,161 @@ export default function VisualizarCarro() {
                     <div className={css.modalCompra}>
                         <div className={css.modalTopo}>
                             <div>
-                                <span className={css.etiquetaEscura}>Pagamento Pix</span>
-                                <h3>Finalize sua compra</h3>
+                                <span className={css.etiquetaEscura}>{modoVendedor ? "Venda" : "Pagamento Pix"}</span>
+                                <h3>{modoVendedor ? "Registrar venda" : "Finalize sua compra"}</h3>
                             </div>
+                            <button
+                                type="button"
+                                className={css.fecharIcone}
+                                onClick={fecharCompra}
+                                aria-label="Fechar modal"
+                            >
+                                x
+                            </button>
                         </div>
 
                         <div className={css.resumoModal}>
                             <strong>{carro.MARCA} {carro.MODELO}</strong>
-                            <span>{formatarPreco(valorAVista)}</span>
+                            <span>{parceladoSemTaxa ? "Carregando juros" : formatarPreco(valorModal)}</span>
                         </div>
 
-                        <div className={css.qrCodeArea}>
-                            {gerandoQrCode && <p>Gerando QR Code...</p>}
+                        {modoVendedor && (
+                            <div className={css.formaPagamento}>
+                                <label className={css.campoVenda}>
+                                    <span>ID do cliente</span>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={idClienteVenda}
+                                        onChange={(e) => setIdClienteVenda(e.target.value)}
+                                        placeholder="Ex: 12"
+                                    />
+                                </label>
 
-                            {!gerandoQrCode && erroCompra && (
-                                <p className={css.erroCompra}>{erroCompra}</p>
-                            )}
+                                <div className={css.opcoesPagamento}>
+                                    <button
+                                        type="button"
+                                        className={Number(formaPagamento) === 0 ? css.opcaoAtiva : ""}
+                                        onClick={() => setFormaPagamento(0)}
+                                    >
+                                        A vista
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={Number(formaPagamento) === 1 ? css.opcaoAtiva : ""}
+                                        onClick={() => {
+                                            setFormaPagamento(1);
+                                            if (porcentagemJuro === null) {
+                                                carregarTaxaJuroEmpresa();
+                                            }
+                                        }}
+                                    >
+                                        Parcelado
+                                    </button>
+                                </div>
 
-                            {!gerandoQrCode && qrCodeUrl && !erroCompra && (
-                                <>
-                                    <img src={qrCodeUrl} alt="QR Code Pix para pagamento" />
-                                    <p className={css.expiracaoQr}>
-                                        QR Code expira em {tempoQrCode}s
+                                {Number(formaPagamento) === 1 && (
+                                    <label className={css.campoVenda}>
+                                        <span>Parcelas</span>
+                                        <select
+                                            value={parcelas}
+                                            onChange={(e) => setParcelas(Number(e.target.value))}
+                                            disabled={!taxaJuroCarregada || carregandoJuro}
+                                        >
+                                            {[6, 12, 18, 24, 36, 48, 60].map((quantidade) => (
+                                                <option value={quantidade} key={quantidade}>
+                                                    {taxaJuroCarregada
+                                                        ? `${quantidade}x de ${formatarPreco(calcularFinanciamento(carro.PRECO_VENDA, porcentagemJuro, quantidade).parcelaMensal)}`
+                                                        : `${quantidade}x`}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {!taxaJuroCarregada && (
+                                            <small className={css.avisoTaxa}>
+                                                {carregandoJuro
+                                                    ? "Carregando taxa de juros da empresa."
+                                                    : "Nao foi possivel carregar a taxa de juros da empresa."}
+                                            </small>
+                                        )}
+                                    </label>
+                                )}
+
+                                <div className={css.resumoPagamento}>
+                                    <div>
+                                        <span>Forma de pagamento</span>
+                                        <strong>{Number(formaPagamento) === 0 ? "A vista no Pix" : `${parcelas} parcelas`}</strong>
+                                    </div>
+                                    {Number(formaPagamento) === 0 && temDescontoAVista && (
+                                        <>
+                                            <div>
+                                                <span>Valor original</span>
+                                                <strong className={css.valorRiscado}>{formatarPreco(carro.PRECO_VENDA)}</strong>
+                                            </div>
+                                            <div>
+                                                <span>Desconto a vista</span>
+                                                <strong className={css.valorDesconto}>{descontoAVista}%</strong>
+                                            </div>
+                                        </>
+                                    )}
+                                    <div>
+                                        <span>{Number(formaPagamento) === 0 ? "Valor com desconto" : "Valor total financiado"}</span>
+                                        <strong>{parceladoSemTaxa ? "Carregando juros" : formatarPreco(valorModal)}</strong>
+                                    </div>
+                                    {Number(formaPagamento) === 1 && (
+                                        <div>
+                                            <span>Juros mensal do banco</span>
+                                            <strong>{taxaJuroCarregada ? `${porcentagemJuro}%` : "Carregando"}</strong>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {deveMostrarRetornoVenda && (
+                            <div className={css.qrCodeArea}>
+                                {gerandoQrCode && <p>{modoVendedor ? "Registrando venda..." : "Gerando QR Code..."}</p>}
+
+                                {!gerandoQrCode && erroCompra && (
+                                    <p className={css.erroCompra}>{erroCompra}</p>
+                                )}
+
+                                {!gerandoQrCode && qrCodeUrl && !erroCompra && (
+                                    <>
+                                        <img src={qrCodeUrl} alt="QR Code Pix para pagamento" />
+                                        {mensagemVenda && (
+                                            <p className={css.mensagemQr}>
+                                                {mensagemVenda}
+                                            </p>
+                                        )}
+                                        <p className={css.expiracaoQr}>
+                                            QR Code expira em {tempoQrCode}s
+                                        </p>
+                                    </>
+                                )}
+
+                                {compraConcluida && (
+                                    <p className={css.sucessoCompra}>
+                                        {mensagemVenda || "Compra concluida com sucesso. Pagamento simulado como aprovado."}
                                     </p>
-                                </>
-                            )}
-
-                            {compraConcluida && (
-                                <p className={css.sucessoCompra}>
-                                    Compra concluida com sucesso. Pagamento simulado como aprovado.
-                                </p>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                        )}
 
                         <div className={css.modalAcoes}>
                             <button
                                 type="button"
-                                className={css.botaoConcluir}
-                                onClick={concluirCompra}
-                                disabled={!qrCodeUrl || gerandoQrCode || compraConcluida}
+                                className={css.botaoFechar}
+                                onClick={fecharCompra}
                             >
-                                Concluir
+                                Fechar
+                            </button>
+                            <button
+                                type="button"
+                                className={css.botaoConcluir}
+                                onClick={modoVendedor && !qrCodeUrl ? registrarVenda : concluirCompra}
+                                disabled={modoVendedor ? gerandoQrCode || compraConcluida || parceladoSemTaxa : !qrCodeUrl || gerandoQrCode || compraConcluida}
+                            >
+                                {modoVendedor && qrCodeUrl ? "Concluir" : modoVendedor ? "Registrar venda" : "Concluir"}
                             </button>
                         </div>
                     </div>
