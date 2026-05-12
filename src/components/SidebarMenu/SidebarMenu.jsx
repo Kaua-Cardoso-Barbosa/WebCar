@@ -32,7 +32,6 @@ export default function SidebarMenu() {
             <aside className={`${styles.sidebar} ${open ? styles.open : ""}`}>
                 <nav className={styles.menu}>
 
-                    {/* BOTÃO FECHAR */}
                     <button className={styles.close} onClick={() => setOpen(false)}>
                         ✕
                     </button>
