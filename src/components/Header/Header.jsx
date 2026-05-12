@@ -31,8 +31,6 @@ async function carregarLogoSite() {
 export default function Header({ busca = "", setBusca = null }) {
     const location = useLocation();
     const navigate = useNavigate();
-
-    // agora usamos usuario_tipo e não token
     const tipoUsuario = localStorage.getItem("usuario_tipo");
     const estaLogado = !!tipoUsuario;
     const tipoNumero = Number(tipoUsuario);
