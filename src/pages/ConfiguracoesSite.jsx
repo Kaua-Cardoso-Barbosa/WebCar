@@ -40,6 +40,58 @@ const CONFIG_SITE_PADRAO = {
     bannerUrl: "/Banner.png",
 };
 
+function somenteDigitos(valor) {
+    return String(valor ?? "").replace(/\D/g, "");
+}
+
+function formatarCnpj(valor) {
+    return somenteDigitos(valor)
+        .slice(0, 14)
+        .replace(/^(\d{2})(\d)/, "$1.$2")
+        .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+        .replace(/\.(\d{3})(\d)/, ".$1/$2")
+        .replace(/(\d{4})(\d)/, "$1-$2");
+}
+
+function formatarCep(valor) {
+    return somenteDigitos(valor)
+        .slice(0, 8)
+        .replace(/^(\d{5})(\d)/, "$1-$2");
+}
+
+function formatarUf(valor) {
+    return String(valor ?? "")
+        .replace(/[^a-zA-Z]/g, "")
+        .slice(0, 2)
+        .toUpperCase();
+}
+
+function formatarInteiro(valor, tamanho = 12) {
+    return somenteDigitos(valor).slice(0, tamanho);
+}
+
+function formatarInscricaoEstadual(valor) {
+    return somenteDigitos(valor).slice(0, 14);
+}
+
+async function criarArquivoPadrao(caminho, nome) {
+    const response = await fetch(caminho);
+
+    if (!response.ok) {
+        throw new Error("Não foi possível carregar as imagens padrão.");
+    }
+
+    const blob = await response.blob();
+    return new File([blob], nome, { type: blob.type || "image/png" });
+}
+
+function atualizarCacheUrl(url) {
+    if (!url || url.startsWith("data:") || url.startsWith("blob:")) return url;
+
+    const separador = url.includes("?") ? "&" : "?";
+    return `${url}${separador}v=${Date.now()}`;
+}
+
 function urlArquivo(valor, fallback) {
     if (!valor) return fallback;
     if (valor.startsWith("http") || valor.startsWith("data:") || valor.startsWith("blob:") || valor.startsWith("/")) {
@@ -54,44 +106,48 @@ function normalizarConfiguracoesSite(data = {}) {
         idEmpresa: data.idEmpresa || data.id_empresa || data.ID_EMPRESA || CONFIG_SITE_PADRAO.idEmpresa,
         nomeFantasia: data.nomeFantasia || data.nome_fantasia || data.NOME_FANTASIA || CONFIG_SITE_PADRAO.nomeFantasia,
         razaoSocial: data.razaoSocial || data.razao_social || data.RAZAO_SOCIAL || CONFIG_SITE_PADRAO.razaoSocial,
-        cnpj: data.cnpj || data.CNPJ || CONFIG_SITE_PADRAO.cnpj,
-        inscricaoEstadual: data.inscricaoEstadual || data.inscricao_estadual || data.INSCRICAO_ESTADUAL || CONFIG_SITE_PADRAO.inscricaoEstadual,
+        cnpj: formatarCnpj(data.cnpj || data.CNPJ || CONFIG_SITE_PADRAO.cnpj),
+        inscricaoEstadual: formatarInscricaoEstadual(data.inscricaoEstadual || data.inscricao_estadual || data.INSCRICAO_ESTADUAL || CONFIG_SITE_PADRAO.inscricaoEstadual),
         cidade: data.cidade || data.CIDADE || CONFIG_SITE_PADRAO.cidade,
-        uf: data.uf || data.UF || CONFIG_SITE_PADRAO.uf,
+        uf: formatarUf(data.uf || data.UF || CONFIG_SITE_PADRAO.uf),
         rua: data.rua || data.RUA || CONFIG_SITE_PADRAO.rua,
-        numeroEndereco: data.numeroEndereco || data.numero_endereco || data.NUMERO_ENDERECO || CONFIG_SITE_PADRAO.numeroEndereco,
-        cep: data.cep || data.CEP || CONFIG_SITE_PADRAO.cep,
+        numeroEndereco: formatarInteiro(data.numeroEndereco || data.numero_endereco || data.NUMERO_ENDERECO || CONFIG_SITE_PADRAO.numeroEndereco),
+        cep: formatarCep(data.cep || data.CEP || CONFIG_SITE_PADRAO.cep),
         chavePix: data.chavePix || data.chave_pix || data.CHAVE_PIX || CONFIG_SITE_PADRAO.chavePix,
-        banco: data.banco || data.BANCO || CONFIG_SITE_PADRAO.banco,
+        banco: formatarInteiro(data.banco || data.BANCO || CONFIG_SITE_PADRAO.banco, 3),
         porcentagemJuro: data.porcentagemJuro || data.porcentagem_juro || data.PORCENTAGEM_JURO || CONFIG_SITE_PADRAO.porcentagemJuro,
-        agencia: data.agencia || data.AGENCIA || CONFIG_SITE_PADRAO.agencia,
+        agencia: formatarInteiro(data.agencia || data.AGENCIA || CONFIG_SITE_PADRAO.agencia, 6),
         conta: data.conta || data.CONTA || CONFIG_SITE_PADRAO.conta,
         porcentagemLucro: data.porcentagemLucro || data.porcentagem_lucro || data.PORCENTAGEM_LUCRO || CONFIG_SITE_PADRAO.porcentagemLucro,
         descontoAVista: data.descontoAVista || data.desconto_a_vista || data.DESCONTO_A_VISTA || CONFIG_SITE_PADRAO.descontoAVista,
-        textoBanner: data.textoBanner || data.texto_banner || data.TEXTO_BANNER || CONFIG_SITE_PADRAO.textoBanner,
+        textoBanner: data.textoBanner || data.texto_banner || data.descricao || data.TEXTO_BANNER || data.DESCRICAO || CONFIG_SITE_PADRAO.textoBanner,
         corPrimaria: data.corPrimaria || data.cor_primaria || data.COR_PRIMARIA || CONFIG_SITE_PADRAO.corPrimaria,
         corSecundaria: data.corSecundaria || data.cor_secundaria || data.COR_SECUNDARIA || CONFIG_SITE_PADRAO.corSecundaria,
         corTerciaria: data.corTerciaria || data.cor_terciaria || data.COR_TERCIARIA || CONFIG_SITE_PADRAO.corTerciaria,
         corFonte: data.corFonte || data.cor_fonte || data.COR_FONTE || CONFIG_SITE_PADRAO.corFonte,
         fonte: data.fonte || data.FONTE || CONFIG_SITE_PADRAO.fonte,
-        logoUrl: urlArquivo(data.logoUrl || data.logo_url || data.LOGO_URL || data.logo || data.LOGO, CONFIG_SITE_PADRAO.logoUrl),
-        bannerUrl: urlArquivo(data.bannerUrl || data.banner_url || data.BANNER_URL || data.banner || data.BANNER, CONFIG_SITE_PADRAO.bannerUrl),
+        logoUrl: urlArquivo(data.logo_url || data.logoUrl || data.LOGO_URL, CONFIG_SITE_PADRAO.logoUrl),
+        bannerUrl: urlArquivo(data.banner_url || data.bannerUrl || data.BANNER_URL, CONFIG_SITE_PADRAO.bannerUrl),
     };
 }
 
 async function carregarConfiguracoesSite() {
-    const response = await fetch(`${API_URL}/configuracoes_site`, {
+    const response = await fetch(`${API_URL}/verdadosempresa`, {
         method: "GET",
         credentials: "include",
     });
 
     if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data.mensagem || "Nao foi possivel carregar os dados da empresa.");
+        throw new Error(data.mensagem || "Não foi possível carregar os dados da empresa.");
     }
 
     const data = await response.json();
-    const empresa = data.empresa || data.configuracoes || data;
+    const empresa = data.empresas[0];
+
+    if (!empresa) {
+        throw new Error("Nenhuma empresa encontrada para este administrador.");
+    }
 
     return normalizarConfiguracoesSite(empresa);
 }
@@ -130,7 +186,7 @@ export default function ConfiguracoesSite() {
                 const configuracoes = await carregarConfiguracoesSite();
                 setForm(configuracoes);
             } catch (error) {
-                setErro(error.message || "Nao foi possivel carregar os dados da empresa.");
+                setErro(error.message || "Não foi possível carregar os dados da empresa.");
                 setForm(CONFIG_SITE_PADRAO);
             }
         }
@@ -147,16 +203,30 @@ export default function ConfiguracoesSite() {
 
     const preview = normalizarConfiguracoesSite({
         ...form,
-        logo_url: logoArquivo?.preview || form.logoUrl,
-        banner_url: bannerArquivo?.preview || form.bannerUrl,
+        logoUrl: logoArquivo?.preview || form.logoUrl,
+        bannerUrl: bannerArquivo?.preview || form.bannerUrl,
     });
+
+    function normalizarValorCampo(campo, valor) {
+        const mascaras = {
+            cnpj: formatarCnpj,
+            inscricaoEstadual: formatarInscricaoEstadual,
+            uf: formatarUf,
+            numeroEndereco: (novoValor) => formatarInteiro(novoValor),
+            cep: formatarCep,
+            banco: (novoValor) => formatarInteiro(novoValor, 3),
+            agencia: (novoValor) => formatarInteiro(novoValor, 6),
+        };
+
+        return mascaras[campo] ? mascaras[campo](valor) : valor;
+    }
 
     function atualizarCampo(campo, valor) {
         setMensagem("");
         setErro("");
         setForm((dados) => ({
             ...dados,
-            [campo]: valor,
+            [campo]: normalizarValorCampo(campo, valor),
         }));
     }
 
@@ -181,6 +251,119 @@ export default function ConfiguracoesSite() {
         setBannerArquivo(previewArquivo);
     }
 
+    function montarFormData(dados, arquivos = {}) {
+        const formData = new FormData();
+        formData.append("cnpj", somenteDigitos(dados.cnpj));
+        formData.append("nome_fantasia", dados.nomeFantasia);
+        formData.append("razao_social", dados.razaoSocial);
+        formData.append("cidade", dados.cidade);
+        formData.append("inscricao_estadual", somenteDigitos(dados.inscricaoEstadual));
+        formData.append("cep", somenteDigitos(dados.cep));
+        formData.append("rua", dados.rua);
+        formData.append("uf", dados.uf);
+        formData.append("numero_endereco", somenteDigitos(dados.numeroEndereco));
+        formData.append("chave_pix", dados.chavePix);
+        formData.append("banco", somenteDigitos(dados.banco));
+        formData.append("porcentagem_juro", dados.porcentagemJuro);
+        formData.append("agencia", somenteDigitos(dados.agencia));
+        formData.append("conta", dados.conta);
+        formData.append("porcentagem_lucro", dados.porcentagemLucro);
+        formData.append("desconto_a_vista", dados.descontoAVista);
+        formData.append("descricao", dados.textoBanner);
+        formData.append("cor_primaria", dados.corPrimaria);
+        formData.append("cor_secundaria", dados.corSecundaria);
+        formData.append("cor_terciaria", dados.corTerciaria);
+        formData.append("cor_fonte", dados.corFonte);
+        formData.append("fonte", dados.fonte);
+
+        if (arquivos.logo) formData.append("logo", arquivos.logo);
+        if (arquivos.banner) formData.append("banner", arquivos.banner);
+
+        return formData;
+    }
+
+    async function enviarConfiguracoes(dados, arquivos = {}) {
+        if (!dados.idEmpresa) {
+            throw new Error("Empresa não encontrada para editar. Verifique se a rota /verdadosempresa está retornando id_empresa.");
+        }
+
+        const response = await fetch(`${API_URL}/edicao_empresa/${dados.idEmpresa}`, {
+            method: "PUT",
+            credentials: "include",
+            body: montarFormData(dados, arquivos),
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(data.mensagem || "Não foi possível salvar as configurações.");
+        }
+
+        return data;
+    }
+
+    async function resetarConfiguracoesVisuais() {
+        if (logoArquivo?.preview) URL.revokeObjectURL(logoArquivo.preview);
+        if (bannerArquivo?.preview) URL.revokeObjectURL(bannerArquivo.preview);
+
+        const configuracoesResetadas = normalizarConfiguracoesSite({
+            ...form,
+            textoBanner: CONFIG_SITE_PADRAO.textoBanner,
+            corPrimaria: CONFIG_SITE_PADRAO.corPrimaria,
+            corSecundaria: CONFIG_SITE_PADRAO.corSecundaria,
+            corTerciaria: CONFIG_SITE_PADRAO.corTerciaria,
+            corFonte: CONFIG_SITE_PADRAO.corFonte,
+            fonte: CONFIG_SITE_PADRAO.fonte,
+            logoUrl: CONFIG_SITE_PADRAO.logoUrl,
+            bannerUrl: CONFIG_SITE_PADRAO.bannerUrl,
+        });
+
+        setLogoArquivo(null);
+        setBannerArquivo(null);
+        setForm(configuracoesResetadas);
+        aplicarConfiguracoesSite(configuracoesResetadas);
+        window.dispatchEvent(new CustomEvent("webcar:configuracoes-site", { detail: configuracoesResetadas }));
+        setErro("");
+        setMensagem("");
+
+        try {
+            setSalvando(true);
+            const logoPadrao = await criarArquivoPadrao(CONFIG_SITE_PADRAO.logoUrl, "logo_padrao.png");
+            const bannerPadrao = await criarArquivoPadrao(CONFIG_SITE_PADRAO.bannerUrl, "banner_padrao.png");
+
+            await enviarConfiguracoes(configuracoesResetadas, {
+                logo: logoPadrao,
+                banner: bannerPadrao,
+            });
+
+            let configuracoesSalvas = {
+                ...configuracoesResetadas,
+                logoUrl: CONFIG_SITE_PADRAO.logoUrl,
+                bannerUrl: CONFIG_SITE_PADRAO.bannerUrl,
+            };
+
+            try {
+                const configuracoesRecarregadas = await carregarConfiguracoesSite();
+                configuracoesSalvas = {
+                    ...configuracoesRecarregadas,
+                    logoUrl: atualizarCacheUrl(configuracoesRecarregadas.logoUrl),
+                    bannerUrl: atualizarCacheUrl(configuracoesRecarregadas.bannerUrl),
+                };
+            } catch {
+                // Se o reload falhar, mantém os padrões locais que acabaram de ser enviados.
+            }
+
+            setForm(configuracoesSalvas);
+            aplicarConfiguracoesSite(configuracoesSalvas);
+            window.dispatchEvent(new CustomEvent("webcar:configuracoes-site", { detail: configuracoesSalvas }));
+            setMensagem("Configurações visuais resetadas com sucesso.");
+        } catch (error) {
+            setErro(error.message || "Não foi possível resetar as configurações.");
+        } finally {
+            setSalvando(false);
+        }
+    }
+
     async function salvarConfiguracoes(e) {
         e.preventDefault();
 
@@ -189,67 +372,32 @@ export default function ConfiguracoesSite() {
             setMensagem("");
             setErro("");
 
-            const formData = new FormData();
-            formData.append("cnpj", form.cnpj);
-            formData.append("nome_fantasia", form.nomeFantasia);
-            formData.append("razao_social", form.razaoSocial);
-            formData.append("cidade", form.cidade);
-            formData.append("inscricao_estadual", form.inscricaoEstadual);
-            formData.append("cep", form.cep);
-            formData.append("rua", form.rua);
-            formData.append("uf", form.uf);
-            formData.append("numero_endereco", form.numeroEndereco);
-            formData.append("chave_pix", form.chavePix);
-            formData.append("banco", form.banco);
-            formData.append("porcentagem_juro", form.porcentagemJuro);
-            formData.append("agencia", form.agencia);
-            formData.append("conta", form.conta);
-            formData.append("porcentagem_lucro", form.porcentagemLucro);
-            formData.append("desconto_a_vista", form.descontoAVista);
-            formData.append("texto_banner", form.textoBanner);
-            formData.append("descricao", form.textoBanner);
-            formData.append("cor_primaria", form.corPrimaria);
-            formData.append("cor_secundaria", form.corSecundaria);
-            formData.append("cor_terciaria", form.corTerciaria);
-            formData.append("cor_fonte", form.corFonte);
-            formData.append("fonte", form.fonte);
-
-            if (logoArquivo?.file) formData.append("logo", logoArquivo.file);
-            if (bannerArquivo?.file) {
-                formData.append("banner", bannerArquivo.file);
-                formData.append("imagem", bannerArquivo.file);
-            }
-
-            if (!form.idEmpresa) {
-                setErro("Empresa nao encontrada para editar. Verifique se a rota /configuracoes_site esta retornando id_empresa.");
-                return;
-            }
-
-            const response = await fetch(`${API_URL}/edicao_empresa/${form.idEmpresa}`, {
-                method: "PUT",
-                credentials: "include",
-                body: formData,
+            const data = await enviarConfiguracoes(form, {
+                logo: logoArquivo?.file,
+                banner: bannerArquivo?.file,
             });
 
-            const data = await response.json().catch(() => ({}));
+            let configuracoesSalvas = normalizarConfiguracoesSite(form);
 
-            if (!response.ok) {
-                setErro(data.mensagem || "Nao foi possivel salvar as configuracoes.");
-                return;
+            try {
+                const configuracoesRecarregadas = await carregarConfiguracoesSite();
+                configuracoesSalvas = {
+                    ...configuracoesRecarregadas,
+                    logoUrl: logoArquivo?.file ? atualizarCacheUrl(configuracoesRecarregadas.logoUrl) : configuracoesRecarregadas.logoUrl,
+                    bannerUrl: bannerArquivo?.file ? atualizarCacheUrl(configuracoesRecarregadas.bannerUrl) : configuracoesRecarregadas.bannerUrl,
+                };
+            } catch {
+                // O PUT retorna apenas mensagem; se o reload falhar, mantém o estado local editado.
             }
 
-            const configuracoesSalvas = normalizarConfiguracoesSite({
-                ...form,
-                ...(data.configuracoes || data.empresa || data),
-            });
             setForm(configuracoesSalvas);
             setLogoArquivo(null);
             setBannerArquivo(null);
             aplicarConfiguracoesSite(configuracoesSalvas);
             window.dispatchEvent(new CustomEvent("webcar:configuracoes-site", { detail: configuracoesSalvas }));
-            setMensagem(data.mensagem || "Configuracoes salvas com sucesso.");
+            setMensagem(data.mensagem || "Configurações salvas com sucesso.");
         } catch {
-            setErro("Nao foi possivel conectar com o servidor.");
+            setErro("Não foi possível conectar com o servidor.");
         } finally {
             setSalvando(false);
         }
@@ -265,8 +413,8 @@ export default function ConfiguracoesSite() {
                 <main className={css.pagina}>
                     <div className={css.topo}>
                         <div>
-                            <span>Personalizacao</span>
-                            <h1>Configuracoes do site</h1>
+                            <span>Personalização</span>
+                            <h1>Configurações do site</h1>
                         </div>
                     </div>
 
@@ -285,12 +433,11 @@ export default function ConfiguracoesSite() {
                                         aria-label="Nome fantasia"
                                     />
                                 </div>
-                                <strong>#{form.idEmpresa || "-"}</strong>
                             </div>
 
                             <div className={css.empresaResumoGrid}>
                                 <label>
-                                    <span>Razao social</span>
+                                    <span>Razão social</span>
                                     <input
                                         type="text"
                                         value={form.razaoSocial}
@@ -304,15 +451,20 @@ export default function ConfiguracoesSite() {
                                         type="text"
                                         value={form.cnpj}
                                         onChange={(e) => atualizarCampo("cnpj", e.target.value)}
+                                        inputMode="numeric"
+                                        maxLength="18"
+                                        placeholder="00.000.000/0000-00"
                                     />
                                 </label>
 
                                 <label>
-                                    <span>Inscricao estadual</span>
+                                    <span>Inscrição estadual</span>
                                     <input
                                         type="text"
                                         value={form.inscricaoEstadual}
                                         onChange={(e) => atualizarCampo("inscricaoEstadual", e.target.value)}
+                                        inputMode="numeric"
+                                        maxLength="14"
                                     />
                                 </label>
 
@@ -331,6 +483,8 @@ export default function ConfiguracoesSite() {
                                         type="text"
                                         value={form.uf}
                                         onChange={(e) => atualizarCampo("uf", e.target.value)}
+                                        maxLength="2"
+                                        placeholder="SP"
                                     />
                                 </label>
 
@@ -344,20 +498,25 @@ export default function ConfiguracoesSite() {
                                 </label>
 
                                 <label>
-                                    <span>Numero</span>
+                                    <span>Número</span>
                                     <input
-                                        type="number"
+                                        type="text"
                                         value={form.numeroEndereco}
                                         onChange={(e) => atualizarCampo("numeroEndereco", e.target.value)}
+                                        inputMode="numeric"
+                                        maxLength="8"
                                     />
                                 </label>
 
                                 <label>
                                     <span>CEP</span>
                                     <input
-                                        type="number"
+                                        type="text"
                                         value={form.cep}
                                         onChange={(e) => atualizarCampo("cep", e.target.value)}
+                                        inputMode="numeric"
+                                        maxLength="9"
+                                        placeholder="00000-000"
                                     />
                                 </label>
 
@@ -373,9 +532,11 @@ export default function ConfiguracoesSite() {
                                 <label>
                                     <span>Banco</span>
                                     <input
-                                        type="number"
+                                        type="text"
                                         value={form.banco}
                                         onChange={(e) => atualizarCampo("banco", e.target.value)}
+                                        inputMode="numeric"
+                                        maxLength="3"
                                     />
                                 </label>
                             </div>
@@ -427,7 +588,7 @@ export default function ConfiguracoesSite() {
 
                                 <div className={css.cores}>
                                     <label>
-                                        Primaria
+                                        Primária
                                         <input
                                             type="color"
                                             value={form.corPrimaria}
@@ -436,7 +597,7 @@ export default function ConfiguracoesSite() {
                                     </label>
 
                                     <label>
-                                        Secundaria
+                                        Secundária
                                         <input
                                             type="color"
                                             value={form.corSecundaria}
@@ -445,7 +606,7 @@ export default function ConfiguracoesSite() {
                                     </label>
 
                                     <label>
-                                        Terciaria
+                                        Terciária
                                         <input
                                             type="color"
                                             value={form.corTerciaria}
@@ -467,49 +628,66 @@ export default function ConfiguracoesSite() {
                             <section className={css.cardFormulario}>
                                 <div className={css.cardTopo}>
                                     <div>
-                                        <span>Midia</span>
+                                        <span>Mídia</span>
                                         <h2>Imagens</h2>
                                     </div>
                                 </div>
 
                                 <label className={css.upload}>
-                                    Logo
+                                    <span>Logo da empresa</span>
                                     <input
                                         type="file"
                                         accept="image/*"
                                         onChange={(e) => selecionarArquivo("logo", e.target.files?.[0])}
                                     />
+                                    <span className={css.uploadControle}>
+                                        <span className={css.uploadNome}>
+                                            {logoArquivo?.file?.name || "Nenhum arquivo selecionado"}
+                                        </span>
+                                        <span className={css.uploadBotao}>Escolher arquivo</span>
+                                    </span>
                                 </label>
 
                                 <label className={css.upload}>
-                                    Imagem do banner
+                                    <span>Imagem do banner</span>
                                     <input
                                         type="file"
                                         accept="image/*"
                                         onChange={(e) => selecionarArquivo("banner", e.target.files?.[0])}
                                     />
+                                    <span className={css.uploadControle}>
+                                        <span className={css.uploadNome}>
+                                            {bannerArquivo?.file?.name || "Nenhum arquivo selecionado"}
+                                        </span>
+                                        <span className={css.uploadBotao}>Escolher arquivo</span>
+                                    </span>
                                 </label>
                             </section>
 
-                            <button type="submit" className={css.salvar} disabled={salvando}>
-                                {salvando ? "Salvando..." : "Salvar configuracoes"}
-                            </button>
+                            <div className={css.acoesFormulario}>
+                                <button type="button" className={css.resetar} onClick={resetarConfiguracoesVisuais} disabled={salvando}>
+                                    Resetar configurações
+                                </button>
+
+                                <button type="submit" className={css.salvar} disabled={salvando}>
+                                    {salvando ? "Salvando..." : "Salvar configurações"}
+                                </button>
+                            </div>
                             </div>
 
                         <aside className={css.preview}>
                             <div className={css.previewBarra}>
-                                <span>Previa</span>
+                                <span>Prévia</span>
                             </div>
 
                             <div className={css.previewHeader}>
                                 <div>
                                     <img src={preview.logoUrl} alt="Logo" />
-                                    <strong style={{ color: preview.corTerciaria }}>WebCar</strong>
                                 </div>
 
                                 <nav>
                                     <span style={{ color: preview.corFonte }}>Comprar</span>
-                                    <span style={{ color: preview.corFonte }}>Servicos</span>
+                                    <span style={{ color: preview.corFonte }}>Serviços</span>
                                     <span style={{ color: preview.corSecundaria }}>Entrar</span>
                                 </nav>
                             </div>
@@ -523,7 +701,7 @@ export default function ConfiguracoesSite() {
                             >
                                 <h2 style={{ color: "#fff" }}>{preview.textoBanner}</h2>
                                 <div className={css.previewAcoes}>
-                                    <span style={{ background: preview.corPrimaria }}>Ver catalogo</span>
+                                    <span style={{ background: preview.corPrimaria }}>Ver catálogo</span>
                                     <span style={{ borderColor: preview.corSecundaria }}>Entrar</span>
                                 </div>
                             </div>
@@ -536,10 +714,10 @@ export default function ConfiguracoesSite() {
                             </div>
 
                             <div className={css.previewSecao}>
-                                <span style={{ color: preview.corPrimaria }}>Selecionados para voce</span>
-                                <strong style={{ color: preview.corTerciaria }}>Veiculos em destaque</strong>
+                                <span style={{ color: preview.corPrimaria }}>Selecionados para você</span>
+                                <strong style={{ color: preview.corTerciaria }}>Veículos em destaque</strong>
                                 <p style={{ color: preview.corFonte }}>
-                                    A home acompanha a identidade escolhida quando as configuracoes forem salvas.
+                                    A home acompanha a identidade escolhida quando as configurações forem salvas.
                                 </p>
                             </div>
 

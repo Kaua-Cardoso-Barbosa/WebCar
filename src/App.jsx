@@ -53,7 +53,7 @@ function normalizarConfiguracoesSite(data = {}) {
 }
 
 async function carregarConfiguracoesSite() {
-    const response = await fetch(`${API_URL}/configuracoes_site`, {
+    const response = await fetch(`${API_URL}/verdadosempresa`, {
         method: "GET",
         credentials: "include",
     });
@@ -63,7 +63,7 @@ async function carregarConfiguracoesSite() {
     }
 
     const data = await response.json();
-    return normalizarConfiguracoesSite(data);
+    return normalizarConfiguracoesSite(data.empresas?.[0] || {});
 }
 
 function aplicarConfiguracoesSite(configuracoes) {

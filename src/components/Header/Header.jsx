@@ -4,6 +4,13 @@ import css from "./Header.module.css";
 import { API_URL } from "../../App";
 
 const LOGO_PADRAO = "/Logo.png";
+const IMAGEM_USUARIO_PADRAO = `data:image/svg+xml;utf8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">
+  <rect width="320" height="320" rx="160" fill="#e2e8f0"/>
+  <circle cx="160" cy="122" r="58" fill="#94a3b8"/>
+  <path d="M62 272c18-61 55-92 98-92s80 31 98 92" fill="#94a3b8"/>
+</svg>
+`)}`;
 
 function urlArquivo(valor, fallback) {
     if (!valor) return fallback;
@@ -15,7 +22,7 @@ function urlArquivo(valor, fallback) {
 }
 
 async function carregarLogoSite() {
-    const response = await fetch(`${API_URL}/configuracoes_site`, {
+    const response = await fetch(`${API_URL}/verdadosempresa`, {
         method: "GET",
         credentials: "include",
     });
@@ -25,7 +32,35 @@ async function carregarLogoSite() {
     }
 
     const data = await response.json();
-    return urlArquivo(data.logo_url || data.LOGO_URL || data.logo || data.LOGO, LOGO_PADRAO);
+    const empresa = data.empresas?.[0] || {};
+
+    return urlArquivo(empresa.logo_url || empresa.logoUrl || empresa.LOGO_URL, LOGO_PADRAO);
+}
+
+function apenasNumeros(valor) {
+    return String(valor ?? "").replace(/\D/g, "");
+}
+
+function formatarCpf(valor) {
+    return apenasNumeros(valor)
+        .slice(0, 11)
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+}
+
+function formatarTelefone(valor) {
+    const numeros = apenasNumeros(valor).slice(0, 11);
+
+    if (numeros.length <= 10) {
+        return numeros
+            .replace(/(\d{2})(\d)/, "($1) $2")
+            .replace(/(\d{4})(\d)/, "$1-$2");
+    }
+
+    return numeros
+        .replace(/(\d{2})(\d)/, "($1) $2")
+        .replace(/(\d{5})(\d)/, "$1-$2");
 }
 
 export default function Header({ busca = "", setBusca = null }) {
@@ -37,10 +72,25 @@ export default function Header({ busca = "", setBusca = null }) {
     const estaLogado = !!tipoUsuario;
     const tipoNumero = Number(tipoUsuario);
     const usuarioInterno = tipoNumero === 0 || tipoNumero === 1;
+    const usuarioCliente = tipoNumero === 2;
     const linkLogo = tipoNumero === 0 ? "/dashboard" : tipoNumero === 1 ? "/restrita-vendedor" : "/";
     const [buscaLocal, setBuscaLocal] = useState("");
     const [logoUrl, setLogoUrl] = useState(LOGO_PADRAO);
+    const [modalDadosAberta, setModalDadosAberta] = useState(false);
+    const [dadosCliente, setDadosCliente] = useState({
+        nome: "",
+        email: "",
+        telefone: "",
+        cpf: "",
+        senha: "",
+    });
+    const [fotoCliente, setFotoCliente] = useState(null);
+    const [previewCliente, setPreviewCliente] = useState(IMAGEM_USUARIO_PADRAO);
+    const [salvandoCliente, setSalvandoCliente] = useState(false);
+    const [mensagemCliente, setMensagemCliente] = useState("");
+    const [erroCliente, setErroCliente] = useState("");
     const valorBusca = setBusca ? busca : buscaLocal;
+    const idUsuario = localStorage.getItem("usuario_id");
 
     function handleBuscaChange(e) {
         if (setBusca) {
@@ -69,6 +119,144 @@ export default function Header({ busca = "", setBusca = null }) {
         navigate("/login");
     };
 
+    function atualizarDadosCliente(campo, valor) {
+        const normalizadores = {
+            cpf: formatarCpf,
+            telefone: formatarTelefone,
+        };
+
+        setMensagemCliente("");
+        setErroCliente("");
+        setDadosCliente((dados) => ({
+            ...dados,
+            [campo]: normalizadores[campo] ? normalizadores[campo](valor) : valor,
+        }));
+    }
+
+    async function carregarDadosCliente() {
+        const dadosLocais = {
+            nome: localStorage.getItem("usuario_nome") || "",
+            email: localStorage.getItem("usuario_email") || "",
+            telefone: "",
+            cpf: "",
+            senha: "",
+        };
+
+        setDadosCliente(dadosLocais);
+        setPreviewCliente(idUsuario ? `${API_URL}/uploads/Usuarios/${idUsuario}.jpg?v=${Date.now()}` : IMAGEM_USUARIO_PADRAO);
+        setFotoCliente(null);
+        setMensagemCliente("");
+        setErroCliente("");
+
+        if (!idUsuario) return;
+
+        try {
+            const response = await fetch(`${API_URL}/buscar_usuario`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ id_usuario: idUsuario }),
+            });
+
+            if (!response.ok) return;
+
+            const data = await response.json();
+            const usuario = data.usuarios?.[0];
+
+            if (!usuario) return;
+
+            setDadosCliente({
+                nome: usuario.nome || dadosLocais.nome,
+                email: usuario.email || dadosLocais.email,
+                telefone: formatarTelefone(usuario.telefone || ""),
+                cpf: formatarCpf(usuario.cpf || ""),
+                senha: "",
+            });
+            setPreviewCliente(usuario.imagem ? `${usuario.imagem}?v=${Date.now()}` : `${API_URL}/uploads/Usuarios/${idUsuario}.jpg?v=${Date.now()}`);
+        } catch {
+            // Cliente pode nao ter permissao para /buscar_usuario; nesse caso usamos localStorage.
+        }
+    }
+
+    function abrirModalDados() {
+        setModalDadosAberta(true);
+        carregarDadosCliente();
+    }
+
+    function fecharModalDados() {
+        setModalDadosAberta(false);
+        setMensagemCliente("");
+        setErroCliente("");
+    }
+
+    function selecionarFotoCliente(e) {
+        const arquivo = e.target.files?.[0];
+
+        if (!arquivo) return;
+
+        if (previewCliente?.startsWith("blob:")) URL.revokeObjectURL(previewCliente);
+
+        setMensagemCliente("");
+        setErroCliente("");
+        setFotoCliente(arquivo);
+        setPreviewCliente(URL.createObjectURL(arquivo));
+    }
+
+    async function salvarDadosCliente(e) {
+        e.preventDefault();
+
+        if (!idUsuario) {
+            setErroCliente("Usuario nao encontrado. Faca login novamente.");
+            return;
+        }
+
+        if (!dadosCliente.nome.trim() || !dadosCliente.email.trim() || !dadosCliente.telefone.trim() || !dadosCliente.cpf.trim() || !dadosCliente.senha.trim()) {
+            setErroCliente("Preencha nome, email, telefone, CPF e senha para salvar.");
+            return;
+        }
+
+        try {
+            setSalvandoCliente(true);
+            setMensagemCliente("");
+            setErroCliente("");
+
+            const formData = new FormData();
+            formData.append("nome", dadosCliente.nome);
+            formData.append("email", dadosCliente.email);
+            formData.append("telefone", apenasNumeros(dadosCliente.telefone));
+            formData.append("cpf", apenasNumeros(dadosCliente.cpf));
+            formData.append("senha", dadosCliente.senha);
+
+            if (fotoCliente) {
+                formData.append("imagem", fotoCliente);
+            }
+
+            const response = await fetch(`${API_URL}/edicao_usuario/${idUsuario}`, {
+                method: "PUT",
+                credentials: "include",
+                body: formData,
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                setErroCliente(data.mensagem || "Nao foi possivel salvar seus dados.");
+                return;
+            }
+
+            localStorage.setItem("usuario_nome", dadosCliente.nome);
+            localStorage.setItem("usuario_email", dadosCliente.email);
+            setDadosCliente((dados) => ({ ...dados, senha: "" }));
+            setFotoCliente(null);
+            setPreviewCliente(`${API_URL}/uploads/Usuarios/${idUsuario}.jpg?v=${Date.now()}`);
+            setMensagemCliente(data.mensagem || "Dados atualizados com sucesso.");
+        } catch {
+            setErroCliente("Nao foi possivel conectar com o servidor.");
+        } finally {
+            setSalvandoCliente(false);
+        }
+    }
+
     useEffect(() => {
         async function buscarLogo() {
             try {
@@ -87,6 +275,12 @@ export default function Header({ busca = "", setBusca = null }) {
         window.addEventListener("webcar:configuracoes-site", atualizar);
         return () => window.removeEventListener("webcar:configuracoes-site", atualizar);
     }, []);
+
+    useEffect(() => {
+        return () => {
+            if (previewCliente?.startsWith("blob:")) URL.revokeObjectURL(previewCliente);
+        };
+    }, [previewCliente]);
 
     useEffect(() => {
         const offcanvasElement = document.getElementById("offcanvasNavbar");
@@ -124,9 +318,6 @@ export default function Header({ busca = "", setBusca = null }) {
                                 width="60"
                                 height="40"
                             />
-                            <p className={"mt-2 " + css.azul}>
-                                Web<span className={css.cinza}>Car</span>
-                            </p>
                         </Link>
 
                         <div className={"container-fluid " + css.mobile}>
@@ -155,9 +346,6 @@ export default function Header({ busca = "", setBusca = null }) {
                                             width="60"
                                             height="40"
                                         />
-                                        <p className={"mt-2 " + css.azul}>
-                                            Web<span className={css.cinza}>Car</span>
-                                        </p>
                                     </Link>
 
                                     <button
@@ -176,9 +364,22 @@ export default function Header({ busca = "", setBusca = null }) {
                                                     <Link className="nav-link" to="/catalogo">Comprar</Link>
                                                 </li>
 
-                                                <li className="nav-item">
-                                                    <Link className="nav-link" to="/">Sobre nós</Link>
-                                                </li>
+                                                {usuarioCliente && estaLogado ? (
+                                                    <>
+                                                        <li className="nav-item">
+                                                            <Link className="nav-link" to="/minhas-compras">Minhas compras</Link>
+                                                        </li>
+                                                        <li className="nav-item">
+                                                            <button type="button" className={css.linkBotao} onClick={abrirModalDados}>
+                                                                Meus dados
+                                                            </button>
+                                                        </li>
+                                                    </>
+                                                ) : (
+                                                    <li className="nav-item">
+                                                        <Link className="nav-link" to="/">Sobre nós</Link>
+                                                    </li>
+                                                )}
                                             </>
                                         )}
 
@@ -259,7 +460,16 @@ export default function Header({ busca = "", setBusca = null }) {
                             {!usuarioInterno && (
                                 <>
                                     <Link className="nav-link" to="/catalogo">Comprar</Link>
-                                    <Link className="nav-link" to="/">Sobre nós</Link>
+                                    {usuarioCliente && estaLogado ? (
+                                        <>
+                                            <Link className="nav-link" to="/minhas-compras">Minhas compras</Link>
+                                            <button type="button" className={css.linkBotao} onClick={abrirModalDados}>
+                                                Meus dados
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <Link className="nav-link" to="/">Sobre nós</Link>
+                                    )}
                                 </>
                             )}
 
@@ -293,6 +503,76 @@ export default function Header({ busca = "", setBusca = null }) {
 
                 </div>
             </nav>
+
+            {modalDadosAberta && (
+                <div className={css.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="meus-dados-titulo">
+                    <div className={css.modalDados}>
+                        <div className={css.modalTopo}>
+                            <div>
+                                <span>Perfil</span>
+                                <h2 id="meus-dados-titulo">Meus dados</h2>
+                            </div>
+                            <button type="button" className={css.fecharModal} onClick={fecharModalDados} aria-label="Fechar">
+                                ×
+                            </button>
+                        </div>
+
+                        {mensagemCliente && <p className={css.sucessoModal}>{mensagemCliente}</p>}
+                        {erroCliente && <p className={css.erroModal}>{erroCliente}</p>}
+
+                        <form className={css.formDados} onSubmit={salvarDadosCliente}>
+                            <section className={css.fotoPerfil}>
+                                <img src={previewCliente} alt="Foto do cliente" />
+                                <label>
+                                    Alterar foto
+                                    <input type="file" accept="image/*" onChange={selecionarFotoCliente} />
+                                </label>
+                            </section>
+
+                            <section className={css.camposPerfil}>
+                                <label>
+                                    Nome
+                                    <input value={dadosCliente.nome} onChange={(e) => atualizarDadosCliente("nome", e.target.value)} />
+                                </label>
+
+                                <label>
+                                    Email
+                                    <input type="email" value={dadosCliente.email} onChange={(e) => atualizarDadosCliente("email", e.target.value)} />
+                                </label>
+
+                                <label>
+                                    Telefone
+                                    <input value={dadosCliente.telefone} onChange={(e) => atualizarDadosCliente("telefone", e.target.value)} inputMode="numeric" />
+                                </label>
+
+                                <label>
+                                    CPF
+                                    <input value={dadosCliente.cpf} onChange={(e) => atualizarDadosCliente("cpf", e.target.value)} inputMode="numeric" />
+                                </label>
+
+                                <label className={css.campoInteiro}>
+                                    Senha para salvar
+                                    <input
+                                        type="password"
+                                        value={dadosCliente.senha}
+                                        onChange={(e) => atualizarDadosCliente("senha", e.target.value)}
+                                        placeholder="Obrigatória para confirmar alterações"
+                                    />
+                                </label>
+                            </section>
+
+                            <div className={css.acoesModal}>
+                                <button type="button" className={css.cancelarModal} onClick={fecharModalDados}>
+                                    Cancelar
+                                </button>
+                                <button type="submit" className={css.salvarModal} disabled={salvandoCliente}>
+                                    {salvandoCliente ? "Salvando..." : "Salvar dados"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </header>
     );
 }

@@ -30,6 +30,21 @@
     color: var(--cor-principal);
 }
 
+.linkBotao {
+    border: none;
+    background: transparent;
+    color: var(--cor-texto-neutro-600);
+    font-size: 14px;
+    font-weight: 700;
+    padding: 8px 4px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.linkBotao:hover {
+    color: var(--cor-principal);
+}
+
 .corFundo {
     background: var(--cor-principal) !important;
     border: none !important;
@@ -128,6 +143,195 @@
     display: block;
 }
 
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.48);
+    padding: 20px;
+}
+
+.modalDados {
+    width: min(780px, 100%);
+    max-height: min(760px, calc(100vh - 40px));
+    overflow-y: auto;
+    background: var(--cor-superficie);
+    border: 1px solid var(--cor-borda-moderna);
+    border-radius: 8px;
+    box-shadow: 0 24px 60px var(--sombra-escura-18);
+}
+
+.modalTopo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 20px 22px;
+    border-bottom: 1px solid var(--cor-divisor-claro);
+}
+
+.modalTopo span {
+    display: block;
+    color: var(--cor-principal);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.modalTopo h2 {
+    margin: 0;
+    color: var(--cor-texto-titulo-escuro);
+    font-size: 24px;
+    font-weight: 900;
+}
+
+.fecharModal {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--cor-borda-moderna);
+    border-radius: 8px;
+    background: var(--cor-fundo-input);
+    color: var(--cor-texto-principal);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.formDados {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 20px;
+    padding: 22px;
+}
+
+.fotoPerfil {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.fotoPerfil img {
+    width: 180px;
+    height: 180px;
+    border: 1px solid var(--cor-borda-moderna);
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--cor-fundo-input);
+}
+
+.fotoPerfil label {
+    width: 180px;
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: var(--cor-principal);
+    color: var(--cor-superficie);
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.fotoPerfil input {
+    display: none;
+}
+
+.camposPerfil {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.camposPerfil label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    color: var(--cor-texto-neutro-700);
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.camposPerfil input {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid var(--cor-borda-moderna);
+    border-radius: 8px;
+    background: var(--cor-fundo-input);
+    color: var(--cor-texto-principal);
+    font-size: 14px;
+    font-weight: 700;
+    padding: 10px 12px;
+}
+
+.camposPerfil input:focus {
+    border-color: var(--cor-principal);
+    box-shadow: 0 0 0 3px var(--sombra-principal-12);
+    outline: none;
+}
+
+.campoInteiro {
+    grid-column: 1 / -1;
+}
+
+.acoesModal {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 4px;
+}
+
+.cancelarModal,
+.salvarModal {
+    min-height: 42px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 900;
+    padding: 0 18px;
+    cursor: pointer;
+}
+
+.cancelarModal {
+    border: 1px solid var(--cor-borda-moderna);
+    background: var(--cor-fundo-input);
+    color: var(--cor-texto-titulo-escuro);
+}
+
+.salvarModal {
+    border: none;
+    background: var(--cor-principal);
+    color: var(--cor-superficie);
+}
+
+.salvarModal:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.sucessoModal,
+.erroModal {
+    margin: 16px 22px 0;
+    border-radius: 8px;
+    padding: 11px 13px;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.sucessoModal {
+    background: var(--cor-sucesso-fundo);
+    color: var(--cor-sucesso-texto);
+}
+
+.erroModal {
+    background: var(--cor-erro-fundo);
+    color: var(--cor-erro-texto);
+}
+
 @media (max-width: 760px) {
     .sumir,
     .buscaDesktop {
@@ -152,6 +356,32 @@
 
     .azul {
         font-size: 20px;
+    }
+
+    .formDados {
+        grid-template-columns: 1fr;
+    }
+
+    .fotoPerfil img,
+    .fotoPerfil label {
+        width: 100%;
+    }
+
+    .fotoPerfil img {
+        height: 220px;
+    }
+
+    .camposPerfil {
+        grid-template-columns: 1fr;
+    }
+
+    .acoesModal {
+        flex-direction: column-reverse;
+    }
+
+    .cancelarModal,
+    .salvarModal {
+        width: 100%;
     }
 }
 

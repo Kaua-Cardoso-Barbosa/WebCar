@@ -51,10 +51,6 @@
 }
 
 .empresaResumoTopo {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 18px;
     padding-bottom: 18px;
     border-bottom: 1px solid var(--cor-divisor-claro);
     margin-bottom: 18px;
@@ -71,41 +67,30 @@
 
 .empresaResumoTopo input {
     width: min(520px, 100%);
-    border: none;
-    background: var(--cor-transparente);
-    color: var(--cor-texto-titulo-escuro);
-    font-size: 28px;
-    line-height: 1.05;
-    font-weight: 900;
-    padding: 0;
+    min-height: 46px;
+    border: 1px solid var(--cor-borda-moderna);
+    border-radius: 8px;
+    background: var(--cor-fundo-input);
+    color: var(--cor-texto-principal);
+    font-size: 16px;
+    font-weight: 800;
+    padding: 11px 13px;
 }
 
 .empresaResumoTopo input:focus {
-    outline: none;
-    color: var(--cor-azul-acao);
-}
-
-.empresaResumoTopo strong {
-    border-radius: 999px;
-    background: var(--cor-azul-fundo-claro);
-    color: var(--cor-azul-acao);
-    padding: 6px 11px;
-    font-size: 13px;
-    font-weight: 900;
+    border-color: var(--cor-principal);
+    box-shadow: 0 0 0 3px var(--sombra-principal-12);
+    outline: 0;
 }
 
 .empresaResumoGrid {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
 }
 
 .empresaResumoGrid label {
     min-width: 0;
-    border: 1px solid var(--cor-divisor-claro);
-    border-radius: 8px;
-    background: var(--cor-fundo-input);
-    padding: 12px;
     margin: 0;
 }
 
@@ -118,17 +103,20 @@
 
 .empresaResumoGrid input {
     width: 100%;
-    border: none;
-    background: var(--cor-transparente);
+    min-height: 42px;
+    border: 1px solid var(--cor-borda-moderna);
+    border-radius: 8px;
+    background: var(--cor-fundo-input);
     color: var(--cor-texto-principal);
     font-size: 14px;
-    font-weight: 900;
-    padding: 0;
+    font-weight: 700;
+    padding: 10px 12px;
 }
 
 .empresaResumoGrid input:focus {
-    outline: none;
-    color: var(--cor-azul-acao);
+    border-color: var(--cor-principal);
+    box-shadow: 0 0 0 3px var(--sombra-principal-12);
+    outline: 0;
 }
 
 .cardFormulario {
@@ -258,33 +246,91 @@
 }
 
 .upload {
-    padding: 13px;
+    border: none;
+    background: var(--cor-transparente);
+    padding: 0;
     cursor: pointer;
 }
 
 .upload input {
-    margin-top: 3px;
+    display: none;
 }
 
-.salvar {
+.uploadControle {
+    width: 100%;
+    min-height: 46px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    border: 1px solid var(--cor-borda-moderna);
+    border-radius: 8px;
+    background: var(--cor-fundo-input);
+    overflow: hidden;
+}
+
+.uploadNome {
+    min-width: 0;
+    color: var(--cor-texto-muted);
+    font-size: 14px;
+    font-weight: 700;
+    padding: 0 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.uploadBotao {
+    min-height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cor-principal);
+    color: var(--cor-superficie);
+    font-size: 13px;
+    font-weight: 900;
+    padding: 0 14px;
+}
+
+.acoesFormulario {
+    display: grid;
+    grid-template-columns: 0.75fr 1fr;
+    gap: 12px;
+}
+
+.salvar,
+.resetar {
     width: 100%;
     min-height: 48px;
     border: none;
     border-radius: 8px;
-    background: var(--cor-principal);
-    color: var(--cor-superficie);
     font-size: 15px;
     font-weight: 900;
     cursor: pointer;
 }
 
-.salvar:disabled {
+.salvar {
+    background: var(--cor-principal);
+    color: var(--cor-superficie);
+}
+
+.resetar {
+    background: var(--cor-fundo-input);
+    color: var(--cor-texto-titulo-escuro);
+    border: 1px solid var(--cor-borda-moderna);
+}
+
+.salvar:disabled,
+.resetar:disabled {
     opacity: 0.55;
     cursor: not-allowed;
 }
 
 .preview {
     overflow: hidden;
+    position: sticky;
+    top: 88px;
+    max-height: calc(100vh - 104px);
+    overflow-y: auto;
 }
 
 .previewBarra {
@@ -442,6 +488,12 @@
         grid-template-columns: 1fr;
     }
 
+    .preview {
+        position: static;
+        max-height: none;
+        overflow: hidden;
+    }
+
     .empresaResumoGrid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -469,7 +521,7 @@
     }
 
     .empresaResumoTopo input {
-        font-size: 24px;
+        font-size: 16px;
     }
 
     .empresaResumoGrid {
@@ -480,6 +532,10 @@
         flex-direction: column;
     }
 
+    .acoesFormulario {
+        grid-template-columns: 1fr;
+    }
+
     .previewHeader {
         align-items: flex-start;
         flex-direction: column;
@@ -487,4 +543,14 @@
         padding: 16px;
     }
 
+}
+
+@media (max-width: 460px) {
+    .uploadControle {
+        grid-template-columns: 1fr;
+    }
+
+    .uploadBotao {
+        width: 100%;
+    }
 }

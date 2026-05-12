@@ -19,13 +19,13 @@ function urlArquivo(valor, fallback) {
 
 function normalizarConfiguracoesSite(data = {}) {
     return {
-        textoBanner: data.textoBanner || data.texto_banner || data.TEXTO_BANNER || CONFIG_SITE_PADRAO.textoBanner,
-        bannerUrl: urlArquivo(data.bannerUrl || data.banner_url || data.BANNER_URL || data.banner || data.BANNER, CONFIG_SITE_PADRAO.bannerUrl),
+        textoBanner: data.textoBanner || data.texto_banner || data.descricao || data.TEXTO_BANNER || data.DESCRICAO || CONFIG_SITE_PADRAO.textoBanner,
+        bannerUrl: urlArquivo(data.banner_url || data.bannerUrl || data.BANNER_URL, CONFIG_SITE_PADRAO.bannerUrl),
     };
 }
 
 async function carregarConfiguracoesSite() {
-    const response = await fetch(`${API_URL}/configuracoes_site`, {
+    const response = await fetch(`${API_URL}/verdadosempresa`, {
         method: "GET",
         credentials: "include",
     });
@@ -35,7 +35,7 @@ async function carregarConfiguracoesSite() {
     }
 
     const data = await response.json();
-    return normalizarConfiguracoesSite(data);
+    return normalizarConfiguracoesSite(data.empresas?.[0] || {});
 }
 
 export default function Banner() {
@@ -76,7 +76,7 @@ export default function Banner() {
 
                     <div className={css.acoes}>
                         <Link to="/catalogo" className={css.primario}>
-                            Ver catalogo
+                            Ver catálogo
                         </Link>
                         <Link to="/Login" className={css.secundario}>
                             Entrar
