@@ -113,7 +113,7 @@
     padding: 42px;
     border-radius: 8px;
     background:
-        linear-gradient(135deg, var(--overlay-escuro-96), var(--overlay-azul-92)),
+        linear-gradient(135deg, color-mix(in srgb, var(--cor-terciaria) 96%, transparent), color-mix(in srgb, var(--cor-secundaria) 92%, transparent)),
         url("/Container.png") right bottom / 440px auto no-repeat;
     box-shadow: 0 24px 60px var(--sombra-escura-18);
     overflow: hidden;
@@ -213,6 +213,6 @@
 
     .confianca {
         padding: 28px 20px;
-        background: linear-gradient(135deg, var(--overlay-escuro-97), var(--overlay-azul-95));
+        background: linear-gradient(135deg, var(--cor-terciaria), var(--cor-secundaria));
     }
 }

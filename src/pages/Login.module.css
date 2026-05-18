@@ -30,7 +30,7 @@
 }
 
 .logo{
-    color: var(--cor-azul-noite);
+    color: var(--cor-terciaria);
     font-size: 28px;
     font-weight: 900;
     letter-spacing: 0.1em;
@@ -68,8 +68,8 @@
 }
 
 .input:focus-within{
-    border-color: var(--cor-azul-noite);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+    border-color: var(--cor-primaria);
+    box-shadow: 0 0 0 2px var(--sombra-principal-12);
 }
 
 .input input{
@@ -98,7 +98,7 @@
 
 .botao{
     width: 100%;
-    background-color: var(--cor-azul-noite);
+    background-color: var(--cor-primaria);
     color: var(--cor-superficie);
     border: none;
     padding: 16px;
@@ -113,7 +113,7 @@
 }
 
 .botao:hover{
-    background-color: var(--cor-azul-marinho);
+    background-color: var(--cor-secundaria);
     transform: translateY(-2px);
 }
 

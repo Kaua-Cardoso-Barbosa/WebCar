@@ -8,7 +8,7 @@
     position: relative;
     padding: 28px 0 46px;
     background:
-        linear-gradient(180deg, var(--overlay-escuro-97) 0%, var(--overlay-escuro-92) 52%, var(--cor-fundo-publico) 52%, var(--cor-fundo-publico) 100%);
+        linear-gradient(180deg, var(--cor-terciaria) 0%, var(--cor-secundaria) 52%, var(--cor-fundo-publico) 52%, var(--cor-fundo-publico) 100%);
 }
 
 .conteudo {
@@ -658,7 +658,7 @@
 
 @media (max-width: 1000px) {
     .hero {
-        background: linear-gradient(180deg, var(--overlay-escuro-96) 0%, var(--overlay-escuro-90) 36%, var(--cor-fundo-frio) 36%, var(--cor-fundo-frio) 100%);
+        background: linear-gradient(180deg, var(--cor-terciaria) 0%, var(--cor-secundaria) 36%, var(--cor-fundo-frio) 36%, var(--cor-fundo-frio) 100%);
     }
 
     .gridPrincipal {

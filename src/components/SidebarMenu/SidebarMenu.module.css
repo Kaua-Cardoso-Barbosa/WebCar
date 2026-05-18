@@ -55,8 +55,8 @@
     left: 16px;
     z-index: 1001;
     font-size: 24px;
-    background: #3867eb;
-    color: white;
+    background: var(--cor-primaria);
+    color: var(--cor-superficie);
     border: none;
     border-radius: 8px;
     padding: 8px 12px;

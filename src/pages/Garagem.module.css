@@ -136,6 +136,33 @@
     color: var(--cor-placeholder-escuro);
 }
 
+.filtrosStatus {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.filtroStatus {
+    border: 1px solid var(--cor-borda-painel);
+    background: var(--cor-superficie);
+    color: var(--cor-texto-neutro-600);
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.filtroStatus:hover,
+.filtroStatusAtivo {
+    background: var(--cor-azul-fundo-claro);
+    border-color: var(--cor-borda-azulada);
+    color: var(--cor-azul-acao);
+}
+
 .tabelaBox {
     background-color: var(--cor-superficie);
     border: 1px solid var(--cor-borda-card-suave);
@@ -191,6 +218,35 @@
 .preco {
     font-weight: 700;
     color: var(--cor-texto-dashboard);
+}
+
+.veiculoVendido {
+    opacity: 0.72;
+}
+
+.statusVendido {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    min-height: 28px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--cor-erro-fundo-suave);
+    color: var(--cor-erro);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.nomeVendido {
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+    color: var(--cor-texto-muted-azulado);
+}
+
+.semClique {
+    cursor: default;
 }
 
 .acoes {

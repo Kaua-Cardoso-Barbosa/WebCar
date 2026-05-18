@@ -46,7 +46,7 @@
     margin-bottom: 28px;
     padding: 30px;
     border-radius: 8px;
-    background: linear-gradient(90deg, var(--overlay-escuro-96), var(--overlay-azul-90));
+    background: linear-gradient(90deg, var(--cor-terciaria), var(--cor-secundaria));
     box-shadow: 0 18px 44px var(--sombra-escura-14);
 }
 
@@ -197,7 +197,7 @@
 
     .heroCatalogo {
         padding: 24px 20px;
-        background: linear-gradient(135deg, var(--overlay-escuro-97), var(--overlay-azul-94));
+        background: linear-gradient(135deg, var(--cor-terciaria), var(--cor-secundaria));
     }
 
     .grid {

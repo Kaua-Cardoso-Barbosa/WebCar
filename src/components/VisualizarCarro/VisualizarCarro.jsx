@@ -79,6 +79,20 @@ function formatarPreco(valor) {
     });
 }
 
+function apenasNumeros(valor) {
+    return String(valor || "").replace(/\D/g, "");
+}
+
+function formatarCpf(valor) {
+    const numeros = apenasNumeros(valor).slice(0, 11);
+
+    if (numeros.length <= 3) return numeros;
+    if (numeros.length <= 6) return `${numeros.slice(0, 3)}.${numeros.slice(3)}`;
+    if (numeros.length <= 9) return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6)}`;
+
+    return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-${numeros.slice(9)}`;
+}
+
 function normalizarDescontoAVista(data = {}) {
     const empresa = data.empresas?.[0] || data.empresa?.[0] || data.empresa || data[0] || data;
     const valor =
@@ -164,7 +178,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
     const [carregandoJuro, setCarregandoJuro] = useState(false);
     const [formaPagamento, setFormaPagamento] = useState(0);
     const [parcelas, setParcelas] = useState(12);
-    const [idClienteVenda, setIdClienteVenda] = useState("");
+    const [cpfClienteVenda, setCpfClienteVenda] = useState("");
     const [mensagemVenda, setMensagemVenda] = useState("");
     const [mensagemSucessoPagina, setMensagemSucessoPagina] = useState("");
 
@@ -359,7 +373,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
             setTempoQrCode(60);
             setFormaPagamento(0);
             setParcelas(12);
-            setIdClienteVenda("");
+            setCpfClienteVenda("");
             if (qrCodeUrl) {
                 URL.revokeObjectURL(qrCodeUrl);
                 setQrCodeUrl("");
@@ -439,8 +453,8 @@ export default function VisualizarCarro({ modoVendedor = false }) {
     async function registrarVenda() {
         if (!carro?.ID_VEICULO || gerandoQrCode) return;
 
-        if (!idClienteVenda.trim()) {
-            setErroCompra("Informe o ID do cliente para registrar a venda.");
+        if (apenasNumeros(cpfClienteVenda).length !== 11) {
+            setErroCompra("Informe o CPF do cliente para registrar a venda.");
             return;
         }
 
@@ -468,7 +482,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
 
             const payload = {
                 id_veiculo: carro.ID_VEICULO,
-                id_usuario_cliente: Number(idClienteVenda),
+                cpf_cliente: apenasNumeros(cpfClienteVenda),
                 forma_pagamento: Number(formaPagamento),
             };
 
@@ -716,13 +730,14 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                         {modoVendedor && (
                             <div className={css.formaPagamento}>
                                 <label className={css.campoVenda}>
-                                    <span>ID do cliente</span>
+                                    <span>CPF do cliente</span>
                                     <input
-                                        type="number"
-                                        min="1"
-                                        value={idClienteVenda}
-                                        onChange={(e) => setIdClienteVenda(e.target.value)}
-                                        placeholder="Ex: 12"
+                                        type="text"
+                                        inputMode="numeric"
+                                        maxLength={14}
+                                        value={cpfClienteVenda}
+                                        onChange={(e) => setCpfClienteVenda(formatarCpf(e.target.value))}
+                                        placeholder="000.000.000-00"
                                     />
                                 </label>
 
@@ -797,7 +812,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                                     </div>
                                     {Number(formaPagamento) === 1 && (
                                         <div>
-                                            <span>Juros mensal do banco</span>
+                                            <span>Juros</span>
                                             <strong>{taxaJuroCarregada ? `${porcentagemJuro}%` : "Carregando"}</strong>
                                         </div>
                                     )}

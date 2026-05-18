@@ -216,6 +216,9 @@ export default function ConfiguracoesSite() {
             cep: formatarCep,
             banco: (novoValor) => formatarInteiro(novoValor, 3),
             agencia: (novoValor) => formatarInteiro(novoValor, 6),
+            porcentagemJuro: (novoValor) => String(novoValor).replace(",", "."),
+            porcentagemLucro: (novoValor) => String(novoValor).replace(",", "."),
+            descontoAVista: (novoValor) => String(novoValor).replace(",", "."),
         };
 
         return mascaras[campo] ? mascaras[campo](valor) : valor;
@@ -544,6 +547,52 @@ export default function ConfiguracoesSite() {
 
                         <div className={css.grid}>
                             <div>
+                            <section className={css.cardFormulario}>
+                                <div className={css.cardTopo}>
+                                    <div>
+                                        <span>Valores</span>
+                                        <h2>Porcentagens comerciais</h2>
+                                    </div>
+                                </div>
+
+                                <div className={css.gradeCampos}>
+                                    <label>
+                                        Juros
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={form.porcentagemJuro}
+                                            onChange={(e) => atualizarCampo("porcentagemJuro", e.target.value)}
+                                            placeholder="Ex: 1.5"
+                                        />
+                                    </label>
+
+                                    <label>
+                                        Lucro
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={form.porcentagemLucro}
+                                            onChange={(e) => atualizarCampo("porcentagemLucro", e.target.value)}
+                                            placeholder="Ex: 20"
+                                        />
+                                    </label>
+
+                                    <label>
+                                        Desconto a vista
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={form.descontoAVista}
+                                            onChange={(e) => atualizarCampo("descontoAVista", e.target.value)}
+                                            placeholder="Ex: 5"
+                                        />
+                                    </label>
+                                </div>
+                            </section>
 
                             <section className={css.cardFormulario}>
                                 <div className={css.cardTopo}>

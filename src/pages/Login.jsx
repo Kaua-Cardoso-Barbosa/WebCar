@@ -139,7 +139,7 @@ export default function Login() {
                         </div>
 
                         <div className="d-grid gap-2 col-12 mx-auto">
-                            <button className="btn btn-primary" type="submit">
+                            <button className={css.botao} type="submit">
                                 Entrar
                             </button>
                         </div>

@@ -4,6 +4,7 @@ import css from "./Header.module.css";
 import { API_URL } from "../../App";
 
 const LOGO_PADRAO = "/Logo.png";
+const LOGO_CACHE_KEY = "webcar_logo_url";
 const IMAGEM_USUARIO_PADRAO = `data:image/svg+xml;utf8,${encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">
   <rect width="320" height="320" rx="160" fill="#e2e8f0"/>
@@ -27,12 +28,14 @@ async function carregarLogoSite() {
         credentials: "include",
     });
 
-    if (!response.ok) return LOGO_PADRAO;
+    if (!response.ok) return localStorage.getItem(LOGO_CACHE_KEY) || LOGO_PADRAO;
 
     const data = await response.json();
     const empresa = data.empresas?.[0] || {};
 
-    return urlArquivo(empresa.logo_url || empresa.logoUrl || empresa.LOGO_URL, LOGO_PADRAO);
+    const logoUrl = urlArquivo(empresa.logo_url || empresa.logoUrl || empresa.LOGO_URL, LOGO_PADRAO);
+    localStorage.setItem(LOGO_CACHE_KEY, logoUrl);
+    return logoUrl;
 }
 
 function apenasNumeros(valor) {
@@ -68,13 +71,14 @@ export default function Header({ busca = "", setBusca = null }) {
     const tipoUsuario = localStorage.getItem("usuario_tipo");
     const estaLogado = !!tipoUsuario;
     const tipoNumero = Number(tipoUsuario);
+    const usuarioVendedor = tipoNumero === 1;
     const usuarioInterno = tipoNumero === 0 || tipoNumero === 1;
     const usuarioCliente = tipoNumero === 2;
     const linkLogo = tipoNumero === 0 ? "/dashboard" : tipoNumero === 1 ? "/restrita-vendedor" : "/";
     const idUsuario = localStorage.getItem("usuario_id");
 
     const [buscaLocal, setBuscaLocal] = useState("");
-    const [logoUrl, setLogoUrl] = useState(LOGO_PADRAO);
+    const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem(LOGO_CACHE_KEY) || LOGO_PADRAO);
     const [modalDadosAberta, setModalDadosAberta] = useState(false);
     const [dadosCliente, setDadosCliente] = useState({
         nome: "",
@@ -169,8 +173,8 @@ export default function Header({ busca = "", setBusca = null }) {
             setDadosCliente({
                 nome: usuario.nome || dadosLocais.nome,
                 email: usuario.email || dadosLocais.email,
-                telefone: formatarTelefone(usuario.telefone || ""),
-                cpf: formatarCpf(usuario.cpf || ""),
+                telefone: formatarTelefone(usuario.telefone || dadosLocais.telefone),
+                cpf: formatarCpf(usuario.cpf || dadosLocais.cpf),
                 senha: "",
             });
             setPreviewCliente(usuario.imagem ? `${usuario.imagem}?v=${Date.now()}` : `${API_URL}/uploads/Usuarios/${idUsuario}.jpg?v=${Date.now()}`);
@@ -211,8 +215,8 @@ export default function Header({ busca = "", setBusca = null }) {
             return;
         }
 
-        if (!dadosCliente.nome.trim() || !dadosCliente.email.trim() || !dadosCliente.telefone.trim() || !dadosCliente.cpf.trim() || !dadosCliente.senha.trim()) {
-            setErroCliente("Preencha nome, email, telefone, CPF e nova senha para salvar.");
+        if (!dadosCliente.nome.trim() || !dadosCliente.email.trim() || !dadosCliente.telefone.trim() || !dadosCliente.cpf.trim()) {
+            setErroCliente("Preencha nome, email, telefone e CPF para salvar.");
             return;
         }
 
@@ -226,7 +230,10 @@ export default function Header({ busca = "", setBusca = null }) {
             formData.append("email", dadosCliente.email);
             formData.append("telefone", apenasNumeros(dadosCliente.telefone));
             formData.append("cpf", apenasNumeros(dadosCliente.cpf));
-            formData.append("senha", dadosCliente.senha);
+
+            if (dadosCliente.senha.trim()) {
+                formData.append("senha", dadosCliente.senha);
+            }
 
             if (fotoCliente) {
                 formData.append("imagem", fotoCliente);
@@ -272,7 +279,9 @@ export default function Header({ busca = "", setBusca = null }) {
         buscarLogo();
 
         function atualizar(e) {
-            setLogoUrl(e.detail?.logoUrl || LOGO_PADRAO);
+            const novaLogo = e.detail?.logoUrl || LOGO_PADRAO;
+            localStorage.setItem(LOGO_CACHE_KEY, novaLogo);
+            setLogoUrl(novaLogo);
         }
 
         window.addEventListener("webcar:configuracoes-site", atualizar);
@@ -368,6 +377,14 @@ export default function Header({ busca = "", setBusca = null }) {
                                             </>
                                         )}
 
+                                        {usuarioVendedor && estaLogado && (
+                                            <li className="nav-item">
+                                                <button type="button" className={css.linkBotao} onClick={abrirModalDados}>
+                                                    Meus dados
+                                                </button>
+                                            </li>
+                                        )}
+
                                         {!estaLogado ? (
                                             <>
                                                 <li className="nav-item">
@@ -421,6 +438,12 @@ export default function Header({ busca = "", setBusca = null }) {
                                     <Link className="nav-link" to="/catalogo">Comprar</Link>
                                     {usuarioCliente && estaLogado ? linksCliente : <Link className="nav-link" to="/">Sobre nós</Link>}
                                 </>
+                            )}
+
+                            {usuarioVendedor && estaLogado && (
+                                <button type="button" className={css.linkBotao} onClick={abrirModalDados}>
+                                    Meus dados
+                                </button>
                             )}
 
                             {!estaLogado ? (
@@ -485,12 +508,12 @@ export default function Header({ busca = "", setBusca = null }) {
                                 </label>
 
                                 <label className={css.campoInteiro}>
-                                    Nova senha
+                                    Nova senha opcional
                                     <input
                                         type="password"
                                         value={dadosCliente.senha}
                                         onChange={(e) => atualizarDadosCliente("senha", e.target.value)}
-                                        placeholder="Digite uma nova senha"
+                                        placeholder="Deixe em branco para manter"
                                     />
                                 </label>
                             </section>

@@ -32,6 +32,7 @@ import AtualizarValores from "./pages/AtualizarValores.jsx";
 import ListarMarcas from "./pages/ListarMarcas.jsx";
 import ListaUsuarios from "./pages/ListaUsuarios.jsx";
 import ConfiguracoesSite from "./pages/ConfiguracoesSite.jsx";
+import MinhasCompras from "./pages/MinhasCompras.jsx";
 
 const CONFIG_SITE_PADRAO = {
     corPrimaria: "#2563EB",
@@ -39,7 +40,33 @@ const CONFIG_SITE_PADRAO = {
     corTerciaria: "#0f172a",
     corFonte: "#111827",
     fonte: "Inter, Arial, sans-serif",
+    logoUrl: "/Logo.png",
 };
+
+const LOGO_CACHE_KEY = "webcar_logo_url";
+
+function urlArquivo(valor, fallback) {
+    if (!valor) return fallback;
+    if (valor.startsWith("http") || valor.startsWith("data:") || valor.startsWith("blob:") || valor.startsWith("/")) {
+        return valor;
+    }
+
+    return `${API_URL}/${valor.replace(/^\/+/, "")}`;
+}
+
+function atualizarFavicon(logoUrl) {
+    let favicon =
+        document.querySelector("link[rel='icon']") ||
+        document.querySelector("link[rel='shortcut icon']");
+
+    if (!favicon) {
+        favicon = document.createElement("link");
+        document.head.appendChild(favicon);
+    }
+
+    favicon.setAttribute("rel", "icon");
+    favicon.setAttribute("href", logoUrl || CONFIG_SITE_PADRAO.logoUrl);
+}
 
 function normalizarConfiguracoesSite(data = {}) {
     return {
@@ -48,6 +75,7 @@ function normalizarConfiguracoesSite(data = {}) {
         corTerciaria: data.corTerciaria || data.cor_terciaria || data.COR_TERCIARIA || CONFIG_SITE_PADRAO.corTerciaria,
         corFonte: data.corFonte || data.cor_fonte || data.COR_FONTE || CONFIG_SITE_PADRAO.corFonte,
         fonte: data.fonte || data.FONTE || CONFIG_SITE_PADRAO.fonte,
+        logoUrl: urlArquivo(data.logo_url || data.logoUrl || data.LOGO_URL, CONFIG_SITE_PADRAO.logoUrl),
     };
 }
 
@@ -58,7 +86,10 @@ async function carregarConfiguracoesSite() {
     });
 
     if (!response.ok) {
-        return CONFIG_SITE_PADRAO;
+        return {
+            ...CONFIG_SITE_PADRAO,
+            logoUrl: localStorage.getItem(LOGO_CACHE_KEY) || CONFIG_SITE_PADRAO.logoUrl,
+        };
     }
 
     const data = await response.json();
@@ -83,6 +114,8 @@ function aplicarConfiguracoesSite(configuracoes) {
     root.style.setProperty("--cor-texto-principal", config.corFonte);
     root.style.setProperty("--fonte-site", config.fonte);
     document.body.style.fontFamily = config.fonte;
+    localStorage.setItem(LOGO_CACHE_KEY, config.logoUrl);
+    atualizarFavicon(config.logoUrl);
 }
 
 function ScrollToTop() {
@@ -107,6 +140,13 @@ export default function App() {
         }
 
         iniciarConfiguracoesSite();
+
+        function atualizarConfiguracoesSite(e) {
+            aplicarConfiguracoesSite(e.detail || {});
+        }
+
+        window.addEventListener("webcar:configuracoes-site", atualizarConfiguracoesSite);
+        return () => window.removeEventListener("webcar:configuracoes-site", atualizarConfiguracoesSite);
     }, []);
 
     return (
@@ -259,6 +299,15 @@ export default function App() {
                 <Route
                     path="/catalogo"
                     element={<Catalogo />}
+                />
+
+                <Route
+                    path="/minhas-compras"
+                    element={
+                        <RotaProtegida tiposPermitidos={[2]}>
+                            <MinhasCompras />
+                        </RotaProtegida>
+                    }
                 />
 
                 <Route
