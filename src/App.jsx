@@ -35,15 +35,18 @@ import ConfiguracoesSite from "./pages/ConfiguracoesSite.jsx";
 import MinhasCompras from "./pages/MinhasCompras.jsx";
 
 const CONFIG_SITE_PADRAO = {
+    textoBanner: "Escolha com confiança. Compre com segurança.",
     corPrimaria: "#2563EB",
     corSecundaria: "#1d4ed8",
     corTerciaria: "#0f172a",
     corFonte: "#111827",
     fonte: "Inter, Arial, sans-serif",
     logoUrl: "/Logo.png",
+    bannerUrl: "/Banner.png",
 };
 
 const LOGO_CACHE_KEY = "webcar_logo_url";
+const CONFIG_SITE_CACHE_KEY = "webcar_configuracoes_site";
 
 function urlArquivo(valor, fallback) {
     if (!valor) return fallback;
@@ -75,8 +78,27 @@ function normalizarConfiguracoesSite(data = {}) {
         corTerciaria: data.corTerciaria || data.cor_terciaria || data.COR_TERCIARIA || CONFIG_SITE_PADRAO.corTerciaria,
         corFonte: data.corFonte || data.cor_fonte || data.COR_FONTE || CONFIG_SITE_PADRAO.corFonte,
         fonte: data.fonte || data.FONTE || CONFIG_SITE_PADRAO.fonte,
+        textoBanner: data.textoBanner || data.texto_banner || data.descricao || data.TEXTO_BANNER || data.DESCRICAO || CONFIG_SITE_PADRAO.textoBanner,
         logoUrl: urlArquivo(data.logo_url || data.logoUrl || data.LOGO_URL, CONFIG_SITE_PADRAO.logoUrl),
+        bannerUrl: urlArquivo(data.banner_url || data.bannerUrl || data.BANNER_URL, CONFIG_SITE_PADRAO.bannerUrl),
     };
+}
+
+function salvarConfiguracoesSiteCache(configuracoes) {
+    try {
+        localStorage.setItem(CONFIG_SITE_CACHE_KEY, JSON.stringify(normalizarConfiguracoesSite(configuracoes)));
+    } catch {
+        // Ignora falhas de cache local.
+    }
+}
+
+function lerConfiguracoesSiteCache() {
+    try {
+        const cache = localStorage.getItem(CONFIG_SITE_CACHE_KEY);
+        return cache ? normalizarConfiguracoesSite(JSON.parse(cache)) : null;
+    } catch {
+        return null;
+    }
 }
 
 async function carregarConfiguracoesSite() {
@@ -115,6 +137,7 @@ function aplicarConfiguracoesSite(configuracoes) {
     root.style.setProperty("--fonte-site", config.fonte);
     document.body.style.fontFamily = config.fonte;
     localStorage.setItem(LOGO_CACHE_KEY, config.logoUrl);
+    salvarConfiguracoesSiteCache(config);
     atualizarFavicon(config.logoUrl);
 }
 
@@ -132,6 +155,9 @@ export default function App() {
     useEffect(() => {
         async function iniciarConfiguracoesSite() {
             try {
+                const cache = lerConfiguracoesSiteCache();
+                if (cache) aplicarConfiguracoesSite(cache);
+
                 const configuracoes = await carregarConfiguracoesSite();
                 aplicarConfiguracoesSite(configuracoes);
             } catch {
@@ -145,8 +171,33 @@ export default function App() {
             aplicarConfiguracoesSite(e.detail || {});
         }
 
+        function atualizarConfiguracoesSiteDeOutraAba(e) {
+            if (e.key !== CONFIG_SITE_CACHE_KEY || !e.newValue) return;
+
+            try {
+                aplicarConfiguracoesSite(JSON.parse(e.newValue));
+            } catch {
+                // Se o cache vier invalido, mantem o estado atual.
+            }
+        }
+
+        function recarregarConfiguracoesAoVoltar() {
+            if (document.visibilityState === "visible") {
+                iniciarConfiguracoesSite();
+            }
+        }
+
         window.addEventListener("webcar:configuracoes-site", atualizarConfiguracoesSite);
-        return () => window.removeEventListener("webcar:configuracoes-site", atualizarConfiguracoesSite);
+        window.addEventListener("storage", atualizarConfiguracoesSiteDeOutraAba);
+        window.addEventListener("focus", iniciarConfiguracoesSite);
+        document.addEventListener("visibilitychange", recarregarConfiguracoesAoVoltar);
+
+        return () => {
+            window.removeEventListener("webcar:configuracoes-site", atualizarConfiguracoesSite);
+            window.removeEventListener("storage", atualizarConfiguracoesSiteDeOutraAba);
+            window.removeEventListener("focus", iniciarConfiguracoesSite);
+            document.removeEventListener("visibilitychange", recarregarConfiguracoesAoVoltar);
+        };
     }, []);
 
     return (

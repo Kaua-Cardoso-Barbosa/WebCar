@@ -3,6 +3,7 @@ import { API_URL } from "../../App";
 
 const LOGO_PADRAO = "/Logo.png";
 const LOGO_CACHE_KEY = "webcar_logo_url";
+const CONFIG_SITE_CACHE_KEY = "webcar_configuracoes_site";
 
 function urlArquivo(valor, fallback) {
     if (!valor) return fallback;
@@ -29,8 +30,20 @@ async function carregarLogoSite() {
     return logoUrl;
 }
 
+function lerLogoConfiguracoesCache() {
+    try {
+        const cache = localStorage.getItem(CONFIG_SITE_CACHE_KEY);
+        if (!cache) return null;
+
+        const config = JSON.parse(cache);
+        return config.logoUrl || config.logo_url || config.LOGO_URL || null;
+    } catch {
+        return null;
+    }
+}
+
 export default function Footer() {
-    const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem(LOGO_CACHE_KEY) || LOGO_PADRAO);
+    const [logoUrl, setLogoUrl] = useState(() => lerLogoConfiguracoesCache() || localStorage.getItem(LOGO_CACHE_KEY) || LOGO_PADRAO);
 
     useEffect(() => {
         async function buscarLogo() {
@@ -49,8 +62,36 @@ export default function Footer() {
             setLogoUrl(novaLogo);
         }
 
+        function atualizarPorOutraAba(e) {
+            if (e.key !== CONFIG_SITE_CACHE_KEY || !e.newValue) return;
+
+            try {
+                const config = JSON.parse(e.newValue);
+                const novaLogo = config.logoUrl || config.logo_url || config.LOGO_URL || LOGO_PADRAO;
+                localStorage.setItem(LOGO_CACHE_KEY, novaLogo);
+                setLogoUrl(novaLogo);
+            } catch {
+                // Mantem a logo atual se o cache vier invalido.
+            }
+        }
+
+        function atualizarAoVoltar() {
+            if (document.visibilityState === "visible") {
+                buscarLogo();
+            }
+        }
+
         window.addEventListener("webcar:configuracoes-site", atualizar);
-        return () => window.removeEventListener("webcar:configuracoes-site", atualizar);
+        window.addEventListener("storage", atualizarPorOutraAba);
+        window.addEventListener("focus", buscarLogo);
+        document.addEventListener("visibilitychange", atualizarAoVoltar);
+
+        return () => {
+            window.removeEventListener("webcar:configuracoes-site", atualizar);
+            window.removeEventListener("storage", atualizarPorOutraAba);
+            window.removeEventListener("focus", buscarLogo);
+            document.removeEventListener("visibilitychange", atualizarAoVoltar);
+        };
     }, []);
 
     return (
@@ -62,9 +103,9 @@ export default function Footer() {
                     </div>
 
                     <p className="text-secondary">
-                        Lider em solucoes modernas para compra e venda
-                        de veiculos. Gerencie seu estoque com
-                        inteligencia de dados.
+                        Líder em soluções modernas para compra e venda
+                        de veículos. Gerencie seu estoque com
+                        inteligência de dados.
                     </p>
                 </div>
 
@@ -73,7 +114,7 @@ export default function Footer() {
                     <ul className="nav flex-column">
                         <li className="nav-item mb-2">
                             <a href="#" className="nav-link p-0 text-secondary">
-                                Sobre Nos
+                                Sobre nós
                             </a>
                         </li>
                         <li className="nav-item">

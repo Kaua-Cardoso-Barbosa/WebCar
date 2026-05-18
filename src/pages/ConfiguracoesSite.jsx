@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Header from "../components/Header/Header.jsx";
 import SidebarMenu from "../components/SidebarMenu/SidebarMenu.jsx";
 import Footer from "../components/Footer/Footer.jsx";
@@ -39,6 +39,8 @@ const CONFIG_SITE_PADRAO = {
     logoUrl: "/Logo.png",
     bannerUrl: "/Banner.png",
 };
+
+const CONFIG_SITE_CACHE_KEY = "webcar_configuracoes_site";
 
 function somenteDigitos(valor) {
     return String(valor ?? "").replace(/\D/g, "");
@@ -172,6 +174,20 @@ function aplicarConfiguracoesSite(configuracoes) {
     document.body.style.fontFamily = config.fonte;
 }
 
+function salvarConfiguracoesSiteCache(configuracoes) {
+    try {
+        localStorage.setItem(CONFIG_SITE_CACHE_KEY, JSON.stringify(normalizarConfiguracoesSite(configuracoes)));
+    } catch {
+        // Ignora falhas de cache local.
+    }
+}
+
+function emitirConfiguracoesSite(configuracoes) {
+    const config = normalizarConfiguracoesSite(configuracoes);
+    salvarConfiguracoesSiteCache(config);
+    window.dispatchEvent(new CustomEvent("webcar:configuracoes-site", { detail: config }));
+}
+
 export default function ConfiguracoesSite() {
     const [form, setForm] = useState(CONFIG_SITE_PADRAO);
     const [logoArquivo, setLogoArquivo] = useState(null);
@@ -179,19 +195,55 @@ export default function ConfiguracoesSite() {
     const [salvando, setSalvando] = useState(false);
     const [mensagem, setMensagem] = useState("");
     const [erro, setErro] = useState("");
+    const editandoRef = useRef(false);
 
     useEffect(() => {
         async function buscarConfiguracoes() {
             try {
                 const configuracoes = await carregarConfiguracoesSite();
                 setForm(configuracoes);
+                salvarConfiguracoesSiteCache(configuracoes);
             } catch (error) {
                 setErro(error.message || "Não foi possível carregar os dados da empresa.");
                 setForm(CONFIG_SITE_PADRAO);
             }
         }
 
+        async function atualizarAoVoltar() {
+            if (document.visibilityState !== "visible" || editandoRef.current) return;
+
+            try {
+                const configuracoes = await carregarConfiguracoesSite();
+                setForm(configuracoes);
+                aplicarConfiguracoesSite(configuracoes);
+                salvarConfiguracoesSiteCache(configuracoes);
+            } catch {
+                // Mantem os dados atuais se o servidor nao responder.
+            }
+        }
+
+        function atualizarPorOutraAba(e) {
+            if (e.key !== CONFIG_SITE_CACHE_KEY || !e.newValue || editandoRef.current) return;
+
+            try {
+                const configuracoes = normalizarConfiguracoesSite(JSON.parse(e.newValue));
+                setForm(configuracoes);
+                aplicarConfiguracoesSite(configuracoes);
+            } catch {
+                // Mantem os dados atuais se o cache vier invalido.
+            }
+        }
+
         buscarConfiguracoes();
+        window.addEventListener("focus", atualizarAoVoltar);
+        window.addEventListener("storage", atualizarPorOutraAba);
+        document.addEventListener("visibilitychange", atualizarAoVoltar);
+
+        return () => {
+            window.removeEventListener("focus", atualizarAoVoltar);
+            window.removeEventListener("storage", atualizarPorOutraAba);
+            document.removeEventListener("visibilitychange", atualizarAoVoltar);
+        };
     }, []);
 
     useEffect(() => {
@@ -225,6 +277,7 @@ export default function ConfiguracoesSite() {
     }
 
     function atualizarCampo(campo, valor) {
+        editandoRef.current = true;
         setMensagem("");
         setErro("");
         setForm((dados) => ({
@@ -236,6 +289,7 @@ export default function ConfiguracoesSite() {
     function selecionarArquivo(tipo, arquivo) {
         setMensagem("");
         setErro("");
+        editandoRef.current = true;
 
         if (!arquivo) return;
 
@@ -325,7 +379,7 @@ export default function ConfiguracoesSite() {
         setBannerArquivo(null);
         setForm(configuracoesResetadas);
         aplicarConfiguracoesSite(configuracoesResetadas);
-        window.dispatchEvent(new CustomEvent("webcar:configuracoes-site", { detail: configuracoesResetadas }));
+        emitirConfiguracoesSite(configuracoesResetadas);
         setErro("");
         setMensagem("");
 
@@ -357,8 +411,9 @@ export default function ConfiguracoesSite() {
             }
 
             setForm(configuracoesSalvas);
+            editandoRef.current = false;
             aplicarConfiguracoesSite(configuracoesSalvas);
-            window.dispatchEvent(new CustomEvent("webcar:configuracoes-site", { detail: configuracoesSalvas }));
+            emitirConfiguracoesSite(configuracoesSalvas);
             setMensagem("Configurações visuais resetadas com sucesso.");
         } catch (error) {
             setErro(error.message || "Não foi possível resetar as configurações.");
@@ -396,8 +451,9 @@ export default function ConfiguracoesSite() {
             setForm(configuracoesSalvas);
             setLogoArquivo(null);
             setBannerArquivo(null);
+            editandoRef.current = false;
             aplicarConfiguracoesSite(configuracoesSalvas);
-            window.dispatchEvent(new CustomEvent("webcar:configuracoes-site", { detail: configuracoesSalvas }));
+            emitirConfiguracoesSite(configuracoesSalvas);
             setMensagem(data.mensagem || "Configurações salvas com sucesso.");
         } catch {
             setErro("Não foi possível conectar com o servidor.");
@@ -581,7 +637,7 @@ export default function ConfiguracoesSite() {
                                     </label>
 
                                     <label>
-                                        Desconto a vista
+                                        Desconto à vista
                                         <input
                                             type="number"
                                             min="0"

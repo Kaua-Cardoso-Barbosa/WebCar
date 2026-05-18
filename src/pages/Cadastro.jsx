@@ -1,6 +1,7 @@
 import "./Cadastro.module.css";
 import css from "./Cadastro.module.css";
 import Header from "../components/Header/Header";
+import Footer from "../components/Footer/Footer.jsx";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../App";
@@ -240,6 +241,8 @@ export default function Cadastro() {
                     </div>
                 </section>
             </main>
+
+            <Footer />
         </>
     );
 }

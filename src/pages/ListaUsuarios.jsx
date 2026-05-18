@@ -55,7 +55,7 @@ function formatarPreco(valor) {
 }
 
 function formatarData(valor) {
-    if (!valor) return "Nao informado";
+    if (!valor) return "Não informado";
 
     const data = new Date(valor);
 
@@ -165,7 +165,7 @@ export default function ListaUsuario() {
         if (Number(tipo) === 0) return "Administrador";
         if (Number(tipo) === 1) return "Vendedor";
         if (Number(tipo) === 2) return "Cliente";
-        return "Nao informado";
+        return "Não informado";
     }
 
     function classeTipo(tipo) {
@@ -226,7 +226,7 @@ export default function ListaUsuario() {
 
             if (!res.ok) {
                 setUsuarios([]);
-                setErro(data.mensagem || "Nao foi possivel carregar os usuarios.");
+                setErro(data.mensagem || "Não foi possível carregar os usuários.");
                 return;
             }
 
@@ -404,7 +404,7 @@ export default function ListaUsuario() {
         if (!usuarioSituacao || novaSituacao === null || salvandoSituacao) return;
 
         if (novaSituacao === 1 && !motivoBloqueio.trim()) {
-            setErroSituacao("Informe o motivo do bloqueio para enviar ao usuario.");
+            setErroSituacao("Informe o motivo do bloqueio para enviar ao usuário.");
             return;
         }
 
@@ -435,7 +435,7 @@ export default function ListaUsuario() {
             const data = await res.json();
 
             if (!res.ok) {
-                setErroSituacao(data.mensagem || "Erro ao alterar situacao do usuario.");
+                setErroSituacao(data.mensagem || "Erro ao alterar situação do usuário.");
                 return;
             }
 
@@ -447,7 +447,7 @@ export default function ListaUsuario() {
             fecharModalSituacao();
             buscarUsuarios();
         } catch {
-            setErroSituacao("Erro ao alterar situacao do usuario.");
+            setErroSituacao("Erro ao alterar situação do usuário.");
         } finally {
             setSalvandoSituacao(false);
         }
@@ -468,7 +468,7 @@ export default function ListaUsuario() {
         }
 
         if (cadastro.senha !== cadastro.confirma) {
-            setErroCadastro("As senhas nao coincidem.");
+            setErroCadastro("As senhas não coincidem.");
             return;
         }
 
@@ -499,7 +499,7 @@ export default function ListaUsuario() {
             const data = await response.json();
 
             if (!response.ok) {
-                setErroCadastro(data.mensagem || "Nao foi possivel cadastrar o usuario.");
+                setErroCadastro(data.mensagem || "Não foi possível cadastrar o usuário.");
                 return;
             }
 
@@ -507,7 +507,7 @@ export default function ListaUsuario() {
             fecharModalCadastro();
             buscarUsuarios();
         } catch {
-            setErroCadastro("Nao foi possivel cadastrar o usuario.");
+            setErroCadastro("Não foi possível cadastrar o usuário.");
         } finally {
             setSalvandoCadastro(false);
         }
@@ -552,7 +552,7 @@ export default function ListaUsuario() {
             const data = await response.json();
 
             if (!response.ok) {
-                setErroEdicao(data.mensagem || "Nao foi possivel editar o usuario.");
+                setErroEdicao(data.mensagem || "Não foi possível editar o usuário.");
                 return;
             }
 
@@ -560,7 +560,7 @@ export default function ListaUsuario() {
             fecharModalEdicao();
             buscarUsuarios();
         } catch {
-            setErroEdicao("Nao foi possivel editar o usuario.");
+            setErroEdicao("Não foi possível editar o usuário.");
         } finally {
             setSalvandoEdicao(false);
         }
@@ -580,7 +580,7 @@ export default function ListaUsuario() {
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                setErroCompras(data.mensagem || "Nao foi possivel carregar as compras do usuario.");
+                setErroCompras(data.mensagem || "Não foi possível carregar as compras do usuário.");
                 return;
             }
 
@@ -633,7 +633,7 @@ export default function ListaUsuario() {
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                setErroCompras(data.mensagem || "Nao foi possivel dar baixa na parcela.");
+                setErroCompras(data.mensagem || "Não foi possível dar baixa na parcela.");
                 return;
             }
 
@@ -667,7 +667,7 @@ export default function ListaUsuario() {
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                setErroCompras(data.mensagem || "Nao foi possivel retirar a baixa da parcela.");
+                setErroCompras(data.mensagem || "Não foi possível retirar a baixa da parcela.");
                 return;
             }
 
@@ -821,7 +821,7 @@ export default function ListaUsuario() {
                                         </td>
 
                                         <td className={css.nomeUsuario}>{usuario.nome}</td>
-                                        <td>{usuario.email || "Nao informado"}</td>
+                                        <td>{usuario.email || "Não informado"}</td>
 
                                         <td>
                                             <span className={`${css.tipo} ${classeTipo(usuario.tipo)}`}>
@@ -875,7 +875,7 @@ export default function ListaUsuario() {
                             ) : (
                                 <tr>
                                     <td colSpan="5" className={css.vazio}>
-                                        Nenhum usuario encontrado.
+                                        Nenhum usuário encontrado.
                                     </td>
                                 </tr>
                             )}
@@ -914,7 +914,7 @@ export default function ListaUsuario() {
 
                         <p>
                             Tem certeza que deseja{" "}
-                            {novaSituacao === 1 ? "bloquear" : "desbloquear"} o usuario{" "}
+                            {novaSituacao === 1 ? "bloquear" : "desbloquear"} o usuário{" "}
                             <strong>{usuarioSituacao?.nome}</strong>?
                         </p>
 
@@ -990,7 +990,7 @@ export default function ListaUsuario() {
                         {carregandoCompras ? (
                             <p className={css.estadoCompras}>Carregando compras...</p>
                         ) : comprasUsuario.length === 0 && !erroCompras ? (
-                            <p className={css.estadoCompras}>Esse cliente ainda nao possui compras registradas.</p>
+                            <p className={css.estadoCompras}>Esse cliente ainda não possui compras registradas.</p>
                         ) : (
                             <div className={css.listaCompras}>
                                 {comprasUsuario.map((compra) => {
@@ -1004,9 +1004,9 @@ export default function ListaUsuario() {
                                         <article className={css.compraUsuario} key={compra.idVenda}>
                                             <div className={css.compraTopo}>
                                                 <div>
-                                                    <span>{ehFinanciamento ? "Financiamento" : "A vista"}</span>
+                                                    <span>{ehFinanciamento ? "Financiamento" : "à vista"}</span>
                                                     <h3>{compra.marca} {compra.modelo}</h3>
-                                                    <p>{compra.placa || "Placa nao informada"} - {formatarData(compra.dataVenda)}</p>
+                                                    <p>{compra.placa || "Placa não informada"} - {formatarData(compra.dataVenda)}</p>
                                                 </div>
 
                                                 <strong>{formatarPreco(compra.valorVenda)}</strong>
@@ -1091,7 +1091,7 @@ export default function ListaUsuario() {
                                                     )}
                                                 </>
                                             ) : (
-                                                <p className={css.estadoCompras}>Compra a vista, sem parcelas.</p>
+                                                <p className={css.estadoCompras}>Compra à vista, sem parcelas.</p>
                                             )}
                                         </article>
                                     );
@@ -1107,7 +1107,7 @@ export default function ListaUsuario() {
                     <div className={css.modalCadastro}>
                         <div className={css.modalTopo}>
                             <div>
-                                <h2>Adicionar usuario interno</h2>
+                                <h2>Adicionar usuário interno</h2>
                                 <p>Use o mesmo padrao do cadastro, escolhendo o tipo de acesso.</p>
                             </div>
 
@@ -1259,7 +1259,7 @@ export default function ListaUsuario() {
                     <div className={css.modalCadastro}>
                         <div className={css.modalTopo}>
                             <div>
-                                <h2>Editar usuario</h2>
+                                <h2>Editar usuário</h2>
                                 <p>Atualize os dados cadastrais e o tipo de acesso.</p>
                             </div>
 
@@ -1410,7 +1410,7 @@ export default function ListaUsuario() {
                                     className={css.confirmar}
                                     disabled={salvandoEdicao}
                                 >
-                                    {salvandoEdicao ? "Salvando..." : "Salvar alteracoes"}
+                                    {salvandoEdicao ? "Salvando..." : "Salvar alterações"}
                                 </button>
                             </div>
                         </form>

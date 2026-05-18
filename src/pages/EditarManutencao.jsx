@@ -124,7 +124,7 @@ export default function EditarManutencao() {
             "codigo_manutencao",
             "CODIGO_MANUTENCAO",
             "id manutenção",
-            "id manutenÃ§Ã£o",
+            "id manutenção",
         ]);
     }
 
@@ -145,7 +145,7 @@ export default function EditarManutencao() {
             "items",
             "servicos",
             "serviços",
-            "serviÃ§os",
+            "serviços",
             "itens_manutencao",
             "itensManutencao",
         ]) || [];
@@ -155,10 +155,10 @@ export default function EditarManutencao() {
         const lista = getCampo(data, [
             "manutencoes",
             "manutenções",
-            "manutenÃ§Ãµes",
+            "manutenções",
             "manutencao",
             "manutenção",
-            "manutenÃ§Ã£o",
+            "manutenção",
         ]);
 
         if (!Array.isArray(lista)) return [];
@@ -194,7 +194,7 @@ export default function EditarManutencao() {
             id_manutencao: idManutencaoDe(item) || manutencao?.id_manutencao,
             id_item_manutencao: idItemDe(item) || `local-${idServicoItem || Date.now()}`,
             id_servico: idServicoItem,
-            descricao: getCampo(item, ["descricao", "DESCRICAO", "descrição", "descriÃ§Ã£o"]) || "Serviço",
+            descricao: getCampo(item, ["descricao", "DESCRICAO", "descrição", "descrição"]) || "Serviço",
             quantidade: quantidadeItem,
             quantidadeSalva: Number(item.quantidadeSalva || quantidadeItem),
             valor_unitario: valorUnitario,

@@ -145,6 +145,20 @@
     background: var(--cor-erro-hover);
 }
 
+.imagemPrincipal .definirPrincipal,
+.imagemMini .definirPrincipal {
+    top: auto;
+    right: 8px;
+    bottom: 8px;
+    min-width: 118px;
+    background: var(--cor-principal);
+}
+
+.imagemPrincipal .definirPrincipal:hover,
+.imagemMini .definirPrincipal:hover {
+    background: var(--cor-azul-acao);
+}
+
 .imagemPrincipal span {
     position: absolute;
     left: 10px;

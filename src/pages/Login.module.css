@@ -1,10 +1,10 @@
 .loginFundo{
     background-color: var(--cor-fundo-login);
-    min-height: 100vh;
+    min-height: calc(100vh - 90px);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 24px 20px;
 }
 
 .senha{
@@ -16,9 +16,9 @@
 
 .cartao{
     background-color: var(--cor-superficie);
-    border-radius: 16px;
+    border-radius: 12px;
     box-shadow: 0 10px 25px -5px var(--sombra-preta-10);
-    padding: 40px;
+    padding: 30px;
     width: 100%;
     max-width: 400px;
 }
@@ -26,7 +26,7 @@
 .cadastro{
     text-align: center;
     font-size: 15px;
-    margin-top: 60px;
+    margin-top: 28px;
 }
 
 .logo{
@@ -39,7 +39,7 @@
 }
 
 .grupoInput{
-    margin-bottom: 24px;
+    margin-bottom: 18px;
     border: 0px;
 }
 
@@ -121,7 +121,28 @@
     text-align: center;
     font-size: 25px;
     font-weight: bold;
-    margin-bottom: 60px;
+    margin-bottom: 32px;
+}
+
+@media (max-height: 640px) {
+    .loginFundo {
+        align-items: flex-start;
+        min-height: auto;
+        padding-top: 18px;
+        padding-bottom: 18px;
+    }
+
+    .cartao {
+        padding: 24px;
+    }
+
+    .h2 {
+        margin-bottom: 24px;
+    }
+
+    .cadastro {
+        margin-top: 20px;
+    }
 }
 
 .verificacaoFundo {

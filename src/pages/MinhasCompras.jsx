@@ -53,7 +53,7 @@ function formatarPreco(valor) {
 }
 
 function formatarData(valor) {
-    if (!valor) return "Nao informado";
+    if (!valor) return "Não informado";
 
     const data = new Date(valor);
 
@@ -63,7 +63,7 @@ function formatarData(valor) {
 }
 
 function formaPagamentoTexto(valor) {
-    return Number(valor) === 1 ? "Financiamento" : "A vista";
+    return Number(valor) === 1 ? "Financiamento" : "à vista";
 }
 
 function normalizarCompra(compra) {
@@ -79,7 +79,7 @@ function normalizarCompra(compra) {
         dataVenda: getCampo(compra, ["data_venda", "DATA_VENDA"]),
         valorVenda: Number(getCampo(compra, ["valor_venda", "VALOR_VENDA"], 0)),
         formaPagamento: getCampo(compra, ["forma_pagamento", "FORMA_PAGAMENTO"], 0),
-        vendedor: getCampo(compra, ["vendedor", "VENDEDOR", "nome_vendedor", "NOME_VENDEDOR"], "Nao informado"),
+        vendedor: getCampo(compra, ["vendedor", "VENDEDOR", "nome_vendedor", "NOME_VENDEDOR"], "Não informado"),
         financiamento: {
             idFinanciamento: getCampo(compra, ["id_financiamento", "ID_FINANCIAMENTO"]),
             valorOriginal: Number(getCampo(compra, ["valor_original", "VALOR_ORIGINAL", "valor_venda_original", "VALOR_VENDA_ORIGINAL"], 0)),
@@ -113,14 +113,14 @@ export default function MinhasCompras() {
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                setErro(data.mensagem || "Nao foi possivel carregar suas compras.");
+                setErro(data.mensagem || "Não foi possível carregar suas compras.");
                 setCompras([]);
                 return;
             }
 
             setCompras((data.compras || data.vendas || data || []).map(normalizarCompra));
         } catch {
-            setErro("Nao foi possivel conectar com o servidor.");
+            setErro("Não foi possível conectar com o servidor.");
             setCompras([]);
         } finally {
             if (mostrarCarregando) setCarregando(false);
@@ -212,7 +212,7 @@ export default function MinhasCompras() {
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                setErroPagamento(data.mensagem || "Nao foi possivel confirmar o pagamento.");
+                setErroPagamento(data.mensagem || "Não foi possível confirmar o pagamento.");
                 return;
             }
 
@@ -223,7 +223,7 @@ export default function MinhasCompras() {
                 fecharPagamentoParcela();
             }, 1400);
         } catch {
-            setErroPagamento("Nao foi possivel conectar com o servidor para confirmar o pagamento.");
+            setErroPagamento("Não foi possível conectar com o servidor para confirmar o pagamento.");
         } finally {
             setBaixandoParcela(false);
         }
@@ -248,7 +248,7 @@ export default function MinhasCompras() {
                     <div>
                         <span className={css.kicker}>Area do cliente</span>
                         <h1>Minhas compras</h1>
-                        <p>Acompanhe seus veiculos comprados, valores, forma de pagamento e parcelas de financiamento.</p>
+                        <p>Acompanhe seus veículos comprados, valores, forma de pagamento e parcelas de financiamento.</p>
                     </div>
 
                     <div className={css.resumoHero}>
@@ -276,7 +276,7 @@ export default function MinhasCompras() {
                 {erro && <p className={css.erro}>{erro}</p>}
 
                 {!carregando && !erro && compras.length === 0 && (
-                    <p className={css.estado}>Voce ainda nao possui compras registradas.</p>
+                    <p className={css.estado}>Você ainda não possui compras registradas.</p>
                 )}
 
                 <section className={css.lista}>
@@ -300,7 +300,7 @@ export default function MinhasCompras() {
                                     <div>
                                         <span className={css.status}>{formaPagamentoTexto(compra.formaPagamento)}</span>
                                         <h2>{compra.marca} {compra.modelo}</h2>
-                                        <p>{compra.anoModelo || "Ano nao informado"} - {compra.placa || "Placa nao informada"}</p>
+                                        <p>{compra.anoModelo || "Ano não informado"} - {compra.placa || "Placa não informada"}</p>
                                     </div>
 
                                     <div className={css.valorCompra}>

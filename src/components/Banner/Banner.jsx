@@ -7,6 +7,7 @@ const CONFIG_SITE_PADRAO = {
     textoBanner: "Escolha com confiança. Compre com segurança.",
     bannerUrl: "/Banner.png",
 };
+const CONFIG_SITE_CACHE_KEY = "webcar_configuracoes_site";
 
 function urlArquivo(valor, fallback) {
     if (!valor) return fallback;
@@ -38,8 +39,17 @@ async function carregarConfiguracoesSite() {
     return normalizarConfiguracoesSite(data.empresas?.[0] || {});
 }
 
+function lerConfiguracoesSiteCache() {
+    try {
+        const cache = localStorage.getItem(CONFIG_SITE_CACHE_KEY);
+        return cache ? normalizarConfiguracoesSite(JSON.parse(cache)) : null;
+    } catch {
+        return null;
+    }
+}
+
 export default function Banner() {
-    const [config, setConfig] = useState(CONFIG_SITE_PADRAO);
+    const [config, setConfig] = useState(() => lerConfiguracoesSiteCache() || CONFIG_SITE_PADRAO);
 
     useEffect(() => {
         async function buscarConfiguracoes() {
@@ -56,8 +66,33 @@ export default function Banner() {
             setConfig(e.detail || CONFIG_SITE_PADRAO);
         }
 
+        function atualizarPorOutraAba(e) {
+            if (e.key !== CONFIG_SITE_CACHE_KEY || !e.newValue) return;
+
+            try {
+                setConfig(normalizarConfiguracoesSite(JSON.parse(e.newValue)));
+            } catch {
+                // Mantem o banner atual se o cache vier invalido.
+            }
+        }
+
+        function atualizarAoVoltar() {
+            if (document.visibilityState === "visible") {
+                buscarConfiguracoes();
+            }
+        }
+
         window.addEventListener("webcar:configuracoes-site", atualizar);
-        return () => window.removeEventListener("webcar:configuracoes-site", atualizar);
+        window.addEventListener("storage", atualizarPorOutraAba);
+        window.addEventListener("focus", buscarConfiguracoes);
+        document.addEventListener("visibilitychange", atualizarAoVoltar);
+
+        return () => {
+            window.removeEventListener("webcar:configuracoes-site", atualizar);
+            window.removeEventListener("storage", atualizarPorOutraAba);
+            window.removeEventListener("focus", buscarConfiguracoes);
+            document.removeEventListener("visibilitychange", atualizarAoVoltar);
+        };
     }, []);
 
     return (
