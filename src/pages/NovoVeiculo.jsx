@@ -34,6 +34,16 @@ const CORES_VEICULO = {
     PEROLA: "#f8f4e3",
 };
 
+function normalizarCodigoCor(valor, fallback = "#111111") {
+    const texto = String(valor || "").trim();
+
+    if (/^#[0-9a-fA-F]{6}$/.test(texto)) {
+        return texto.toLowerCase();
+    }
+
+    return fallback;
+}
+
 export default function NovoVeiculo() {
     const navigate = useNavigate();
 
@@ -178,6 +188,11 @@ export default function NovoVeiculo() {
         // Mantem a cor digitada em maiusculo.
         const corFormatada = valor.toUpperCase();
         setCor(corFormatada);
+
+        if (normalizarCodigoCor(corFormatada, "")) {
+            setCodigoCor(normalizarCodigoCor(corFormatada));
+            return;
+        }
 
         const corEncontrada = CORES_VEICULO[corFormatada.trim()];
         if (corEncontrada) {

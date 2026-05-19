@@ -1,6 +1,5 @@
 import SidebarMenu from "../components/SidebarMenu/SidebarMenu.jsx";
 import Header from "../components/Header/Header.jsx";
-import css from "./Dashboard.module.css";
 
 
 export default function Dashboard() {
@@ -37,16 +36,12 @@ export default function Dashboard() {
 
                         {/* Gráfico Responsivo */}
                         <section className="card border-0 shadow-sm p-4 mb-4 mx-auto" style={{ maxWidth: '800px' }}>
-                            <h3 className="h6 fw-bold mb-4">Saldo</h3>
-                            <div className="d-flex align-items-end justify-content-between flex-nowrap overflow-auto" style={{ height: '250px' }}>
-                                {["JAN", "FEV", "MAR", "ABR", "MAIO", "JUN"].map((mes, index) => (
-                                    <div className="text-center flex-grow-1" key={mes} style={{ minWidth: '50px' }}>
-                                        <div className={`mx-auto rounded-top bg-primary opacity-${(index + 1) * 10}`}
-                                             style={{ height: `${Math.random() * 200 + 50}px`, width: '80%' }}>
-                                        </div>
-                                        <span className="small text-muted fw-bold d-block mt-2">{mes}</span>
-                                    </div>
-                                ))}
+                            <h3 className="h6 fw-bold mb-3">Saldo</h3>
+                            <div className="text-center py-5">
+                                <p className="h5 fw-bold mb-2">Página em desenvolvimento</p>
+                                <p className="text-muted mb-0">
+                                    O painel financeiro será atualizado quando os dados reais estiverem disponíveis.
+                                </p>
                             </div>
                         </section>
 

@@ -34,6 +34,22 @@ const CORES_VEICULO = {
     PEROLA: "#f8f4e3",
 };
 
+function normalizarCodigoCor(valor, fallback = "#111111") {
+    const texto = String(valor || "").trim();
+
+    if (/^#[0-9a-fA-F]{6}$/.test(texto)) {
+        return texto.toLowerCase();
+    }
+
+    return fallback;
+}
+
+function codigoCorInicial(corVeiculo) {
+    const corFormatada = String(corVeiculo || "").trim().toUpperCase();
+
+    return normalizarCodigoCor(corFormatada, CORES_VEICULO[corFormatada] || "#111111");
+}
+
 function formatarMoedaBanco(valor) {
     if (valor === null || valor === undefined || valor === "") return "";
 
@@ -89,7 +105,7 @@ export default function EditarVeiculo() {
     const [combustivel, setCombustivel] = useState(String(carro?.COMBUSTIVEL ?? ""));
     const [cambio, setCambio] = useState(String(carro?.CAMBIO ?? ""));
     const [cor, setCor] = useState(carro?.COR?.toUpperCase() || "");
-    const [codigoCor, setCodigoCor] = useState(CORES_VEICULO[carro?.COR?.toUpperCase()] || "#111111");
+    const [codigoCor, setCodigoCor] = useState(() => codigoCorInicial(carro?.COR));
     const [placa, setPlaca] = useState(carro?.PLACA || "");
     const [renavam, setRenavam] = useState(carro?.RENAVAM || "");
     const [valorCusto, setValorCusto] = useState(() => formatarMoedaBanco(carro?.PRECO_CUSTO));
@@ -239,6 +255,11 @@ export default function EditarVeiculo() {
     function handleCor(valor) {
         const corFormatada = valor.toUpperCase();
         setCor(corFormatada);
+
+        if (normalizarCodigoCor(corFormatada, "")) {
+            setCodigoCor(normalizarCodigoCor(corFormatada));
+            return;
+        }
 
         const corEncontrada = CORES_VEICULO[corFormatada.trim()];
         if (corEncontrada) {

@@ -35,6 +35,7 @@ import ConfiguracoesSite from "./pages/ConfiguracoesSite.jsx";
 import MinhasCompras from "./pages/MinhasCompras.jsx";
 
 const CONFIG_SITE_PADRAO = {
+    nomeFantasia: "WebCar",
     textoBanner: "Escolha com confiança. Compre com segurança.",
     corPrimaria: "#2563EB",
     corSecundaria: "#1d4ed8",
@@ -73,6 +74,7 @@ function atualizarFavicon(logoUrl) {
 
 function normalizarConfiguracoesSite(data = {}) {
     return {
+        nomeFantasia: data.nomeFantasia || data.nome_fantasia || data.NOME_FANTASIA || CONFIG_SITE_PADRAO.nomeFantasia,
         corPrimaria: data.corPrimaria || data.cor_primaria || data.COR_PRIMARIA || CONFIG_SITE_PADRAO.corPrimaria,
         corSecundaria: data.corSecundaria || data.cor_secundaria || data.COR_SECUNDARIA || CONFIG_SITE_PADRAO.corSecundaria,
         corTerciaria: data.corTerciaria || data.cor_terciaria || data.COR_TERCIARIA || CONFIG_SITE_PADRAO.corTerciaria,
@@ -136,6 +138,7 @@ function aplicarConfiguracoesSite(configuracoes) {
     root.style.setProperty("--cor-texto-principal", config.corFonte);
     root.style.setProperty("--fonte-site", config.fonte);
     document.body.style.fontFamily = config.fonte;
+    document.title = config.nomeFantasia || CONFIG_SITE_PADRAO.nomeFantasia;
     localStorage.setItem(LOGO_CACHE_KEY, config.logoUrl);
     salvarConfiguracoesSiteCache(config);
     atualizarFavicon(config.logoUrl);

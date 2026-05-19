@@ -906,6 +906,16 @@
     font-weight: 700;
 }
 
+.sucessoModal {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--cor-sucesso-fundo);
+    color: var(--cor-sucesso-texto);
+    font-weight: 800;
+    text-align: center;
+}
+
 .modalBotoes {
     display: flex;
     justify-content: flex-end;

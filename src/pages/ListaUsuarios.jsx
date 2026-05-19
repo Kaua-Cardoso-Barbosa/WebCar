@@ -132,6 +132,7 @@ export default function ListaUsuario() {
     const [comprasUsuario, setComprasUsuario] = useState([]);
     const [carregandoCompras, setCarregandoCompras] = useState(false);
     const [erroCompras, setErroCompras] = useState("");
+    const [sucessoCompras, setSucessoCompras] = useState("");
     const [baixandoParcela, setBaixandoParcela] = useState("");
     const [parcelasComprasAbertas, setParcelasComprasAbertas] = useState({});
 
@@ -603,6 +604,7 @@ export default function ListaUsuario() {
         setUsuarioCompras(null);
         setComprasUsuario([]);
         setErroCompras("");
+        setSucessoCompras("");
         setCarregandoCompras(false);
         setBaixandoParcela("");
         setParcelasComprasAbertas({});
@@ -622,6 +624,7 @@ export default function ListaUsuario() {
             setBaixandoParcela(chaveBaixa);
             setErroCompras("");
             setSucesso("");
+            setSucessoCompras("");
 
             const response = await fetch(`${API_URL}/adicionar_baixa/${idFinanciamento}`, {
                 method: "PUT",
@@ -638,6 +641,7 @@ export default function ListaUsuario() {
             }
 
             setSucesso(data.mensagem || "Baixa realizada com sucesso.");
+            setSucessoCompras(data.mensagem || "Baixa realizada com sucesso.");
 
             if (usuarioCompras?.id_usuario) {
                 await buscarComprasUsuario(usuarioCompras.id_usuario);
@@ -656,6 +660,7 @@ export default function ListaUsuario() {
             setBaixandoParcela(chaveBaixa);
             setErroCompras("");
             setSucesso("");
+            setSucessoCompras("");
 
             const response = await fetch(`${API_URL}/retirar_baixa/${idFinanciamento}`, {
                 method: "PUT",
@@ -672,6 +677,7 @@ export default function ListaUsuario() {
             }
 
             setSucesso(data.mensagem || "Baixa retirada com sucesso.");
+            setSucessoCompras(data.mensagem || "Baixa retirada com sucesso.");
 
             if (usuarioCompras?.id_usuario) {
                 await buscarComprasUsuario(usuarioCompras.id_usuario);
@@ -986,6 +992,7 @@ export default function ListaUsuario() {
                         </div>
 
                         {erroCompras && <p className={css.erroCadastro}>{erroCompras}</p>}
+                        {sucessoCompras && <p className={css.sucessoModal}>{sucessoCompras}</p>}
 
                         {carregandoCompras ? (
                             <p className={css.estadoCompras}>Carregando compras...</p>

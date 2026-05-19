@@ -172,6 +172,7 @@ function aplicarConfiguracoesSite(configuracoes) {
     root.style.setProperty("--cor-texto-principal", config.corFonte);
     root.style.setProperty("--fonte-site", config.fonte);
     document.body.style.fontFamily = config.fonte;
+    document.title = config.nomeFantasia || CONFIG_SITE_PADRAO.nomeFantasia;
 }
 
 function salvarConfiguracoesSiteCache(configuracoes) {
