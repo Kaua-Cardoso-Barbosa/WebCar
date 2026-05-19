@@ -93,6 +93,27 @@ function formatarCpf(valor) {
     return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-${numeros.slice(9)}`;
 }
 
+function formatarTelefone(valor) {
+    const numeros = apenasNumeros(valor).slice(0, 11);
+
+    if (numeros.length <= 2) return numeros;
+    if (numeros.length <= 7) return `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`;
+
+    return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
+}
+
+function clienteNaoEncontrado(mensagem = "") {
+    const texto = String(mensagem)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
+    return (
+        (texto.includes("cpf") || texto.includes("cliente") || texto.includes("usuario")) &&
+        (texto.includes("nao encontrado") || texto.includes("nao cadastrado") || texto.includes("inexistente"))
+    );
+}
+
 function normalizarDescontoAVista(data = {}) {
     const empresa = data.empresas?.[0] || data.empresa?.[0] || data.empresa || data[0] || data;
     const valor =
@@ -181,6 +202,19 @@ export default function VisualizarCarro({ modoVendedor = false }) {
     const [cpfClienteVenda, setCpfClienteVenda] = useState("");
     const [mensagemVenda, setMensagemVenda] = useState("");
     const [mensagemSucessoPagina, setMensagemSucessoPagina] = useState("");
+    const [modalCadastroClienteAberta, setModalCadastroClienteAberta] = useState(false);
+    const [etapaCadastroCliente, setEtapaCadastroCliente] = useState("cadastro");
+    const [salvandoCadastroCliente, setSalvandoCadastroCliente] = useState(false);
+    const [erroCadastroCliente, setErroCadastroCliente] = useState("");
+    const [cadastroClienteVenda, setCadastroClienteVenda] = useState({
+        nome: "",
+        telefone: "",
+        email: "",
+        cpf: "",
+        senha: "",
+        confirmarSenha: "",
+        codigo: "",
+    });
 
     async function carregarImagensDisponiveis(idVeiculo) {
         if (!idVeiculo) {
@@ -394,8 +428,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
             setCompraConcluida(false);
             setGerandoQrCode(false);
             setTempoQrCode(60);
-            setErroCompra("Faça login como cliente para comprar este veículo.");
-            setModalCompraAberta(true);
+            navigate("/login", { state: { voltarPara: `/Visualizar/${carro.ID_VEICULO}` } });
             return;
         }
 
@@ -467,10 +500,10 @@ export default function VisualizarCarro({ modoVendedor = false }) {
         );
     }
 
-    async function registrarVenda() {
+    async function executarVenda(cpfVenda, permitirCadastro = true) {
         if (!carro?.ID_VEICULO || gerandoQrCode) return;
 
-        if (apenasNumeros(cpfClienteVenda).length !== 11) {
+        if (apenasNumeros(cpfVenda).length !== 11) {
             setErroCompra("Informe o CPF do cliente para registrar a venda.");
             return;
         }
@@ -499,7 +532,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
 
             const payload = {
                 id_veiculo: carro.ID_VEICULO,
-                cpf_cliente: apenasNumeros(cpfClienteVenda),
+                cpf_cliente: apenasNumeros(cpfVenda),
                 forma_pagamento: Number(formaPagamento),
             };
 
@@ -522,6 +555,12 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                 const data = tipoResposta.includes("application/json") ? await response.json() : null;
 
                 if (!response.ok) {
+                    if (permitirCadastro && clienteNaoEncontrado(data?.mensagem)) {
+                        setErroCompra("");
+                        abrirCadastroClienteVenda(cpfVenda);
+                        return;
+                    }
+
                     setErroCompra(data?.mensagem || "Não foi possível registrar a venda.");
                     return;
                 }
@@ -538,6 +577,143 @@ export default function VisualizarCarro({ modoVendedor = false }) {
             setErroCompra("Erro ao conectar com o servidor para registrar a venda.");
         } finally {
             setGerandoQrCode(false);
+        }
+    }
+
+    function atualizarCadastroCliente(campo, valor) {
+        const normalizadores = {
+            cpf: formatarCpf,
+            telefone: formatarTelefone,
+        };
+
+        setErroCadastroCliente("");
+        setCadastroClienteVenda((dados) => ({
+            ...dados,
+            [campo]: normalizadores[campo] ? normalizadores[campo](valor) : valor,
+        }));
+    }
+
+    function abrirCadastroClienteVenda(cpf) {
+        setCadastroClienteVenda({
+            nome: "",
+            telefone: "",
+            email: "",
+            cpf: formatarCpf(cpf),
+            senha: "",
+            confirmarSenha: "",
+            codigo: "",
+        });
+        setErroCadastroCliente("");
+        setEtapaCadastroCliente("cadastro");
+        setModalCadastroClienteAberta(true);
+    }
+
+    function fecharCadastroClienteVenda() {
+        setModalCadastroClienteAberta(false);
+        setErroCadastroCliente("");
+        setSalvandoCadastroCliente(false);
+    }
+
+    async function registrarVenda() {
+        await executarVenda(cpfClienteVenda);
+    }
+
+    async function cadastrarClienteVenda(e) {
+        e.preventDefault();
+
+        if (
+            !cadastroClienteVenda.nome.trim() ||
+            !cadastroClienteVenda.telefone.trim() ||
+            !cadastroClienteVenda.email.trim() ||
+            !cadastroClienteVenda.cpf.trim() ||
+            !cadastroClienteVenda.senha.trim() ||
+            !cadastroClienteVenda.confirmarSenha.trim()
+        ) {
+            setErroCadastroCliente("Preencha todos os campos.");
+            return;
+        }
+
+        if (apenasNumeros(cadastroClienteVenda.cpf).length !== 11) {
+            setErroCadastroCliente("Informe um CPF valido.");
+            return;
+        }
+
+        if (cadastroClienteVenda.senha !== cadastroClienteVenda.confirmarSenha) {
+            setErroCadastroCliente("As senhas nao coincidem.");
+            return;
+        }
+
+        try {
+            setSalvandoCadastroCliente(true);
+            setErroCadastroCliente("");
+
+            const formData = new FormData();
+            formData.append("nome", cadastroClienteVenda.nome);
+            formData.append("telefone", apenasNumeros(cadastroClienteVenda.telefone));
+            formData.append("email", cadastroClienteVenda.email);
+            formData.append("cpf", apenasNumeros(cadastroClienteVenda.cpf));
+            formData.append("senha", cadastroClienteVenda.senha);
+            formData.append("confirma", cadastroClienteVenda.confirmarSenha);
+            formData.append("tipo", "2");
+
+            const response = await fetch(`${API_URL}/adicionar_usuario`, {
+                method: "POST",
+                body: formData,
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                setErroCadastroCliente(data.mensagem || "Nao foi possivel cadastrar o cliente.");
+                return;
+            }
+
+            setEtapaCadastroCliente("codigo");
+        } catch {
+            setErroCadastroCliente("Erro ao conectar com o servidor.");
+        } finally {
+            setSalvandoCadastroCliente(false);
+        }
+    }
+
+    async function verificarCadastroClienteVenda(e) {
+        e.preventDefault();
+
+        if (!cadastroClienteVenda.codigo.trim()) {
+            setErroCadastroCliente("Digite o codigo enviado para o email.");
+            return;
+        }
+
+        try {
+            setSalvandoCadastroCliente(true);
+            setErroCadastroCliente("");
+
+            const response = await fetch(`${API_URL}/verificar_email`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: cadastroClienteVenda.email,
+                    codigo: cadastroClienteVenda.codigo,
+                }),
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                setErroCadastroCliente(data.mensagem || "Codigo invalido.");
+                return;
+            }
+
+            const cpfCadastrado = cadastroClienteVenda.cpf;
+            setCpfClienteVenda(formatarCpf(cpfCadastrado));
+            fecharCadastroClienteVenda();
+            await executarVenda(cpfCadastrado, false);
+        } catch {
+            setErroCadastroCliente("Erro ao conectar com o servidor.");
+        } finally {
+            setSalvandoCadastroCliente(false);
         }
     }
 
@@ -884,6 +1060,131 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                                 {modoVendedor && qrCodeUrl ? "Concluir" : modoVendedor ? "Registrar venda" : "Concluir"}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {modalCadastroClienteAberta && (
+                <div className={css.modalFundo}>
+                    <div className={css.modalCompra}>
+                        <div className={css.modalTopo}>
+                            <div>
+                                <span className={css.etiquetaEscura}>Cliente</span>
+                                <h3>{etapaCadastroCliente === "cadastro" ? "Cadastrar cliente" : "Confirmar cadastro"}</h3>
+                            </div>
+                            <button
+                                type="button"
+                                className={css.fecharIcone}
+                                onClick={fecharCadastroClienteVenda}
+                                aria-label="Fechar modal"
+                            >
+                                x
+                            </button>
+                        </div>
+
+                        {etapaCadastroCliente === "cadastro" ? (
+                            <form className={css.formaPagamento} onSubmit={cadastrarClienteVenda}>
+                                <label className={css.campoVenda}>
+                                    <span>Nome completo</span>
+                                    <input
+                                        value={cadastroClienteVenda.nome}
+                                        onChange={(e) => atualizarCadastroCliente("nome", e.target.value)}
+                                        placeholder="Nome do cliente"
+                                    />
+                                </label>
+
+                                <label className={css.campoVenda}>
+                                    <span>Telefone</span>
+                                    <input
+                                        value={cadastroClienteVenda.telefone}
+                                        onChange={(e) => atualizarCadastroCliente("telefone", e.target.value)}
+                                        placeholder="(11) 99999-9999"
+                                        inputMode="numeric"
+                                        maxLength={15}
+                                    />
+                                </label>
+
+                                <label className={css.campoVenda}>
+                                    <span>Email</span>
+                                    <input
+                                        type="email"
+                                        value={cadastroClienteVenda.email}
+                                        onChange={(e) => atualizarCadastroCliente("email", e.target.value)}
+                                        placeholder="cliente@email.com"
+                                    />
+                                </label>
+
+                                <label className={css.campoVenda}>
+                                    <span>CPF</span>
+                                    <input
+                                        value={cadastroClienteVenda.cpf}
+                                        onChange={(e) => atualizarCadastroCliente("cpf", e.target.value)}
+                                        placeholder="000.000.000-00"
+                                        inputMode="numeric"
+                                        maxLength={14}
+                                    />
+                                </label>
+
+                                <div className={css.duasColunas}>
+                                    <label className={css.campoVenda}>
+                                        <span>Senha</span>
+                                        <input
+                                            type="password"
+                                            value={cadastroClienteVenda.senha}
+                                            onChange={(e) => atualizarCadastroCliente("senha", e.target.value)}
+                                        />
+                                    </label>
+
+                                    <label className={css.campoVenda}>
+                                        <span>Confirmar senha</span>
+                                        <input
+                                            type="password"
+                                            value={cadastroClienteVenda.confirmarSenha}
+                                            onChange={(e) => atualizarCadastroCliente("confirmarSenha", e.target.value)}
+                                        />
+                                    </label>
+                                </div>
+
+                                {erroCadastroCliente && <p className={css.erroCompra}>{erroCadastroCliente}</p>}
+
+                                <div className={css.modalAcoes}>
+                                    <button type="button" className={css.botaoFechar} onClick={fecharCadastroClienteVenda}>
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" className={css.botaoConcluir} disabled={salvandoCadastroCliente}>
+                                        {salvandoCadastroCliente ? "Cadastrando..." : "Cadastrar"}
+                                    </button>
+                                </div>
+                            </form>
+                        ) : (
+                            <form className={css.formaPagamento} onSubmit={verificarCadastroClienteVenda}>
+                                <p className={css.textoModal}>
+                                    Digite o codigo enviado para {cadastroClienteVenda.email}.
+                                </p>
+
+                                <label className={css.campoVenda}>
+                                    <span>Codigo</span>
+                                    <input
+                                        value={cadastroClienteVenda.codigo}
+                                        onChange={(e) => atualizarCadastroCliente("codigo", e.target.value)}
+                                        placeholder="000000"
+                                        inputMode="numeric"
+                                        maxLength={6}
+                                    />
+                                </label>
+
+                                {erroCadastroCliente && <p className={css.erroCompra}>{erroCadastroCliente}</p>}
+
+                                <div className={css.modalAcoes}>
+                                    <button type="button" className={css.botaoFechar} onClick={() => setEtapaCadastroCliente("cadastro")}>
+                                        Voltar
+                                    </button>
+                                    <button type="submit" className={css.botaoConcluir} disabled={salvandoCadastroCliente}>
+                                        {salvandoCadastroCliente ? "Verificando..." : "Verificar e vender"}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
                     </div>
                 </div>
             )}

@@ -1,6 +1,6 @@
 import css from './Login.module.css';
 import Header from "../components/Header/Header.jsx";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Footer from "../components/Footer/Footer.jsx";
 import { useState } from "react";
 import Sucesso from "../components/Sucesso/Sucesso.jsx";
@@ -8,6 +8,8 @@ import { API_URL } from "../App";
 
 export default function Login() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const voltarPara = location.state?.voltarPara;
 
     const [senha, setSenha] = useState("");
     const [mostrarSenha, setMostrarSenha] = useState(false);
@@ -75,7 +77,7 @@ export default function Login() {
                 } else if (tipo === 1) {
                     navigate("/catalogo");
                 } else if (tipo === 2) {
-                    navigate("/catalogo");
+                    navigate(voltarPara || "/catalogo");
                 } else {
                     navigate("/login");
                 }

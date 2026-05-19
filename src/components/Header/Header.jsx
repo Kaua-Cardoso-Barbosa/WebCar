@@ -96,12 +96,13 @@ export default function Header({ busca = "", setBusca = null }) {
     }));
 
     const tipoUsuario = auth.tipoUsuario;
-    const estaLogado = !!tipoUsuario;
-    const tipoNumero = Number(tipoUsuario);
+    const estaLogado = tipoUsuario !== null && tipoUsuario !== undefined && tipoUsuario !== "";
+    const tipoNumero = estaLogado ? Number(tipoUsuario) : null;
+    const usuarioAdmin = tipoNumero === 0;
     const usuarioVendedor = tipoNumero === 1;
-    const usuarioInterno = tipoNumero === 0 || tipoNumero === 1;
+    const usuarioInterno = usuarioAdmin || usuarioVendedor;
     const usuarioCliente = tipoNumero === 2;
-    const linkLogo = tipoNumero === 0 ? "/dashboard" : tipoNumero === 1 ? "/restrita-vendedor" : "/";
+    const linkLogo = usuarioAdmin ? "/dashboard" : usuarioVendedor ? "/restrita-vendedor" : "/";
     const idUsuario = auth.usuarioId;
 
     const [buscaLocal, setBuscaLocal] = useState("");
@@ -454,13 +455,13 @@ export default function Header({ busca = "", setBusca = null }) {
 
                                 <div className="offcanvas-body">
                                     <ul className="navbar-nav flex-grow-1">
-                                        {!usuarioInterno && (
+                                        {!usuarioAdmin && (
                                             <>
                                                 <li className="nav-item">
-                                                    <Link className="nav-link" to="/catalogo">Comprar</Link>
+                                                    <Link className="nav-link" to="/catalogo">Catálogo</Link>
                                                 </li>
 
-                                                {usuarioCliente && estaLogado ? (
+                                                {usuarioCliente && estaLogado && (
                                                     <>
                                                         <li className="nav-item">
                                                             <Link className="nav-link" to="/minhas-compras">Minhas compras</Link>
@@ -471,10 +472,6 @@ export default function Header({ busca = "", setBusca = null }) {
                                                             </button>
                                                         </li>
                                                     </>
-                                                ) : (
-                                                    <li className="nav-item">
-                                                        <Link className="nav-link" to="/">Sobre nós</Link>
-                                                    </li>
                                                 )}
                                             </>
                                         )}
@@ -508,7 +505,7 @@ export default function Header({ busca = "", setBusca = null }) {
                                         )}
                                     </ul>
 
-                                    <form className={usuarioInterno ? css.oculto : css.buscaMobile} onSubmit={handleBuscar}>
+                                    <form className={usuarioAdmin ? css.oculto : css.buscaMobile} onSubmit={handleBuscar}>
                                         <input
                                             className="form-control"
                                             type="search"
@@ -523,7 +520,7 @@ export default function Header({ busca = "", setBusca = null }) {
                         </div>
                     </div>
 
-                    <form className={usuarioInterno ? css.oculto : css.buscaDesktop} onSubmit={handleBuscar}>
+                    <form className={usuarioAdmin ? css.oculto : css.buscaDesktop} onSubmit={handleBuscar}>
                         <input
                             className="form-control"
                             type="search"
@@ -535,10 +532,10 @@ export default function Header({ busca = "", setBusca = null }) {
 
                     <div className={css.sumir}>
                         <div className="d-flex align-items-center gap-3">
-                            {!usuarioInterno && (
+                            {!usuarioAdmin && (
                                 <>
-                                    <Link className="nav-link" to="/catalogo">Comprar</Link>
-                                    {usuarioCliente && estaLogado ? linksCliente : <Link className="nav-link" to="/">Sobre nós</Link>}
+                                    <Link className="nav-link" to="/catalogo">Catálogo</Link>
+                                    {usuarioCliente && estaLogado && linksCliente}
                                 </>
                             )}
 

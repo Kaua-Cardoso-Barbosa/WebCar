@@ -810,7 +810,7 @@ export default function ListaUsuario() {
                                         key={usuario.id_usuario}
                                         className={Number(usuario.situacao) === 1 ? css.linhaBloqueada : ""}
                                     >
-                                        <td>
+                                        <td data-label="Foto">
                                             <img
                                                 src={imagensUsuario(usuario)[0]}
                                                 data-indice="0"
@@ -820,16 +820,16 @@ export default function ListaUsuario() {
                                             />
                                         </td>
 
-                                        <td className={css.nomeUsuario}>{usuario.nome}</td>
-                                        <td>{usuario.email || "Não informado"}</td>
+                                        <td data-label="Nome" className={css.nomeUsuario}>{usuario.nome}</td>
+                                        <td data-label="Email">{usuario.email || "Não informado"}</td>
 
-                                        <td>
+                                        <td data-label="Tipo">
                                             <span className={`${css.tipo} ${classeTipo(usuario.tipo)}`}>
                                                 {textoTipo(usuario.tipo)}
                                             </span>
                                         </td>
 
-                                        <td>
+                                        <td data-label="Acoes">
                                             <div className={css.acoes}>
                                                 {Number(usuario.situacao) === 1 ? (
                                                     <button
