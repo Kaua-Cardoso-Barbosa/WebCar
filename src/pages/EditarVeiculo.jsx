@@ -94,6 +94,7 @@ export default function EditarVeiculo() {
     const [renavam, setRenavam] = useState(carro?.RENAVAM || "");
     const [valorCusto, setValorCusto] = useState(() => formatarMoedaBanco(carro?.PRECO_CUSTO));
     const [valorVenda, setValorVenda] = useState(() => formatarMoedaBanco(carro?.PRECO_VENDA));
+    const [lucroSugerido, setLucroSugerido] = useState(0);
     const [imagens, setImagens] = useState([]);
 
     const [erroRenavam, setErroRenavam] = useState("");
@@ -127,6 +128,34 @@ export default function EditarVeiculo() {
         }
 
         if (carro) buscarMarcas();
+    }, [carro]);
+
+    useEffect(() => {
+        async function buscarLucroSugerido() {
+            try {
+                const response = await fetch(`${API_URL}/verdadosempresa`, {
+                    method: "GET",
+                    credentials: "include",
+                });
+
+                if (!response.ok) return;
+
+                const data = await response.json();
+                const empresa = data.empresas?.[0] || data.empresa?.[0] || data.empresa || {};
+                const lucro =
+                    empresa.porcentagem_lucro ??
+                    empresa.PORCENTAGEM_LUCRO ??
+                    empresa.porcentagemLucro;
+
+                if (lucro !== undefined && lucro !== null && lucro !== "") {
+                    setLucroSugerido(numeroPercentual(lucro));
+                }
+            } catch {
+                // Se nao carregar, o valor de venda continua editavel manualmente.
+            }
+        }
+
+        if (carro) buscarLucroSugerido();
     }, [carro]);
 
     useEffect(() => {
@@ -177,8 +206,26 @@ export default function EditarVeiculo() {
         return String(valor).replace(/\D/g, "");
     }
 
+    function numeroMoeda(valor) {
+        return Number(limparMoeda(valor)) / 100;
+    }
+
+    function numeroPercentual(valor) {
+        const numero = Number(String(valor).replace(",", "."));
+        return Number.isFinite(numero) ? numero : 0;
+    }
+
+    function moedaDeNumero(valor) {
+        if (!Number.isFinite(valor) || valor <= 0) return "";
+
+        return valor.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        });
+    }
+
     function moedaParaBackend(valor) {
-        return String(Number(limparMoeda(valor)) / 100);
+        return String(numeroMoeda(valor));
     }
 
     function valorMoedaMaiorQueZero(valor) {
@@ -202,6 +249,21 @@ export default function EditarVeiculo() {
     function handleCodigoCor(valor) {
         setCodigoCor(valor);
         setCor(valor.toUpperCase());
+    }
+
+    function calcularValorVendaSugerido(custo = valorCusto, lucro = lucroSugerido) {
+        const custoNumero = numeroMoeda(custo);
+        const lucroNumero = numeroPercentual(lucro);
+
+        if (!custoNumero) return "";
+
+        return moedaDeNumero(custoNumero + (custoNumero * lucroNumero) / 100);
+    }
+
+    function handleValorCusto(valor) {
+        const custoFormatado = formatarMoeda(valor);
+        setValorCusto(custoFormatado);
+        setValorVenda(calcularValorVendaSugerido(custoFormatado, lucroSugerido));
     }
 
     function formatarPlaca(valor) {
@@ -268,6 +330,15 @@ export default function EditarVeiculo() {
             }
 
             return atuais.filter((img) => img.id !== id);
+        });
+    }
+
+    function definirImagemPrincipal(id) {
+        setImagens((atuais) => {
+            const escolhida = atuais.find((img) => img.id === id);
+            if (!escolhida) return atuais;
+
+            return [escolhida, ...atuais.filter((img) => img.id !== id)];
         });
     }
 
@@ -428,11 +499,25 @@ export default function EditarVeiculo() {
                                     >
                                         <img src={img.preview} alt="preview" />
 
-                                        <button type="button" onClick={() => removerImagem(img.id)}>
+                                        <button
+                                            type="button"
+                                            className={css.removerImagem}
+                                            onClick={() => removerImagem(img.id)}
+                                        >
                                             Remover
                                         </button>
 
-                                        {index === 0 && <span>Principal</span>}
+                                        {index === 0 ? (
+                                            <span>Principal</span>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                className={css.definirPrincipal}
+                                                onClick={() => definirImagemPrincipal(img.id)}
+                                            >
+                                                Tornar principal
+                                            </button>
+                                        )}
                                     </div>
                                 ))
                             )}
@@ -573,7 +658,7 @@ export default function EditarVeiculo() {
                             <input
                                 placeholder="Valor de Custo"
                                 value={valorCusto}
-                                onChange={(e) => setValorCusto(formatarMoeda(e.target.value))}
+                                onChange={(e) => handleValorCusto(e.target.value)}
                             />
 
                             <input

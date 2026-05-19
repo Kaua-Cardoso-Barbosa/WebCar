@@ -37,6 +37,53 @@ function tentarProximaImagem(e, imagens) {
     }
 }
 
+function getCampo(objeto, nomes, fallback = "") {
+    for (const nome of nomes) {
+        if (objeto?.[nome] !== undefined && objeto?.[nome] !== null && objeto?.[nome] !== "") {
+            return objeto[nome];
+        }
+    }
+
+    return fallback;
+}
+
+function formatarPreco(valor) {
+    return Number(valor || 0).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+    });
+}
+
+function formatarData(valor) {
+    if (!valor) return "Não informado";
+
+    const data = new Date(valor);
+
+    if (Number.isNaN(data.getTime())) return String(valor);
+
+    return data.toLocaleDateString("pt-BR");
+}
+
+function normalizarCompra(compra) {
+    const parcelas = getCampo(compra, ["parcelas", "PARCELAS", "itens_financiamento", "ITENS_FINANCIAMENTO"], []);
+
+    return {
+        idVenda: getCampo(compra, ["id_venda", "ID_VENDA"]),
+        marca: getCampo(compra, ["marca", "MARCA"], "Marca"),
+        modelo: getCampo(compra, ["modelo", "MODELO"], "Modelo"),
+        placa: getCampo(compra, ["placa", "PLACA"]),
+        dataVenda: getCampo(compra, ["data_venda", "DATA_VENDA"]),
+        valorVenda: Number(getCampo(compra, ["valor_venda", "VALOR_VENDA"], 0)),
+        formaPagamento: Number(getCampo(compra, ["forma_pagamento", "FORMA_PAGAMENTO"], 0)),
+        financiamento: {
+            idFinanciamento: getCampo(compra, ["id_financiamento", "ID_FINANCIAMENTO"]),
+            valorOriginal: Number(getCampo(compra, ["valor_original", "VALOR_ORIGINAL"], 0)),
+            valorFinanciado: Number(getCampo(compra, ["valor_financiado", "VALOR_FINANCIADO", "valor_venda_financiamento", "VALOR_VENDA_FINANCIAMENTO"], 0)),
+        },
+        parcelas: Array.isArray(parcelas) ? parcelas : [],
+    };
+}
+
 export default function ListaUsuario() {
     const [usuarios, setUsuarios] = useState([]);
     const [busca, setBusca] = useState("");
@@ -48,6 +95,9 @@ export default function ListaUsuario() {
     const [modalSituacao, setModalSituacao] = useState(false);
     const [usuarioSituacao, setUsuarioSituacao] = useState(null);
     const [novaSituacao, setNovaSituacao] = useState(null);
+    const [motivoBloqueio, setMotivoBloqueio] = useState("");
+    const [erroSituacao, setErroSituacao] = useState("");
+    const [salvandoSituacao, setSalvandoSituacao] = useState(false);
     const [modalCadastro, setModalCadastro] = useState(false);
     const [cadastro, setCadastro] = useState({
         nome: "",
@@ -77,6 +127,13 @@ export default function ListaUsuario() {
     const [salvandoEdicao, setSalvandoEdicao] = useState(false);
     const [erroEdicao, setErroEdicao] = useState("");
     const [alterarSenhaEdicao, setAlterarSenhaEdicao] = useState(false);
+    const [modalCompras, setModalCompras] = useState(false);
+    const [usuarioCompras, setUsuarioCompras] = useState(null);
+    const [comprasUsuario, setComprasUsuario] = useState([]);
+    const [carregandoCompras, setCarregandoCompras] = useState(false);
+    const [erroCompras, setErroCompras] = useState("");
+    const [baixandoParcela, setBaixandoParcela] = useState("");
+    const [parcelasComprasAbertas, setParcelasComprasAbertas] = useState({});
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -108,7 +165,7 @@ export default function ListaUsuario() {
         if (Number(tipo) === 0) return "Administrador";
         if (Number(tipo) === 1) return "Vendedor";
         if (Number(tipo) === 2) return "Cliente";
-        return "Nao informado";
+        return "Não informado";
     }
 
     function classeTipo(tipo) {
@@ -169,7 +226,7 @@ export default function ListaUsuario() {
 
             if (!res.ok) {
                 setUsuarios([]);
-                setErro(data.mensagem || "Nao foi possivel carregar os usuarios.");
+                setErro(data.mensagem || "Não foi possível carregar os usuários.");
                 return;
             }
 
@@ -226,6 +283,8 @@ export default function ListaUsuario() {
     function abrirModalSituacao(usuario, situacao) {
         setErro("");
         setSucesso("");
+        setErroSituacao("");
+        setMotivoBloqueio("");
         setUsuarioSituacao(usuario);
         setNovaSituacao(situacao);
         setModalSituacao(true);
@@ -234,6 +293,9 @@ export default function ListaUsuario() {
     function fecharModalSituacao() {
         setUsuarioSituacao(null);
         setNovaSituacao(null);
+        setMotivoBloqueio("");
+        setErroSituacao("");
+        setSalvandoSituacao(false);
         setModalSituacao(false);
     }
 
@@ -339,36 +401,55 @@ export default function ListaUsuario() {
     }
 
     async function alterarSituacaoUsuario() {
-        if (!usuarioSituacao || novaSituacao === null) return;
+        if (!usuarioSituacao || novaSituacao === null || salvandoSituacao) return;
+
+        if (novaSituacao === 1 && !motivoBloqueio.trim()) {
+            setErroSituacao("Informe o motivo do bloqueio para enviar ao usuário.");
+            return;
+        }
 
         try {
-            const formData = new FormData();
-            formData.append("situacao", String(novaSituacao));
+            setSalvandoSituacao(true);
+            setErroSituacao("");
 
-            const res = await fetch(`${API_URL}/alterar_situacao/${usuarioSituacao.id_usuario}`, {
-                method: "PUT",
-                credentials: "include",
-                body: formData,
-            });
+            let res;
+
+            if (novaSituacao === 1) {
+                res = await fetch(`${API_URL}/bloquear_usuario/${usuarioSituacao.id_usuario}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ motivo_bloqueio: motivoBloqueio.trim() }),
+                });
+            } else {
+                const formData = new FormData();
+                formData.append("situacao", String(novaSituacao));
+
+                res = await fetch(`${API_URL}/alterar_situacao/${usuarioSituacao.id_usuario}`, {
+                    method: "PUT",
+                    credentials: "include",
+                    body: formData,
+                });
+            }
 
             const data = await res.json();
 
             if (!res.ok) {
-                setErro(data.mensagem || "Erro ao alterar situacao do usuario.");
-                fecharModalSituacao();
+                setErroSituacao(data.mensagem || "Erro ao alterar situação do usuário.");
                 return;
             }
 
             setSucesso(
                 novaSituacao === 1
-                    ? "Usuario bloqueado com sucesso."
+                    ? data.mensagem || "Usuario bloqueado e e-mail enviado com sucesso."
                     : "Usuario desbloqueado com sucesso."
             );
             fecharModalSituacao();
             buscarUsuarios();
         } catch {
-            setErro("Erro ao alterar situacao do usuario.");
-            fecharModalSituacao();
+            setErroSituacao("Erro ao alterar situação do usuário.");
+        } finally {
+            setSalvandoSituacao(false);
         }
     }
 
@@ -387,7 +468,7 @@ export default function ListaUsuario() {
         }
 
         if (cadastro.senha !== cadastro.confirma) {
-            setErroCadastro("As senhas nao coincidem.");
+            setErroCadastro("As senhas não coincidem.");
             return;
         }
 
@@ -418,7 +499,7 @@ export default function ListaUsuario() {
             const data = await response.json();
 
             if (!response.ok) {
-                setErroCadastro(data.mensagem || "Nao foi possivel cadastrar o usuario.");
+                setErroCadastro(data.mensagem || "Não foi possível cadastrar o usuário.");
                 return;
             }
 
@@ -426,7 +507,7 @@ export default function ListaUsuario() {
             fecharModalCadastro();
             buscarUsuarios();
         } catch {
-            setErroCadastro("Nao foi possivel cadastrar o usuario.");
+            setErroCadastro("Não foi possível cadastrar o usuário.");
         } finally {
             setSalvandoCadastro(false);
         }
@@ -471,7 +552,7 @@ export default function ListaUsuario() {
             const data = await response.json();
 
             if (!response.ok) {
-                setErroEdicao(data.mensagem || "Nao foi possivel editar o usuario.");
+                setErroEdicao(data.mensagem || "Não foi possível editar o usuário.");
                 return;
             }
 
@@ -479,9 +560,126 @@ export default function ListaUsuario() {
             fecharModalEdicao();
             buscarUsuarios();
         } catch {
-            setErroEdicao("Nao foi possivel editar o usuario.");
+            setErroEdicao("Não foi possível editar o usuário.");
         } finally {
             setSalvandoEdicao(false);
+        }
+    }
+
+    async function buscarComprasUsuario(idUsuario) {
+        try {
+            setCarregandoCompras(true);
+            setErroCompras("");
+            setComprasUsuario([]);
+
+            const response = await fetch(`${API_URL}/minhas_compras?id_usuario=${idUsuario}`, {
+                method: "GET",
+                credentials: "include",
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                setErroCompras(data.mensagem || "Não foi possível carregar as compras do usuário.");
+                return;
+            }
+
+            setComprasUsuario((data.compras || data.vendas || []).map(normalizarCompra));
+        } catch {
+            setErroCompras("Erro ao conectar com o servidor.");
+        } finally {
+            setCarregandoCompras(false);
+        }
+    }
+
+    function abrirModalComprasUsuario(usuario) {
+        setUsuarioCompras(usuario);
+        setModalCompras(true);
+        buscarComprasUsuario(usuario.id_usuario);
+    }
+
+    function fecharModalComprasUsuario() {
+        setModalCompras(false);
+        setUsuarioCompras(null);
+        setComprasUsuario([]);
+        setErroCompras("");
+        setCarregandoCompras(false);
+        setBaixandoParcela("");
+        setParcelasComprasAbertas({});
+    }
+
+    function alternarParcelasCompra(idVenda) {
+        setParcelasComprasAbertas((atuais) => ({
+            ...atuais,
+            [idVenda]: !atuais[idVenda],
+        }));
+    }
+
+    async function darBaixaParcela(idFinanciamento, numeroParcela) {
+        const chaveBaixa = `${idFinanciamento}-${numeroParcela}`;
+
+        try {
+            setBaixandoParcela(chaveBaixa);
+            setErroCompras("");
+            setSucesso("");
+
+            const response = await fetch(`${API_URL}/adicionar_baixa/${idFinanciamento}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ parcela: Number(numeroParcela) }),
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                setErroCompras(data.mensagem || "Não foi possível dar baixa na parcela.");
+                return;
+            }
+
+            setSucesso(data.mensagem || "Baixa realizada com sucesso.");
+
+            if (usuarioCompras?.id_usuario) {
+                await buscarComprasUsuario(usuarioCompras.id_usuario);
+            }
+        } catch {
+            setErroCompras("Erro ao dar baixa na parcela.");
+        } finally {
+            setBaixandoParcela("");
+        }
+    }
+
+    async function retirarBaixaParcela(idFinanciamento, numeroParcela) {
+        const chaveBaixa = `${idFinanciamento}-${numeroParcela}`;
+
+        try {
+            setBaixandoParcela(chaveBaixa);
+            setErroCompras("");
+            setSucesso("");
+
+            const response = await fetch(`${API_URL}/retirar_baixa/${idFinanciamento}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ parcela: Number(numeroParcela) }),
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                setErroCompras(data.mensagem || "Não foi possível retirar a baixa da parcela.");
+                return;
+            }
+
+            setSucesso(data.mensagem || "Baixa retirada com sucesso.");
+
+            if (usuarioCompras?.id_usuario) {
+                await buscarComprasUsuario(usuarioCompras.id_usuario);
+            }
+        } catch {
+            setErroCompras("Erro ao retirar baixa da parcela.");
+        } finally {
+            setBaixandoParcela("");
         }
     }
 
@@ -623,7 +821,7 @@ export default function ListaUsuario() {
                                         </td>
 
                                         <td className={css.nomeUsuario}>{usuario.nome}</td>
-                                        <td>{usuario.email || "Nao informado"}</td>
+                                        <td>{usuario.email || "Não informado"}</td>
 
                                         <td>
                                             <span className={`${css.tipo} ${classeTipo(usuario.tipo)}`}>
@@ -651,6 +849,16 @@ export default function ListaUsuario() {
                                                             Editar
                                                         </button>
 
+                                                        {Number(usuario.tipo) === 2 && (
+                                                            <button
+                                                                type="button"
+                                                                className={css.icone}
+                                                                onClick={() => abrirModalComprasUsuario(usuario)}
+                                                            >
+                                                                Parcelas
+                                                            </button>
+                                                        )}
+
                                                         <button
                                                             type="button"
                                                             className={`${css.icone} ${css.bloquear}`}
@@ -667,7 +875,7 @@ export default function ListaUsuario() {
                             ) : (
                                 <tr>
                                     <td colSpan="5" className={css.vazio}>
-                                        Nenhum usuario encontrado.
+                                        Nenhum usuário encontrado.
                                     </td>
                                 </tr>
                             )}
@@ -706,15 +914,34 @@ export default function ListaUsuario() {
 
                         <p>
                             Tem certeza que deseja{" "}
-                            {novaSituacao === 1 ? "bloquear" : "desbloquear"} o usuario{" "}
+                            {novaSituacao === 1 ? "bloquear" : "desbloquear"} o usuário{" "}
                             <strong>{usuarioSituacao?.nome}</strong>?
                         </p>
+
+                        {novaSituacao === 1 && (
+                            <label className={css.campoModal}>
+                                Motivo do bloqueio
+                                <textarea
+                                    value={motivoBloqueio}
+                                    onChange={(e) => {
+                                        setMotivoBloqueio(e.target.value);
+                                        setErroSituacao("");
+                                    }}
+                                    placeholder="Explique o motivo que sera enviado por e-mail"
+                                    rows={4}
+                                    disabled={salvandoSituacao}
+                                />
+                            </label>
+                        )}
+
+                        {erroSituacao && <p className={css.erroModal}>{erroSituacao}</p>}
 
                         <div className={css.modalBotoes}>
                             <button
                                 type="button"
                                 className={css.cancelar}
                                 onClick={fecharModalSituacao}
+                                disabled={salvandoSituacao}
                             >
                                 Cancelar
                             </button>
@@ -723,10 +950,154 @@ export default function ListaUsuario() {
                                 type="button"
                                 className={novaSituacao === 1 ? css.excluir : css.confirmar}
                                 onClick={alterarSituacaoUsuario}
+                                disabled={
+                                    salvandoSituacao ||
+                                    (novaSituacao === 1 && !motivoBloqueio.trim())
+                                }
                             >
-                                {novaSituacao === 1 ? "Bloquear" : "Desbloquear"}
+                                {salvandoSituacao
+                                    ? "Enviando..."
+                                    : novaSituacao === 1
+                                        ? "Bloquear e enviar e-mail"
+                                        : "Desbloquear"}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {modalCompras && (
+                <div className={css.modalFundo}>
+                    <div className={css.modalCompras}>
+                        <div className={css.modalTopo}>
+                            <div>
+                                <h2>Compras e parcelas</h2>
+                                <p>{usuarioCompras?.nome || "Cliente"} - acompanhe os financiamentos e baixas.</p>
+                            </div>
+
+                            <button
+                                type="button"
+                                className={css.fecharModal}
+                                onClick={fecharModalComprasUsuario}
+                                aria-label="Fechar"
+                            >
+                                x
+                            </button>
+                        </div>
+
+                        {erroCompras && <p className={css.erroCadastro}>{erroCompras}</p>}
+
+                        {carregandoCompras ? (
+                            <p className={css.estadoCompras}>Carregando compras...</p>
+                        ) : comprasUsuario.length === 0 && !erroCompras ? (
+                            <p className={css.estadoCompras}>Esse cliente ainda não possui compras registradas.</p>
+                        ) : (
+                            <div className={css.listaCompras}>
+                                {comprasUsuario.map((compra) => {
+                                    const ehFinanciamento = Number(compra.formaPagamento) === 1;
+                                    const parcelasVisiveis = Boolean(parcelasComprasAbertas[compra.idVenda]);
+                                    const parcelasPagas = compra.parcelas.filter((parcela) =>
+                                        Number(getCampo(parcela, ["status", "STATUS"], 0)) === 1
+                                    ).length;
+
+                                    return (
+                                        <article className={css.compraUsuario} key={compra.idVenda}>
+                                            <div className={css.compraTopo}>
+                                                <div>
+                                                    <span>{ehFinanciamento ? "Financiamento" : "à vista"}</span>
+                                                    <h3>{compra.marca} {compra.modelo}</h3>
+                                                    <p>{compra.placa || "Placa não informada"} - {formatarData(compra.dataVenda)}</p>
+                                                </div>
+
+                                                <strong>{formatarPreco(compra.valorVenda)}</strong>
+                                            </div>
+
+                                            {ehFinanciamento ? (
+                                                <>
+                                                    <div className={css.resumoFinanciamento}>
+                                                        <div>
+                                                            <span>Valor original</span>
+                                                            <strong>{formatarPreco(compra.financiamento.valorOriginal)}</strong>
+                                                        </div>
+                                                        <div>
+                                                            <span>Total financiado</span>
+                                                            <strong>{formatarPreco(compra.financiamento.valorFinanciado || compra.valorVenda)}</strong>
+                                                        </div>
+                                                        <div>
+                                                            <span>Parcelas pagas</span>
+                                                            <strong>{parcelasPagas}/{compra.parcelas.length}</strong>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className={css.parcelasControle}>
+                                                        <span>{compra.parcelas.length} parcelas - {compra.parcelas.length - parcelasPagas} em aberto</span>
+                                                        <button
+                                                            type="button"
+                                                            className={css.verParcelas}
+                                                            onClick={() => alternarParcelasCompra(compra.idVenda)}
+                                                        >
+                                                            {parcelasVisiveis ? "Ocultar parcelas" : "Ver parcelas"}
+                                                        </button>
+                                                    </div>
+
+                                                    {parcelasVisiveis && (
+                                                        <div className={css.parcelasAdmin}>
+                                                            {compra.parcelas.length > 0 ? (
+                                                            compra.parcelas.map((parcela) => {
+                                                                const numero = getCampo(parcela, ["numero_parcela", "NUMERO_PARCELA"]);
+                                                                const valor = getCampo(parcela, ["valor_parcela", "VALOR_PARCELA"], 0);
+                                                                const vencimento = getCampo(parcela, ["data_vencimento", "DATA_VENCIMENTO"]);
+                                                                const pagamento = getCampo(parcela, ["data_pagamento", "DATA_PAGAMENTO"]);
+                                                                const paga = Number(getCampo(parcela, ["status", "STATUS"], 0)) === 1;
+                                                                const chaveBaixa = `${compra.financiamento.idFinanciamento}-${numero}`;
+
+                                                                return (
+                                                                    <div className={css.parcelaAdmin} key={`${compra.idVenda}-${numero}`}>
+                                                                        <div>
+                                                                            <strong>Parcela {numero}</strong>
+                                                                            <span>Vence {formatarData(vencimento)}</span>
+                                                                        </div>
+
+                                                                        <div>
+                                                                            <strong>{formatarPreco(valor)}</strong>
+                                                                            <span className={paga ? css.parcelaPaga : css.parcelaAberta}>
+                                                                                {paga ? `Pago em ${formatarData(pagamento)}` : "Em aberto"}
+                                                                            </span>
+                                                                        </div>
+
+                                                                        <button
+                                                                            type="button"
+                                                                            className={`${css.baixarParcela} ${paga ? css.retirarBaixa : ""}`}
+                                                                            disabled={baixandoParcela === chaveBaixa}
+                                                                            onClick={() =>
+                                                                                paga
+                                                                                    ? retirarBaixaParcela(compra.financiamento.idFinanciamento, numero)
+                                                                                    : darBaixaParcela(compra.financiamento.idFinanciamento, numero)
+                                                                            }
+                                                                        >
+                                                                            {baixandoParcela === chaveBaixa
+                                                                                ? "Salvando..."
+                                                                                : paga
+                                                                                    ? "Retirar baixa"
+                                                                                    : "Dar baixa"}
+                                                                        </button>
+                                                                    </div>
+                                                                );
+                                                            })
+                                                        ) : (
+                                                            <p className={css.estadoCompras}>Nenhuma parcela encontrada.</p>
+                                                        )}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <p className={css.estadoCompras}>Compra à vista, sem parcelas.</p>
+                                            )}
+                                        </article>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
@@ -736,7 +1107,7 @@ export default function ListaUsuario() {
                     <div className={css.modalCadastro}>
                         <div className={css.modalTopo}>
                             <div>
-                                <h2>Adicionar usuario interno</h2>
+                                <h2>Adicionar usuário interno</h2>
                                 <p>Use o mesmo padrao do cadastro, escolhendo o tipo de acesso.</p>
                             </div>
 
@@ -888,7 +1259,7 @@ export default function ListaUsuario() {
                     <div className={css.modalCadastro}>
                         <div className={css.modalTopo}>
                             <div>
-                                <h2>Editar usuario</h2>
+                                <h2>Editar usuário</h2>
                                 <p>Atualize os dados cadastrais e o tipo de acesso.</p>
                             </div>
 
@@ -1039,7 +1410,7 @@ export default function ListaUsuario() {
                                     className={css.confirmar}
                                     disabled={salvandoEdicao}
                                 >
-                                    {salvandoEdicao ? "Salvando..." : "Salvar alteracoes"}
+                                    {salvandoEdicao ? "Salvando..." : "Salvar alterações"}
                                 </button>
                             </div>
                         </form>

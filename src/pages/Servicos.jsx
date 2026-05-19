@@ -69,14 +69,14 @@ export default function Servicos() {
     function valorHistoricoDe(item) {
         return Number(
             item?.["valor_unitário"] ??
-            item?.["valor_unitÃ¡rio"] ??
+            item?.["valor_unitário"] ??
             item?.valor_unitario ??
             0
         );
     }
 
     function dataHistoricoDe(item) {
-        return item?.["data_histórico"] ?? item?.["data_histÃ³rico"] ?? item?.data_historico;
+        return item?.["data_histórico"] ?? item?.["data_histórico"] ?? item?.data_historico;
     }
 
     function servicoTemHistorico(servico) {
@@ -150,7 +150,7 @@ export default function Servicos() {
                 return;
             }
 
-            setHistoricoServico(data["manutenções"] || data["manutenÃ§Ãµes"] || []);
+            setHistoricoServico(data["manutenções"] || data["manutenções"] || []);
         } catch (error) {
             console.error(error);
             setHistoricoServico([]);
@@ -177,7 +177,7 @@ export default function Servicos() {
                     if (!response.ok) return;
 
                     const data = await response.json().catch(() => ({}));
-                    const historico = data["manutenções"] || data["manutenÃ§Ãµes"] || [];
+                    const historico = data["manutenções"] || data["manutenções"] || [];
 
                     if (historico.length > 0) {
                         idsComHistorico.add(Number(servico.id_servico));

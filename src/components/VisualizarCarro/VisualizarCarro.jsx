@@ -63,13 +63,13 @@ function textoCombustivel(valor) {
     if (String(valor) === "1") return "Gasolina";
     if (String(valor) === "2") return "Etanol";
     if (String(valor) === "3") return "Diesel";
-    return valor || "Nao informado";
+    return valor || "Não informado";
 }
 
 function textoCambio(valor) {
     if (String(valor) === "0") return "Manual";
     if (String(valor) === "1") return "Automatico";
-    return valor || "Nao informado";
+    return valor || "Não informado";
 }
 
 function formatarPreco(valor) {
@@ -77,6 +77,20 @@ function formatarPreco(valor) {
         style: "currency",
         currency: "BRL",
     });
+}
+
+function apenasNumeros(valor) {
+    return String(valor || "").replace(/\D/g, "");
+}
+
+function formatarCpf(valor) {
+    const numeros = apenasNumeros(valor).slice(0, 11);
+
+    if (numeros.length <= 3) return numeros;
+    if (numeros.length <= 6) return `${numeros.slice(0, 3)}.${numeros.slice(3)}`;
+    if (numeros.length <= 9) return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6)}`;
+
+    return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-${numeros.slice(9)}`;
 }
 
 function normalizarDescontoAVista(data = {}) {
@@ -164,7 +178,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
     const [carregandoJuro, setCarregandoJuro] = useState(false);
     const [formaPagamento, setFormaPagamento] = useState(0);
     const [parcelas, setParcelas] = useState(12);
-    const [idClienteVenda, setIdClienteVenda] = useState("");
+    const [cpfClienteVenda, setCpfClienteVenda] = useState("");
     const [mensagemVenda, setMensagemVenda] = useState("");
     const [mensagemSucessoPagina, setMensagemSucessoPagina] = useState("");
 
@@ -229,14 +243,14 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                 const data = await response.json();
 
                 if (!response.ok) {
-                    setErro(data.mensagem || "Nao foi possivel carregar o veiculo.");
+                    setErro(data.mensagem || "Não foi possível carregar o veículo.");
                     return;
                 }
 
                 const veiculo = data.veiculos?.[0] || data[0] || data;
 
                 if (!veiculo?.ID_VEICULO) {
-                    setErro("Veiculo nao encontrado.");
+                    setErro("Veículo não encontrado.");
                     return;
                 }
 
@@ -359,11 +373,28 @@ export default function VisualizarCarro({ modoVendedor = false }) {
             setTempoQrCode(60);
             setFormaPagamento(0);
             setParcelas(12);
-            setIdClienteVenda("");
+            setCpfClienteVenda("");
             if (qrCodeUrl) {
                 URL.revokeObjectURL(qrCodeUrl);
                 setQrCodeUrl("");
             }
+            setModalCompraAberta(true);
+            return;
+        }
+
+        const usuarioId = localStorage.getItem("usuario_id");
+        const usuarioTipo = Number(localStorage.getItem("usuario_tipo"));
+
+        if (!usuarioId || usuarioTipo !== 2) {
+            if (qrCodeUrl) {
+                URL.revokeObjectURL(qrCodeUrl);
+                setQrCodeUrl("");
+            }
+
+            setCompraConcluida(false);
+            setGerandoQrCode(false);
+            setTempoQrCode(60);
+            setErroCompra("Faça login como cliente para comprar este veículo.");
             setModalCompraAberta(true);
             return;
         }
@@ -431,7 +462,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
 
         setMensagemSucessoPagina(
             modoVendedor
-                ? "Venda a vista concluida com sucesso."
+                ? "Venda à vista concluída com sucesso."
                 : "Carro comprado com sucesso."
         );
     }
@@ -439,8 +470,8 @@ export default function VisualizarCarro({ modoVendedor = false }) {
     async function registrarVenda() {
         if (!carro?.ID_VEICULO || gerandoQrCode) return;
 
-        if (!idClienteVenda.trim()) {
-            setErroCompra("Informe o ID do cliente para registrar a venda.");
+        if (apenasNumeros(cpfClienteVenda).length !== 11) {
+            setErroCompra("Informe o CPF do cliente para registrar a venda.");
             return;
         }
 
@@ -456,7 +487,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                 const taxa = await carregarTaxaJuroEmpresa();
 
                 if (taxa === null) {
-                    setErroCompra("Nao foi possivel carregar a taxa de juros cadastrada pela empresa.");
+                    setErroCompra("Não foi possível carregar a taxa de juros cadastrada pela empresa.");
                     return;
                 }
             }
@@ -468,7 +499,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
 
             const payload = {
                 id_veiculo: carro.ID_VEICULO,
-                id_usuario_cliente: Number(idClienteVenda),
+                cpf_cliente: apenasNumeros(cpfClienteVenda),
                 forma_pagamento: Number(formaPagamento),
             };
 
@@ -491,18 +522,18 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                 const data = tipoResposta.includes("application/json") ? await response.json() : null;
 
                 if (!response.ok) {
-                    setErroCompra(data?.mensagem || "Nao foi possivel registrar a venda.");
+                    setErroCompra(data?.mensagem || "Não foi possível registrar a venda.");
                     return;
                 }
 
                 setModalCompraAberta(false);
-                setMensagemSucessoPagina(data?.mensagem || "Venda concluida com sucesso.");
+                setMensagemSucessoPagina(data?.mensagem || "Venda concluída com sucesso.");
                 return;
             }
 
             const imagemQrCode = await response.blob();
             setQrCodeUrl(URL.createObjectURL(imagemQrCode));
-            setMensagemVenda("Venda a vista registrada. Use o QR Code Pix para o pagamento.");
+            setMensagemVenda("Venda à vista registrada. Use o QR Code Pix para o pagamento.");
         } catch {
             setErroCompra("Erro ao conectar com o servidor para registrar a venda.");
         } finally {
@@ -521,9 +552,9 @@ export default function VisualizarCarro({ modoVendedor = false }) {
     if (erro || !carro) {
         return (
             <div className={css.estado}>
-                <div className={css.erro}>{erro || "Veiculo nao encontrado."}</div>
+                <div className={css.erro}>{erro || "Veículo não encontrado."}</div>
                 <button type="button" className={css.comprar} onClick={() => navigate("/catalogo")}>
-                    Voltar para o catalogo
+                    Voltar para o catálogo
                 </button>
             </div>
         );
@@ -548,7 +579,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
         {
             icon: "palette",
             title: "COR",
-            value: carro.COR || "Nao informado",
+            value: carro.COR || "Não informado",
         },
     ];
     const valorAVista = calcularValorAVista(carro.PRECO_VENDA, descontoAVista);
@@ -567,7 +598,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                 <div className={css.conteudo}>
                     <div className={css.barraTopo}>
                         <button className={css.voltar} onClick={() => navigate("/catalogo")}>
-                            Voltar ao catalogo
+                            Voltar ao catálogo
                         </button>
 
                     </div>
@@ -607,14 +638,14 @@ export default function VisualizarCarro({ modoVendedor = false }) {
 
                         <aside className={css.painelCompra}>
                             <div className={css.painelTopo}>
-                                <span className={css.etiqueta}>Disponivel</span>
+                                <span className={css.etiqueta}>Disponível</span>
                                 <span className={css.condicao}>Estoque WebCar</span>
                             </div>
 
                             <h1>{carro.MARCA} {carro.MODELO}</h1>
 
                             <div className={css.precoBox}>
-                                <span>Valor no Pix a vista</span>
+                                <span>Valor no Pix à vista</span>
                                 {temDescontoAVista && (
                                     <del>{formatarPreco(carro.PRECO_VENDA)}</del>
                                 )}
@@ -627,14 +658,14 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                             <div className={css.resumoRapido}>
                                 <div>
                                     <span>Ano</span>
-                                    <strong>{carro.ANO_MODELO || "Nao informado"}</strong>
+                                    <strong>{carro.ANO_MODELO || "Não informado"}</strong>
                                 </div>
                                 <div>
                                     <span>Quilometragem</span>
                                     <strong>{Number(carro.KM || 0).toLocaleString("pt-BR")} km</strong>
                                 </div>
                                 <div>
-                                    <span>Cambio</span>
+                                    <span>Câmbio</span>
                                     <strong>{textoCambio(carro.CAMBIO)}</strong>
                                 </div>
                             </div>
@@ -650,9 +681,9 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                             <div className={css.garantias}>
                                 <span><i className="bi bi-qr-code"></i> Pagamento via Pix</span>
                                 {modoVendedor && (
-                                    <span><i className="bi bi-credit-card"></i> Venda a vista ou parcelada</span>
+                                    <span><i className="bi bi-credit-card"></i> Venda à vista ou parcelada</span>
                                 )}
-                                <span><i className="bi bi-shield-check"></i> Dados do veiculo conferidos</span>
+                                <span><i className="bi bi-shield-check"></i> Dados do veículo conferidos</span>
                                 {!modoVendedor && (
                                     <span><i className="bi bi-check2-circle"></i> Compra simulada para teste</span>
                                 )}
@@ -682,9 +713,9 @@ export default function VisualizarCarro({ modoVendedor = false }) {
 
                         <p>
                             {carro.MARCA} {carro.MODELO}, ano {carro.ANO_MODELO}, cor{" "}
-                            {carro.COR || "nao informada"}, com{" "}
-                            {Number(carro.KM || 0).toLocaleString("pt-BR")} km, cambio{" "}
-                            {textoCambio(carro.CAMBIO)} e combustivel {textoCombustivel(carro.COMBUSTIVEL)}.
+                            {carro.COR || "não informada"}, com{" "}
+                            {Number(carro.KM || 0).toLocaleString("pt-BR")} km, câmbio{" "}
+                            {textoCambio(carro.CAMBIO)} e combustível {textoCombustivel(carro.COMBUSTIVEL)}.
                         </p>
                     </div>
                 </div>
@@ -716,13 +747,14 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                         {modoVendedor && (
                             <div className={css.formaPagamento}>
                                 <label className={css.campoVenda}>
-                                    <span>ID do cliente</span>
+                                    <span>CPF do cliente</span>
                                     <input
-                                        type="number"
-                                        min="1"
-                                        value={idClienteVenda}
-                                        onChange={(e) => setIdClienteVenda(e.target.value)}
-                                        placeholder="Ex: 12"
+                                        type="text"
+                                        inputMode="numeric"
+                                        maxLength={14}
+                                        value={cpfClienteVenda}
+                                        onChange={(e) => setCpfClienteVenda(formatarCpf(e.target.value))}
+                                        placeholder="000.000.000-00"
                                     />
                                 </label>
 
@@ -732,7 +764,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                                         className={Number(formaPagamento) === 0 ? css.opcaoAtiva : ""}
                                         onClick={() => setFormaPagamento(0)}
                                     >
-                                        A vista
+                                        à vista
                                     </button>
                                     <button
                                         type="button"
@@ -768,7 +800,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                                             <small className={css.avisoTaxa}>
                                                 {carregandoJuro
                                                     ? "Carregando taxa de juros da empresa."
-                                                    : "Nao foi possivel carregar a taxa de juros da empresa."}
+                                                    : "Não foi possível carregar a taxa de juros da empresa."}
                                             </small>
                                         )}
                                     </label>
@@ -777,7 +809,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                                 <div className={css.resumoPagamento}>
                                     <div>
                                         <span>Forma de pagamento</span>
-                                        <strong>{Number(formaPagamento) === 0 ? "A vista no Pix" : `${parcelas} parcelas`}</strong>
+                                        <strong>{Number(formaPagamento) === 0 ? "à vista no Pix" : `${parcelas} parcelas`}</strong>
                                     </div>
                                     {Number(formaPagamento) === 0 && temDescontoAVista && (
                                         <>
@@ -786,7 +818,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                                                 <strong className={css.valorRiscado}>{formatarPreco(carro.PRECO_VENDA)}</strong>
                                             </div>
                                             <div>
-                                                <span>Desconto a vista</span>
+                                                <span>Desconto à vista</span>
                                                 <strong className={css.valorDesconto}>{descontoAVista}%</strong>
                                             </div>
                                         </>
@@ -797,7 +829,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                                     </div>
                                     {Number(formaPagamento) === 1 && (
                                         <div>
-                                            <span>Juros mensal do banco</span>
+                                            <span>Juros</span>
                                             <strong>{taxaJuroCarregada ? `${porcentagemJuro}%` : "Carregando"}</strong>
                                         </div>
                                     )}
@@ -829,7 +861,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
 
                                 {compraConcluida && (
                                     <p className={css.sucessoCompra}>
-                                        {mensagemVenda || "Compra concluida com sucesso. Pagamento simulado como aprovado."}
+                                        {mensagemVenda || "Compra concluída com sucesso. Pagamento simulado como aprovado."}
                                     </p>
                                 )}
                             </div>

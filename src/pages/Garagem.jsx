@@ -50,11 +50,39 @@ function exclusaoFoiConfirmada(data) {
     );
 }
 
+function veiculoEstaDisponivel(carro) {
+    if (!carro) return false;
+
+    const status = carro.STATUS ?? carro.status ?? carro.SITUACAO ?? carro.situacao;
+    const vendido = carro.VENDIDO ?? carro.vendido ?? carro.ID_VENDA ?? carro.id_venda;
+    const disponibilidade = carro.DISPONIBILIDADE ?? carro.disponibilidade ?? carro.ESTADO ?? carro.estado;
+
+    if (vendido !== undefined && vendido !== null && String(vendido) !== "0" && String(vendido) !== "") {
+        return false;
+    }
+
+    const textoStatus = String(status ?? disponibilidade ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
+    if (textoStatus.includes("vend") || textoStatus.includes("inativo") || textoStatus.includes("indisponivel")) {
+        return false;
+    }
+
+    if (status !== undefined && status !== null && status !== "") {
+        return Number(status) === 0;
+    }
+
+    return true;
+}
+
 export default function Garagem() {
     const navigate = useNavigate();
 
     const [veiculos, setVeiculos] = useState([]);
     const [busca, setBusca] = useState("");
+    const [filtroStatus, setFiltroStatus] = useState("todos");
     const [paginaAtual, setPaginaAtual] = useState(1);
     const [erro, setErro] = useState("");
     const [sucesso, setSucesso] = useState("");
@@ -89,15 +117,26 @@ export default function Garagem() {
         }
     }
 
-    const valorGaragem = veiculos.reduce((total, carro) => {
+    const veiculosAtivos = veiculos.filter(veiculoEstaDisponivel);
+    const totalVeiculosAtivos = veiculosAtivos.length;
+
+    const valorGaragem = veiculosAtivos.reduce((total, carro) => {
         return total + Number(carro.PRECO_VENDA || 0);
     }, 0);
 
-    const veiculosFiltrados = veiculos.filter((carro) =>
-        `${carro.MARCA} ${carro.MODELO} ${carro.ANO_MODELO} ${carro.PLACA}`
+    const veiculosFiltrados = veiculos.filter((carro) => {
+        const veiculoDisponivel = veiculoEstaDisponivel(carro);
+        const passaStatus =
+            filtroStatus === "todos" ||
+            (filtroStatus === "ativos" && veiculoDisponivel) ||
+            (filtroStatus === "vendidos" && !veiculoDisponivel);
+
+        const passaBusca = `${carro.MARCA} ${carro.MODELO} ${carro.ANO_MODELO} ${carro.PLACA}`
             .toLowerCase()
-            .includes(busca.toLowerCase())
-    );
+            .includes(busca.toLowerCase());
+
+        return passaStatus && passaBusca;
+    });
 
     const totalPaginas = Math.max(1, Math.ceil(veiculosFiltrados.length / 15));
     const inicioPagina = (paginaAtual - 1) * 15;
@@ -197,7 +236,7 @@ export default function Garagem() {
                                 </p>
 
                                 <h2 className={css.cardValor}>
-                                    {veiculos.length}
+                                    {totalVeiculosAtivos}
                                 </h2>
                             </div>
                         </div>
@@ -209,7 +248,7 @@ export default function Garagem() {
 
                             <div>
                                 <p className={css.cardLabel}>
-                                    Valor da garagem
+                                    Valor ativo da garagem
                                 </p>
 
                                 <h2 className={css.cardValor}>
@@ -229,7 +268,7 @@ export default function Garagem() {
                                 </p>
 
                                 <h2 className={css.cardValor}>
-                                    {veiculos.length}
+                                    {totalVeiculosAtivos}
                                 </h2>
                             </div>
                         </div>
@@ -259,6 +298,41 @@ export default function Garagem() {
                         />
                     </div>
 
+                    <div className={css.filtrosStatus}>
+                        <button
+                            type="button"
+                            className={`${css.filtroStatus} ${filtroStatus === "todos" ? css.filtroStatusAtivo : ""}`}
+                            onClick={() => {
+                                setFiltroStatus("todos");
+                                setPaginaAtual(1);
+                            }}
+                        >
+                            Todos
+                        </button>
+
+                        <button
+                            type="button"
+                            className={`${css.filtroStatus} ${filtroStatus === "ativos" ? css.filtroStatusAtivo : ""}`}
+                            onClick={() => {
+                                setFiltroStatus("ativos");
+                                setPaginaAtual(1);
+                            }}
+                        >
+                            Estoque
+                        </button>
+
+                        <button
+                            type="button"
+                            className={`${css.filtroStatus} ${filtroStatus === "vendidos" ? css.filtroStatusAtivo : ""}`}
+                            onClick={() => {
+                                setFiltroStatus("vendidos");
+                                setPaginaAtual(1);
+                            }}
+                        >
+                            Vendidos
+                        </button>
+                    </div>
+
                     <section className={css.tabelaBox}>
                         <div className={css.tableResponsive}>
                             <table className={css.tabela}>
@@ -273,18 +347,24 @@ export default function Garagem() {
                                 </thead>
 
                                 <tbody className={css.corpoCarrossel}>
-                                {veiculosPaginados.map((carro, index) => (
+                                {veiculosPaginados.map((carro, index) => {
+                                    const veiculoDisponivel = veiculoEstaDisponivel(carro);
+
+                                    return (
                                     <tr
                                         key={carro.ID_VEICULO || index}
-                                        className={css.cardVeiculo}
+                                        className={`${css.cardVeiculo} ${!veiculoDisponivel ? css.veiculoVendido : ""}`}
                                     >
                                         <td
                                             data-label="MODELO"
-                                            onClick={() =>
+                                            onClick={() => {
+                                                if (!veiculoDisponivel) return;
+
                                                 navigate("/VisualizarAdm", {
                                                     state: { carro },
-                                                })
-                                            }
+                                                });
+                                            }}
+                                            className={!veiculoDisponivel ? css.semClique : ""}
                                         >
                                             <div className={css.modeloCell}>
                                                 <img
@@ -304,10 +384,9 @@ export default function Garagem() {
                                                     alt="veiculo"
                                                 />
 
-                                                <span>
-                                                        {carro.MARCA}{" "}
-                                                    {carro.MODELO}
-                                                    </span>
+                                                <span className={!veiculoDisponivel ? css.nomeVendido : ""}>
+                                                    {carro.MARCA} {carro.MODELO}
+                                                </span>
                                             </div>
                                         </td>
 
@@ -334,35 +413,42 @@ export default function Garagem() {
                                             data-label="AÇÕES"
                                             className={css.acoes}
                                         >
-                                            <button
-                                                className={css.btnAcao}
-                                                onClick={() =>
-                                                    navigate(
-                                                        "/EdicaoVeiculo",
-                                                        {
-                                                            state: {
-                                                                carro,
-                                                            },
+                                            {veiculoDisponivel ? (
+                                                <>
+                                                    <button
+                                                        className={css.btnAcao}
+                                                        onClick={() =>
+                                                            navigate(
+                                                                "/EdicaoVeiculo",
+                                                                {
+                                                                    state: {
+                                                                        carro,
+                                                                    },
+                                                                }
+                                                            )
                                                         }
-                                                    )
-                                                }
-                                            >
-                                                Editar
-                                            </button>
+                                                    >
+                                                        Editar
+                                                    </button>
 
-                                            <button
-                                                className={
-                                                    css.btnAcaoDelete
-                                                }
-                                                onClick={() =>
-                                                    abrirModalDelete(carro)
-                                                }
-                                            >
-                                                Excluir
-                                            </button>
+                                                    <button
+                                                        className={
+                                                            css.btnAcaoDelete
+                                                        }
+                                                        onClick={() =>
+                                                            abrirModalDelete(carro)
+                                                        }
+                                                    >
+                                                        Excluir
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <span className={css.statusVendido}>Vendido</span>
+                                            )}
                                         </td>
                                     </tr>
-                                ))}
+                                    );
+                                })}
                                 </tbody>
                             </table>
                         </div>

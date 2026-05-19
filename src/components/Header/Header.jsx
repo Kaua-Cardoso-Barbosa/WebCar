@@ -4,6 +4,17 @@ import css from "./Header.module.css";
 import { API_URL } from "../../App";
 
 const LOGO_PADRAO = "/Logo.png";
+const LOGO_CACHE_KEY = "webcar_logo_url";
+const CONFIG_SITE_CACHE_KEY = "webcar_configuracoes_site";
+const AUTH_KEYS = [
+    "usuario_id",
+    "usuario_nome",
+    "usuario_email",
+    "usuario_telefone",
+    "usuario_cpf",
+    "usuario_tipo",
+    "token",
+];
 const IMAGEM_USUARIO_PADRAO = `data:image/svg+xml;utf8,${encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">
   <rect width="320" height="320" rx="160" fill="#e2e8f0"/>
@@ -27,12 +38,26 @@ async function carregarLogoSite() {
         credentials: "include",
     });
 
-    if (!response.ok) return LOGO_PADRAO;
+    if (!response.ok) return localStorage.getItem(LOGO_CACHE_KEY) || LOGO_PADRAO;
 
     const data = await response.json();
     const empresa = data.empresas?.[0] || {};
 
-    return urlArquivo(empresa.logo_url || empresa.logoUrl || empresa.LOGO_URL, LOGO_PADRAO);
+    const logoUrl = urlArquivo(empresa.logo_url || empresa.logoUrl || empresa.LOGO_URL, LOGO_PADRAO);
+    localStorage.setItem(LOGO_CACHE_KEY, logoUrl);
+    return logoUrl;
+}
+
+function lerLogoConfiguracoesCache() {
+    try {
+        const cache = localStorage.getItem(CONFIG_SITE_CACHE_KEY);
+        if (!cache) return null;
+
+        const config = JSON.parse(cache);
+        return config.logoUrl || config.logo_url || config.LOGO_URL || null;
+    } catch {
+        return null;
+    }
 }
 
 function apenasNumeros(valor) {
@@ -65,16 +90,22 @@ export default function Header({ busca = "", setBusca = null }) {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const tipoUsuario = localStorage.getItem("usuario_tipo");
+    const [auth, setAuth] = useState(() => ({
+        usuarioId: localStorage.getItem("usuario_id"),
+        tipoUsuario: localStorage.getItem("usuario_tipo"),
+    }));
+
+    const tipoUsuario = auth.tipoUsuario;
     const estaLogado = !!tipoUsuario;
     const tipoNumero = Number(tipoUsuario);
+    const usuarioVendedor = tipoNumero === 1;
     const usuarioInterno = tipoNumero === 0 || tipoNumero === 1;
     const usuarioCliente = tipoNumero === 2;
     const linkLogo = tipoNumero === 0 ? "/dashboard" : tipoNumero === 1 ? "/restrita-vendedor" : "/";
-    const idUsuario = localStorage.getItem("usuario_id");
+    const idUsuario = auth.usuarioId;
 
     const [buscaLocal, setBuscaLocal] = useState("");
-    const [logoUrl, setLogoUrl] = useState(LOGO_PADRAO);
+    const [logoUrl, setLogoUrl] = useState(() => lerLogoConfiguracoesCache() || localStorage.getItem(LOGO_CACHE_KEY) || LOGO_PADRAO);
     const [modalDadosAberta, setModalDadosAberta] = useState(false);
     const [dadosCliente, setDadosCliente] = useState({
         nome: "",
@@ -108,15 +139,39 @@ export default function Header({ busca = "", setBusca = null }) {
         }
     }
 
-    function handleLogout() {
-        localStorage.removeItem("usuario_id");
-        localStorage.removeItem("usuario_nome");
-        localStorage.removeItem("usuario_email");
-        localStorage.removeItem("usuario_telefone");
-        localStorage.removeItem("usuario_cpf");
-        localStorage.removeItem("usuario_tipo");
-        localStorage.removeItem("token");
+    function limparSessaoLocal() {
+        AUTH_KEYS.forEach((chave) => localStorage.removeItem(chave));
 
+        document.cookie.split(";").forEach((cookie) => {
+            const nome = cookie.split("=")[0]?.trim();
+            if (!nome) return;
+
+            document.cookie = `${nome}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+            document.cookie = `${nome}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=localhost`;
+        });
+
+        setAuth({ usuarioId: null, tipoUsuario: null });
+        window.dispatchEvent(new CustomEvent("webcar:auth", { detail: { logado: false } }));
+    }
+
+    async function handleLogout() {
+        try {
+            const response = await fetch(`${API_URL}/logout`, {
+                method: "POST",
+                credentials: "include",
+            });
+
+            if (!response.ok) {
+                await fetch(`${API_URL}/logout`, {
+                    method: "GET",
+                    credentials: "include",
+                });
+            }
+        } catch {
+            // Mesmo se o servidor nao responder, a sessao local precisa sair.
+        }
+
+        limparSessaoLocal();
         navigate("/login");
     }
 
@@ -169,8 +224,8 @@ export default function Header({ busca = "", setBusca = null }) {
             setDadosCliente({
                 nome: usuario.nome || dadosLocais.nome,
                 email: usuario.email || dadosLocais.email,
-                telefone: formatarTelefone(usuario.telefone || ""),
-                cpf: formatarCpf(usuario.cpf || ""),
+                telefone: formatarTelefone(usuario.telefone || dadosLocais.telefone),
+                cpf: formatarCpf(usuario.cpf || dadosLocais.cpf),
                 senha: "",
             });
             setPreviewCliente(usuario.imagem ? `${usuario.imagem}?v=${Date.now()}` : `${API_URL}/uploads/Usuarios/${idUsuario}.jpg?v=${Date.now()}`);
@@ -211,8 +266,8 @@ export default function Header({ busca = "", setBusca = null }) {
             return;
         }
 
-        if (!dadosCliente.nome.trim() || !dadosCliente.email.trim() || !dadosCliente.telefone.trim() || !dadosCliente.cpf.trim() || !dadosCliente.senha.trim()) {
-            setErroCliente("Preencha nome, email, telefone, CPF e nova senha para salvar.");
+        if (!dadosCliente.nome.trim() || !dadosCliente.email.trim() || !dadosCliente.telefone.trim() || !dadosCliente.cpf.trim()) {
+            setErroCliente("Preencha nome, email, telefone e CPF para salvar.");
             return;
         }
 
@@ -226,7 +281,10 @@ export default function Header({ busca = "", setBusca = null }) {
             formData.append("email", dadosCliente.email);
             formData.append("telefone", apenasNumeros(dadosCliente.telefone));
             formData.append("cpf", apenasNumeros(dadosCliente.cpf));
-            formData.append("senha", dadosCliente.senha);
+
+            if (dadosCliente.senha.trim()) {
+                formData.append("senha", dadosCliente.senha);
+            }
 
             if (fotoCliente) {
                 formData.append("imagem", fotoCliente);
@@ -261,6 +319,29 @@ export default function Header({ busca = "", setBusca = null }) {
     }
 
     useEffect(() => {
+        function atualizarAuth() {
+            setAuth({
+                usuarioId: localStorage.getItem("usuario_id"),
+                tipoUsuario: localStorage.getItem("usuario_tipo"),
+            });
+        }
+
+        function atualizarAuthPorStorage(e) {
+            if (AUTH_KEYS.includes(e.key)) {
+                atualizarAuth();
+            }
+        }
+
+        window.addEventListener("webcar:auth", atualizarAuth);
+        window.addEventListener("storage", atualizarAuthPorStorage);
+
+        return () => {
+            window.removeEventListener("webcar:auth", atualizarAuth);
+            window.removeEventListener("storage", atualizarAuthPorStorage);
+        };
+    }, []);
+
+    useEffect(() => {
         async function buscarLogo() {
             try {
                 setLogoUrl(await carregarLogoSite());
@@ -272,11 +353,41 @@ export default function Header({ busca = "", setBusca = null }) {
         buscarLogo();
 
         function atualizar(e) {
-            setLogoUrl(e.detail?.logoUrl || LOGO_PADRAO);
+            const novaLogo = e.detail?.logoUrl || LOGO_PADRAO;
+            localStorage.setItem(LOGO_CACHE_KEY, novaLogo);
+            setLogoUrl(novaLogo);
+        }
+
+        function atualizarPorOutraAba(e) {
+            if (e.key !== CONFIG_SITE_CACHE_KEY || !e.newValue) return;
+
+            try {
+                const config = JSON.parse(e.newValue);
+                const novaLogo = config.logoUrl || config.logo_url || config.LOGO_URL || LOGO_PADRAO;
+                localStorage.setItem(LOGO_CACHE_KEY, novaLogo);
+                setLogoUrl(novaLogo);
+            } catch {
+                // Mantem a logo atual se o cache vier invalido.
+            }
+        }
+
+        function atualizarAoVoltar() {
+            if (document.visibilityState === "visible") {
+                buscarLogo();
+            }
         }
 
         window.addEventListener("webcar:configuracoes-site", atualizar);
-        return () => window.removeEventListener("webcar:configuracoes-site", atualizar);
+        window.addEventListener("storage", atualizarPorOutraAba);
+        window.addEventListener("focus", buscarLogo);
+        document.addEventListener("visibilitychange", atualizarAoVoltar);
+
+        return () => {
+            window.removeEventListener("webcar:configuracoes-site", atualizar);
+            window.removeEventListener("storage", atualizarPorOutraAba);
+            window.removeEventListener("focus", buscarLogo);
+            document.removeEventListener("visibilitychange", atualizarAoVoltar);
+        };
     }, []);
 
     useEffect(() => {
@@ -368,6 +479,14 @@ export default function Header({ busca = "", setBusca = null }) {
                                             </>
                                         )}
 
+                                        {usuarioVendedor && estaLogado && (
+                                            <li className="nav-item">
+                                                <button type="button" className={css.linkBotao} onClick={abrirModalDados}>
+                                                    Meus dados
+                                                </button>
+                                            </li>
+                                        )}
+
                                         {!estaLogado ? (
                                             <>
                                                 <li className="nav-item">
@@ -421,6 +540,12 @@ export default function Header({ busca = "", setBusca = null }) {
                                     <Link className="nav-link" to="/catalogo">Comprar</Link>
                                     {usuarioCliente && estaLogado ? linksCliente : <Link className="nav-link" to="/">Sobre nós</Link>}
                                 </>
+                            )}
+
+                            {usuarioVendedor && estaLogado && (
+                                <button type="button" className={css.linkBotao} onClick={abrirModalDados}>
+                                    Meus dados
+                                </button>
                             )}
 
                             {!estaLogado ? (
@@ -485,12 +610,12 @@ export default function Header({ busca = "", setBusca = null }) {
                                 </label>
 
                                 <label className={css.campoInteiro}>
-                                    Nova senha
+                                    Nova senha opcional
                                     <input
                                         type="password"
                                         value={dadosCliente.senha}
                                         onChange={(e) => atualizarDadosCliente("senha", e.target.value)}
-                                        placeholder="Digite uma nova senha"
+                                        placeholder="Deixe em branco para manter"
                                     />
                                 </label>
                             </section>

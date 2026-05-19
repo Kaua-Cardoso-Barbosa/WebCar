@@ -220,3 +220,25 @@ body {
   overflow-x: hidden;
   font-family: var(--fonte-site);
 }
+
+.btn-primary {
+  --bs-btn-bg: var(--cor-primaria);
+  --bs-btn-border-color: var(--cor-primaria);
+  --bs-btn-hover-bg: var(--cor-secundaria);
+  --bs-btn-hover-border-color: var(--cor-secundaria);
+  --bs-btn-active-bg: var(--cor-secundaria);
+  --bs-btn-active-border-color: var(--cor-secundaria);
+  --bs-btn-disabled-bg: var(--cor-primaria);
+  --bs-btn-disabled-border-color: var(--cor-primaria);
+  background-color: var(--cor-primaria) !important;
+  border-color: var(--cor-primaria) !important;
+  color: var(--cor-superficie) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: var(--cor-secundaria) !important;
+  border-color: var(--cor-secundaria) !important;
+  color: var(--cor-superficie) !important;
+}

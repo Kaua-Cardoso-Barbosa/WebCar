@@ -1,10 +1,10 @@
 .paginaCadastro {
-    min-height: 100vh;
+    min-height: calc(100vh - 90px);
     background-color: var(--cor-fundo-cadastro);
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 40px 20px;
+    padding: 24px 20px;
 }
 
 .areaCadastro {
@@ -14,23 +14,23 @@
 }
 
 .tituloCadastro {
-    font-size: 42px;
+    font-size: 34px;
     font-weight: 700;
     color: var(--cor-texto-principal);
-    margin-bottom: 10px;
+    margin: 0 0 6px;
 }
 
 .subtituloCadastro {
     font-size: 14px;
     color: var(--cor-texto-cinza);
-    margin-bottom: 32px;
+    margin: 0 0 18px;
     line-height: 1.5;
 }
 
 .cardCadastro {
     background-color: var(--cor-superficie);
-    border-radius: 14px;
-    padding: 28px 24px;
+    border-radius: 12px;
+    padding: 22px 22px 18px;
     box-shadow: 0 8px 24px var(--sombra-preta-12);
     text-align: left;
 }
@@ -38,7 +38,7 @@
 .formularioCadastro {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
 }
 
 .grupoCampo {
@@ -55,7 +55,7 @@
 
 .inputCadastro {
     width: 100%;
-    height: 44px;
+    height: 40px;
     border: 1px solid var(--cor-borda-cinza);
     border-radius: 8px;
     padding: 0 12px;
@@ -84,7 +84,7 @@
 
 .botaoCadastro {
     width: 100%;
-    height: 46px;
+    height: 42px;
     background-color: var(--cor-principal);
     color: var(--cor-superficie);
     border: none;
@@ -92,7 +92,7 @@
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    margin-top: 8px;
+    margin-top: 2px;
     box-shadow: 0 4px 12px var(--sombra-principal-25);
 }
 
@@ -108,7 +108,7 @@
     text-align: center;
     font-size: 13px;
     color: var(--cor-texto-cinza);
-    margin-top: 8px;
+    margin: 2px 0 0;
 }
 
 .textoLogin a {
@@ -127,7 +127,7 @@
     color: var(--cor-erro-alerta);
     font-weight: 500;
     text-align: center;
-    margin-top: 10px;
+    margin: 2px 0 0;
 }
 
 .inputImg {
@@ -151,16 +151,13 @@
 
 .uploadArea {
     border: 3px dashed var(--cor-borda-upload);
-    border-radius: 18px;
+    border-radius: 12px;
     background-color: var(--cor-fundo-input);
     width: 100%;
     max-width: 376px;
-    height: 200px;
+    height: 112px;
     position: relative;
     overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -176,5 +173,30 @@
 @media (max-width: 400px){
     .sumir{
         display: none;
+    }
+}
+
+@media (max-height: 780px) {
+    .paginaCadastro {
+        align-items: flex-start;
+        min-height: auto;
+        padding-top: 18px;
+        padding-bottom: 18px;
+    }
+
+    .tituloCadastro {
+        font-size: 30px;
+    }
+
+    .subtituloCadastro {
+        margin-bottom: 14px;
+    }
+
+    .cardCadastro {
+        padding: 18px;
+    }
+
+    .uploadArea {
+        height: 86px;
     }
 }

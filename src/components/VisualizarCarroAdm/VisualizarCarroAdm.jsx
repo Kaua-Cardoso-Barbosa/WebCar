@@ -279,7 +279,7 @@ export default function VisualizarCarroAdm() {
             "codigo_manutencao",
             "CODIGO_MANUTENCAO",
             "id manutenção",
-            "id manutenÃ§Ã£o",
+            "id manutenção",
         ]) || fallback;
     }
 
@@ -304,7 +304,7 @@ export default function VisualizarCarroAdm() {
             "ITENS",
             "items",
             "servicos",
-            "serviÃ§os",
+            "serviços",
             "serviços",
             "itens_manutencao",
             "itensManutencao",
@@ -337,10 +337,10 @@ export default function VisualizarCarroAdm() {
         const lista = getCampo(data, [
             "manutencoes",
             "manutenções",
-            "manutenÃ§Ãµes",
+            "manutenções",
             "manutencao",
             "manutenção",
-            "manutenÃ§Ã£o",
+            "manutenção",
         ]);
 
         if (!Array.isArray(lista)) return [];
@@ -363,7 +363,7 @@ export default function VisualizarCarroAdm() {
             id_manutencao: idManutencao,
             id_item_manutencao: idItemDe(item),
             id_servico: getCampo(item, ["id_servico", "ID_SERVICO", "idServico"]),
-            descricao: getCampo(item, ["descricao", "DESCRICAO", "descrição", "descriÃ§Ã£o"]) || "Serviço",
+            descricao: getCampo(item, ["descricao", "DESCRICAO", "descrição", "descrição"]) || "Serviço",
             quantidade,
             valor_unitario: valorUnitario,
             valor_total: valorTotal || valorUnitario * quantidade,
