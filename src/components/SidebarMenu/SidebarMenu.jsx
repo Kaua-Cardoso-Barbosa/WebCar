@@ -1,13 +1,61 @@
 import styles from "./SidebarMenu.module.css";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { API_URL } from "../../App";
+
+const AUTH_KEYS = [
+    "usuario_id",
+    "usuario_nome",
+    "usuario_email",
+    "usuario_telefone",
+    "usuario_cpf",
+    "usuario_tipo",
+    "token",
+];
 
 export default function SidebarMenu() {
     const location = useLocation();
+    const navigate = useNavigate();
     const [open, setOpen] = useState(false);
 
     function fecharMenu() {
         setOpen(false);
+    }
+
+    function limparSessaoLocal() {
+        AUTH_KEYS.forEach((chave) => localStorage.removeItem(chave));
+
+        document.cookie.split(";").forEach((cookie) => {
+            const nome = cookie.split("=")[0]?.trim();
+            if (!nome) return;
+
+            document.cookie = `${nome}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+            document.cookie = `${nome}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=localhost`;
+        });
+
+        window.dispatchEvent(new CustomEvent("webcar:auth", { detail: { logado: false } }));
+    }
+
+    async function fazerLogout() {
+        try {
+            const response = await fetch(`${API_URL}/logout`, {
+                method: "POST",
+                credentials: "include",
+            });
+
+            if (!response.ok) {
+                await fetch(`${API_URL}/logout`, {
+                    method: "GET",
+                    credentials: "include",
+                });
+            }
+        } catch {
+            // Mesmo se o servidor nao responder, a sessao local precisa sair.
+        }
+
+        limparSessaoLocal();
+        fecharMenu();
+        navigate("/login");
     }
 
     return (
@@ -91,6 +139,14 @@ export default function SidebarMenu() {
                         <SettingsIcon />
                         <span>Configurações</span>
                     </Link>
+                    <button
+                        type="button"
+                        className={`${styles.item} ${styles.mobileLogout}`}
+                        onClick={fazerLogout}
+                    >
+                        <LogoutIcon />
+                        <span>Logout</span>
+                    </button>
                 </nav>
             </aside>
         </>
@@ -156,6 +212,16 @@ function SettingsIcon() {
         <svg className={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="3" />
             <path d="M19 12a7 7 0 0 0-.09-1.1l2.02-1.57-2-3.46-2.39.96a7.4 7.4 0 0 0-1.9-1.1L14.28 3h-4l-.36 2.73a7.4 7.4 0 0 0-1.9 1.1l-2.39-.96-2 3.46 2.02 1.57a7 7 0 0 0 0 2.2l-2.02 1.57 2 3.46 2.39-.96a7.4 7.4 0 0 0 1.9 1.1l.36 2.73h4l.36-2.73a7.4 7.4 0 0 0 1.9-1.1l2.39.96 2-3.46-2.02-1.57A7 7 0 0 0 19 12z" />
+        </svg>
+    );
+}
+
+function LogoutIcon() {
+    return (
+        <svg className={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <path d="M16 17l5-5-5-5" />
+            <path d="M21 12H9" />
         </svg>
     );
 }

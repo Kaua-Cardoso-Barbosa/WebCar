@@ -100,7 +100,6 @@ export default function Header({ busca = "", setBusca = null }) {
     const tipoNumero = estaLogado ? Number(tipoUsuario) : null;
     const usuarioAdmin = tipoNumero === 0;
     const usuarioVendedor = tipoNumero === 1;
-    const usuarioInterno = usuarioAdmin || usuarioVendedor;
     const usuarioCliente = tipoNumero === 2;
     const linkLogo = usuarioAdmin ? "/dashboard" : usuarioVendedor ? "/restrita-vendedor" : "/";
     const idUsuario = auth.usuarioId;
@@ -434,6 +433,7 @@ export default function Header({ busca = "", setBusca = null }) {
                             <img src={logoUrl} alt="Logo" width="60" height="40" />
                         </Link>
 
+                        {!usuarioAdmin && (
                         <div className={"container-fluid " + css.mobile}>
                             <button
                                 className={"navbar-toggler " + css.corrigir}
@@ -518,6 +518,7 @@ export default function Header({ busca = "", setBusca = null }) {
                                 </div>
                             </div>
                         </div>
+                        )}
                     </div>
 
                     <form className={usuarioAdmin ? css.oculto : css.buscaDesktop} onSubmit={handleBuscar}>

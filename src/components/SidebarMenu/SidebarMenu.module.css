@@ -43,6 +43,17 @@
     color: var(--cor-principal);
 }
 
+.mobileLogout {
+    display: none;
+    margin-top: 12px;
+    color: var(--cor-erro-texto);
+}
+
+.mobileLogout:hover {
+    background-color: var(--cor-erro-fundo);
+    color: var(--cor-erro-texto);
+}
+
 .icon {
     width: 24px;
     height: 24px;
@@ -110,5 +121,9 @@
         cursor: pointer;
         margin-bottom: 10px;
         display: block;
+    }
+
+    .mobileLogout {
+        display: flex;
     }
 }
