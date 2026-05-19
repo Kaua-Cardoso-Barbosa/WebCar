@@ -98,104 +98,144 @@ export default function AtualizarValores() {
 
     return (
         <>
-            <Header />
+            <Header/>
 
             <div className={css.layout}>
-                <SidebarMenu />
+                <aside className={css.sidebar}>
+                    <SidebarMenu/>
+                </aside>
 
                 <main className={css.main}>
-                    <div className={css.topo}>
-                        <h1>Atualizar Valores</h1>
-                        <p>
-                            Atualize o valor dos serviços cadastrados usando uma porcentagem.
-                        </p>
-                    </div>
+                    <div className="container-fluid">
 
-                    {mensagem && (
-                        <div
-                            className={`${css.mensagem} ${
-                                tipoMensagem === "sucesso" ? css.sucesso : css.erro
-                            }`}
-                        >
-                            {mensagem}
+                        <div className={css.topo}>
+                            <h1>Atualizar Valores</h1>
+
+                            <p>
+                                Atualize o valor dos serviços cadastrados usando uma porcentagem.
+                            </p>
                         </div>
-                    )}
 
-                    <section className={css.card}>
-                        <h2>Informações da Atualização</h2>
-
-                        <form onSubmit={handleSubmit}>
-                            <div className={css.campo}>
-                                <label>Aplicar em</label>
-
-                                <select
-                                    value={modo}
-                                    onChange={(e) => {
-                                        setModo(e.target.value);
-                                        setIdServico("");
-                                    }}
-                                >
-                                    <option value="todos">Todos os serviços</option>
-                                    <option value="servico">Serviço específico</option>
-                                </select>
+                        {mensagem && (
+                            <div
+                                className={`alert ${
+                                    tipoMensagem === "sucesso"
+                                        ? "alert-success"
+                                        : "alert-danger"
+                                }`}
+                            >
+                                {mensagem}
                             </div>
+                        )}
 
-                            {modo === "servico" && (
-                                <div className={css.campo}>
-                                    <label>Serviço</label>
+                        <div className="card shadow-sm border-0">
+                            <div className="card-body">
 
-                                    <select
-                                        value={idServico}
-                                        onChange={(e) => setIdServico(e.target.value)}
-                                    >
-                                        <option value="">Selecione um serviço</option>
+                                <h2 className="h5 mb-4">
+                                    Informações da Atualização
+                                </h2>
 
-                                        {servicos.map((servico) => (
-                                            <option
-                                                key={servico.id_servico}
-                                                value={servico.id_servico}
-                                            >
-                                                {servico.descricao}
+                                <form onSubmit={handleSubmit}>
+
+                                    <div className="mb-3">
+                                        <label className="form-label">
+                                            Aplicar em
+                                        </label>
+
+                                        <select
+                                            className="form-select"
+                                            value={modo}
+                                            onChange={(e) => {
+                                                setModo(e.target.value);
+                                                setIdServico("");
+                                            }}
+                                        >
+                                            <option value="todos">
+                                                Todos os serviços
                                             </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
 
-                            <div className={css.campo}>
-                                <label>Porcentagem (%)</label>
+                                            <option value="servico">
+                                                Serviço específico
+                                            </option>
+                                        </select>
+                                    </div>
 
-                                <input
-                                    type="text"
-                                    placeholder="Ex: 10"
-                                    value={porcentagem}
-                                    onChange={(e) => setPorcentagem(e.target.value)}
-                                />
+                                    {modo === "servico" && (
+                                        <div className="mb-3">
+                                            <label className="form-label">
+                                                Serviço
+                                            </label>
+
+                                            <select
+                                                className="form-select"
+                                                value={idServico}
+                                                onChange={(e) =>
+                                                    setIdServico(e.target.value)
+                                                }
+                                            >
+                                                <option value="">
+                                                    Selecione um serviço
+                                                </option>
+
+                                                {servicos.map((servico) => (
+                                                    <option
+                                                        key={servico.id_servico}
+                                                        value={servico.id_servico}
+                                                    >
+                                                        {servico.descricao}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    <div className="mb-3">
+                                        <label className="form-label">
+                                            Porcentagem (%)
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="Ex: 10"
+                                            value={porcentagem}
+                                            onChange={(e) =>
+                                                setPorcentagem(e.target.value)
+                                            }
+                                        />
+                                    </div>
+
+                                    <div className="alert alert-warning">
+                                        Essa atualização irá aumentar o valor atual
+                                        em porcentagem.
+                                    </div>
+
+                                    <div className={css.botoes}>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary"
+                                            onClick={() =>
+                                                navigate("/servicos")
+                                            }
+                                        >
+                                            Cancelar
+                                        </button>
+
+                                        <button
+                                            type="submit"
+                                            className="btn btn-primary"
+                                            disabled={salvando}
+                                        >
+                                            {salvando
+                                                ? "Salvando..."
+                                                : "Salvar Atualização"}
+                                        </button>
+                                    </div>
+
+                                </form>
                             </div>
-
-                            <div className={css.aviso}>
-                                Essa atualização irá aumentar o valor atual em porcentagem.
-                            </div>
-
-                            <div className={css.botoes}>
-                                <button
-                                    type="button"
-                                    className={css.cancelar}
-                                    onClick={() => navigate("/servicos")}
-                                >
-                                    Cancelar
-                                </button>
-
-                                <button
-                                    type="submit"
-                                    className={css.salvar}
-                                    disabled={salvando}
-                                >
-                                    {salvando ? "Salvando..." : "Salvar Atualização"}
-                                </button>
-                            </div>
-                        </form>
-                    </section>
+                        </div>
+                    </div>
                 </main>
             </div>
         </>
