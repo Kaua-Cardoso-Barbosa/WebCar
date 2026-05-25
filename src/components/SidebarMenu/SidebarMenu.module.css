@@ -13,6 +13,7 @@
     display: flex;
     flex-direction: column;
     gap: 7px;
+    min-height: max-content;
 }
 
 .item {
@@ -104,9 +105,12 @@
         position: fixed;
         top: 0;
         left: -100%;
-        height: 100%;
+        width: 280px;
+        height: 100vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         z-index: 1001;
-        transition: 0.3s;
+        transition: left 0.3s ease;
     }
 
     .open {
