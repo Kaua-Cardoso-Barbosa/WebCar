@@ -280,6 +280,28 @@ export default function EditarManutencao() {
         return result;
     }
 
+    async function editarItemManutencao(idItem, idServicoAtualizado, quantidadeAtualizada) {
+        const response = await fetch(`${API_URL}/edicao_item_manutencao/${idItem}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                id_servico: idServicoAtualizado,
+                quantidade: quantidadeAtualizada,
+            }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.mensagem || "NÃ£o foi possÃ­vel editar o item.");
+        }
+
+        return result;
+    }
+
     async function excluirItemManutencao(idItem) {
         const response = await fetch(`${API_URL}/deletar_item_manutencao/${idItem}`, {
             method: "DELETE",
@@ -357,7 +379,7 @@ export default function EditarManutencao() {
         setQuantidade("");
     }
 
-    async function alterarQuantidadeItem(item, quantidadeNova = item.quantidade) {
+    async function _alterarQuantidadeItem(item, quantidadeNova = item.quantidade) {
         setErro("");
         setSucesso("");
 
@@ -370,8 +392,11 @@ export default function EditarManutencao() {
 
         try {
             setSalvando(true);
-            await excluirItemManutencao(item.id_item_manutencao);
-            const itemAtualizado = await adicionarItemManutencao(item.id_servico, quantidadeNumero);
+            const itemAtualizado = await editarItemManutencao(
+                item.id_item_manutencao,
+                item.id_servico,
+                quantidadeNumero
+            );
             const recarregou = await recarregarItensManutencao();
 
             if (recarregou) {
@@ -428,7 +453,11 @@ export default function EditarManutencao() {
 
     async function salvarItensDaManutencao() {
         for (const itemOriginal of itensOriginais) {
-            if (itemTemIdReal(itemOriginal)) {
+            const itemAindaExiste = itens.some(
+                (item) => String(item.id_item_manutencao) === String(itemOriginal.id_item_manutencao)
+            );
+
+            if (itemTemIdReal(itemOriginal) && !itemAindaExiste) {
                 await excluirItemManutencao(itemOriginal.id_item_manutencao);
             }
         }
@@ -443,7 +472,21 @@ export default function EditarManutencao() {
             );
             const idServico = item.id_servico || servicoDoItem?.id_servico;
 
-            if (idServico && quantidadeNumero > 0) {
+            if (!idServico || quantidadeNumero <= 0) {
+                continue;
+            }
+
+            if (itemTemIdReal(item)) {
+                const itemOriginal = itensOriginais.find(
+                    (original) => String(original.id_item_manutencao) === String(item.id_item_manutencao)
+                );
+                const mudouServico = Number(itemOriginal?.id_servico) !== Number(idServico);
+                const mudouQuantidade = Number(itemOriginal?.quantidade) !== quantidadeNumero;
+
+                if (mudouServico || mudouQuantidade) {
+                    await editarItemManutencao(item.id_item_manutencao, idServico, quantidadeNumero);
+                }
+            } else {
                 await adicionarItemManutencao(idServico, quantidadeNumero);
             }
         }

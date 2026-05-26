@@ -21,6 +21,7 @@ const CONFIG_SITE_PADRAO = {
     cidade: "",
     uf: "",
     rua: "",
+    bairro: "",
     numeroEndereco: "0",
     cep: "0",
     chavePix: "",
@@ -72,6 +73,14 @@ function formatarInteiro(valor, tamanho = 12) {
     return somenteDigitos(valor).slice(0, tamanho);
 }
 
+function formatarContaBancaria(valor) {
+    const digitos = somenteDigitos(valor).slice(0, 12);
+
+    if (digitos.length <= 1) return digitos;
+
+    return `${digitos.slice(0, -1)}-${digitos.slice(-1)}`;
+}
+
 function formatarInscricaoEstadual(valor) {
     return somenteDigitos(valor).slice(0, 14);
 }
@@ -113,13 +122,14 @@ function normalizarConfiguracoesSite(data = {}) {
         cidade: data.cidade || data.CIDADE || CONFIG_SITE_PADRAO.cidade,
         uf: formatarUf(data.uf || data.UF || CONFIG_SITE_PADRAO.uf),
         rua: data.rua || data.RUA || CONFIG_SITE_PADRAO.rua,
+        bairro: data.bairro || data.BAIRRO || CONFIG_SITE_PADRAO.bairro,
         numeroEndereco: formatarInteiro(data.numeroEndereco || data.numero_endereco || data.NUMERO_ENDERECO || CONFIG_SITE_PADRAO.numeroEndereco),
         cep: formatarCep(data.cep || data.CEP || CONFIG_SITE_PADRAO.cep),
         chavePix: data.chavePix || data.chave_pix || data.CHAVE_PIX || CONFIG_SITE_PADRAO.chavePix,
         banco: formatarInteiro(data.banco || data.BANCO || CONFIG_SITE_PADRAO.banco, 3),
         porcentagemJuro: data.porcentagemJuro || data.porcentagem_juro || data.PORCENTAGEM_JURO || CONFIG_SITE_PADRAO.porcentagemJuro,
         agencia: formatarInteiro(data.agencia || data.AGENCIA || CONFIG_SITE_PADRAO.agencia, 6),
-        conta: data.conta || data.CONTA || CONFIG_SITE_PADRAO.conta,
+        conta: formatarContaBancaria(data.conta || data.CONTA || CONFIG_SITE_PADRAO.conta),
         porcentagemLucro: data.porcentagemLucro || data.porcentagem_lucro || data.PORCENTAGEM_LUCRO || CONFIG_SITE_PADRAO.porcentagemLucro,
         descontoAVista: data.descontoAVista || data.desconto_a_vista || data.DESCONTO_A_VISTA || CONFIG_SITE_PADRAO.descontoAVista,
         textoBanner: data.textoBanner || data.texto_banner || data.descricao || data.TEXTO_BANNER || data.DESCRICAO || CONFIG_SITE_PADRAO.textoBanner,
@@ -196,7 +206,9 @@ export default function ConfiguracoesSite() {
     const [salvando, setSalvando] = useState(false);
     const [mensagem, setMensagem] = useState("");
     const [erro, setErro] = useState("");
+    const [statusCep, setStatusCep] = useState("");
     const editandoRef = useRef(false);
+    const cepConsultadoRef = useRef("");
 
     useEffect(() => {
         async function buscarConfiguracoes() {
@@ -254,6 +266,53 @@ export default function ConfiguracoesSite() {
         };
     }, [logoArquivo, bannerArquivo]);
 
+    useEffect(() => {
+        const cepLimpo = somenteDigitos(form.cep);
+
+        if (cepLimpo.length < 8) {
+            setStatusCep("");
+            return;
+        }
+
+        if (cepConsultadoRef.current === cepLimpo) return;
+
+        const controller = new AbortController();
+        cepConsultadoRef.current = cepLimpo;
+
+        async function buscarCep() {
+            try {
+                setStatusCep("Buscando CEP...");
+
+                const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`, {
+                    signal: controller.signal,
+                });
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok || data.erro) {
+                    setStatusCep("CEP nao encontrado.");
+                    return;
+                }
+
+                setForm((dados) => ({
+                    ...dados,
+                    rua: data.logradouro || dados.rua,
+                    bairro: data.bairro || dados.bairro,
+                    cidade: data.localidade || dados.cidade,
+                    uf: formatarUf(data.uf || dados.uf),
+                }));
+                setStatusCep("Endereco preenchido pelo CEP.");
+            } catch (error) {
+                if (error.name !== "AbortError") {
+                    setStatusCep("Nao foi possivel buscar o CEP.");
+                }
+            }
+        }
+
+        buscarCep();
+
+        return () => controller.abort();
+    }, [form.cep]);
+
     const preview = normalizarConfiguracoesSite({
         ...form,
         logoUrl: logoArquivo?.preview || form.logoUrl,
@@ -269,6 +328,7 @@ export default function ConfiguracoesSite() {
             cep: formatarCep,
             banco: (novoValor) => formatarInteiro(novoValor, 3),
             agencia: (novoValor) => formatarInteiro(novoValor, 6),
+            conta: formatarContaBancaria,
             porcentagemJuro: (novoValor) => String(novoValor).replace(",", "."),
             porcentagemLucro: (novoValor) => String(novoValor).replace(",", "."),
             descontoAVista: (novoValor) => String(novoValor).replace(",", "."),
@@ -281,6 +341,7 @@ export default function ConfiguracoesSite() {
         editandoRef.current = true;
         setMensagem("");
         setErro("");
+        if (campo === "cep") setStatusCep("");
         setForm((dados) => ({
             ...dados,
             [campo]: normalizarValorCampo(campo, valor),
@@ -318,13 +379,14 @@ export default function ConfiguracoesSite() {
         formData.append("inscricao_estadual", somenteDigitos(dados.inscricaoEstadual));
         formData.append("cep", somenteDigitos(dados.cep));
         formData.append("rua", dados.rua);
+        formData.append("bairro", dados.bairro);
         formData.append("uf", dados.uf);
         formData.append("numero_endereco", somenteDigitos(dados.numeroEndereco));
         formData.append("chave_pix", dados.chavePix);
         formData.append("banco", somenteDigitos(dados.banco));
         formData.append("porcentagem_juro", dados.porcentagemJuro);
         formData.append("agencia", somenteDigitos(dados.agencia));
-        formData.append("conta", dados.conta);
+        formData.append("conta", somenteDigitos(dados.conta));
         formData.append("porcentagem_lucro", dados.porcentagemLucro);
         formData.append("desconto_a_vista", dados.descontoAVista);
         formData.append("descricao", dados.textoBanner);
@@ -529,6 +591,19 @@ export default function ConfiguracoesSite() {
                                 </label>
 
                                 <label>
+                                    <span>CEP</span>
+                                    <input
+                                        type="text"
+                                        value={form.cep}
+                                        onChange={(e) => atualizarCampo("cep", e.target.value)}
+                                        inputMode="numeric"
+                                        maxLength="9"
+                                        placeholder="00000-000"
+                                    />
+                                    {statusCep && <small className={css.statusCep}>{statusCep}</small>}
+                                </label>
+
+                                <label>
                                     <span>Cidade</span>
                                     <input
                                         type="text"
@@ -558,6 +633,15 @@ export default function ConfiguracoesSite() {
                                 </label>
 
                                 <label>
+                                    <span>Bairro</span>
+                                    <input
+                                        type="text"
+                                        value={form.bairro}
+                                        onChange={(e) => atualizarCampo("bairro", e.target.value)}
+                                    />
+                                </label>
+
+                                <label>
                                     <span>Número</span>
                                     <input
                                         type="text"
@@ -565,18 +649,6 @@ export default function ConfiguracoesSite() {
                                         onChange={(e) => atualizarCampo("numeroEndereco", e.target.value)}
                                         inputMode="numeric"
                                         maxLength="8"
-                                    />
-                                </label>
-
-                                <label>
-                                    <span>CEP</span>
-                                    <input
-                                        type="text"
-                                        value={form.cep}
-                                        onChange={(e) => atualizarCampo("cep", e.target.value)}
-                                        inputMode="numeric"
-                                        maxLength="9"
-                                        placeholder="00000-000"
                                     />
                                 </label>
 
@@ -597,6 +669,30 @@ export default function ConfiguracoesSite() {
                                         onChange={(e) => atualizarCampo("banco", e.target.value)}
                                         inputMode="numeric"
                                         maxLength="3"
+                                    />
+                                </label>
+
+                                <label>
+                                    <span>Agencia</span>
+                                    <input
+                                        type="text"
+                                        value={form.agencia}
+                                        onChange={(e) => atualizarCampo("agencia", e.target.value)}
+                                        inputMode="numeric"
+                                        maxLength="6"
+                                        placeholder="0000"
+                                    />
+                                </label>
+
+                                <label>
+                                    <span>Conta</span>
+                                    <input
+                                        type="text"
+                                        value={form.conta}
+                                        onChange={(e) => atualizarCampo("conta", e.target.value)}
+                                        inputMode="numeric"
+                                        maxLength="14"
+                                        placeholder="00000-0"
                                     />
                                 </label>
                             </div>

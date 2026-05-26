@@ -401,7 +401,8 @@
 .modalBox {
     width: min(980px, 100%);
     max-height: min(760px, calc(100vh - 48px));
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     padding: 22px;
     background: var(--cor-superficie);
     border: 1px solid var(--cor-borda-painel);
@@ -464,6 +465,63 @@
 .modalEmpty p {
     max-width: 560px;
     margin: 0;
+}
+
+.modalConteudo {
+    display: grid;
+    gap: 18px;
+}
+
+.modalResumoGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.modalResumoGrid div {
+    padding: 14px;
+    border: 1px solid var(--cor-borda-painel);
+    border-radius: 10px;
+    background: var(--cor-fundo-input);
+}
+
+.modalResumoGrid span {
+    display: block;
+    color: var(--cor-texto-muted-forte);
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.modalResumoGrid strong {
+    display: block;
+    margin-top: 6px;
+    color: var(--cor-texto-dashboard);
+    font-size: 18px;
+    font-weight: 850;
+}
+
+.modalChart {
+    min-height: 360px;
+    padding: 18px;
+    border: 1px solid var(--cor-borda-painel);
+    border-radius: 12px;
+    background: var(--cor-superficie);
+}
+
+.modalConteudo .tableWrap {
+    overflow-x: hidden;
+}
+
+.modalConteudo .tableWrap table {
+    min-width: 0;
+    table-layout: fixed;
+}
+
+.modalConteudo .tableWrap th,
+.modalConteudo .tableWrap td {
+    padding: 12px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 :global(.recharts-wrapper) {
@@ -554,5 +612,9 @@
 
     .metricCard {
         min-height: 112px;
+    }
+
+    .modalResumoGrid {
+        grid-template-columns: 1fr;
     }
 }

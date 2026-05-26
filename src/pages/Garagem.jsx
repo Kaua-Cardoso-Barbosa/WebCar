@@ -89,10 +89,6 @@ export default function Garagem() {
     const [modalAberto, setModalAberto] = useState(false);
     const [veiculoParaDeletar, setVeiculoParaDeletar] = useState(null);
 
-    useEffect(() => {
-        buscarVeiculos();
-    }, []);
-
     async function buscarVeiculos() {
         try {
             const response = await fetch(`${API_URL}/buscar_veiculo`, {
@@ -112,10 +108,15 @@ export default function Garagem() {
             }
 
             setVeiculos(data.veiculos || data);
-        } catch (error) {
+        } catch {
             setErro("Não foi possível carregar os dados. Tente novamente.");
         }
     }
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        buscarVeiculos();
+    }, []);
 
     const veiculosAtivos = veiculos.filter(veiculoEstaDisponivel);
     const totalVeiculosAtivos = veiculosAtivos.length;
@@ -197,7 +198,7 @@ export default function Garagem() {
 
             setSucesso(data.mensagem || "Veículo excluído com sucesso.");
             fecharModalDelete();
-        } catch (error) {
+        } catch {
             setErro("Não foi possível excluir este item. Tente novamente.");
             fecharModalDelete();
         }
@@ -456,44 +457,21 @@ export default function Garagem() {
 
                     <div className={css.paginacao}>
                         <button
-                            className={css.paginaSeta}
                             disabled={paginaAtual === 1}
-                            onClick={() =>
-                                setPaginaAtual((prev) => prev - 1)
-                            }
+                            onClick={() => setPaginaAtual((pagina) => Math.max(1, pagina - 1))}
                         >
-                            ←
+                            Anterior
                         </button>
 
-                        {Array.from(
-                            { length: totalPaginas },
-                            (_, index) => (
-                                <button
-                                    key={index}
-                                    className={`${css.pagina} ${
-                                        paginaAtual === index + 1
-                                            ? css.ativa
-                                            : ""
-                                    }`}
-                                    onClick={() =>
-                                        setPaginaAtual(index + 1)
-                                    }
-                                >
-                                    {index + 1}
-                                </button>
-                            )
-                        )}
+                        <span>{paginaAtual} / {totalPaginas}</span>
 
                         <button
-                            className={css.paginaSeta}
                             disabled={
                                 paginaAtual === totalPaginas
                             }
-                            onClick={() =>
-                                setPaginaAtual((prev) => prev + 1)
-                            }
+                            onClick={() => setPaginaAtual((pagina) => Math.min(totalPaginas, pagina + 1))}
                         >
-                            →
+                            Proxima
                         </button>
                     </div>
                 </main>

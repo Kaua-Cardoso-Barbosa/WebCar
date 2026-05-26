@@ -52,6 +52,22 @@ function formatarPreco(valor) {
     });
 }
 
+function formatarMoedaDigitada(valor) {
+    const apenasNumeros = String(valor || "").replace(/\D/g, "");
+    const centavos = Number(apenasNumeros || 0) / 100;
+
+    return centavos.toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+    });
+}
+
+function moedaParaNumero(valor) {
+    const apenasNumeros = String(valor || "").replace(/\D/g, "");
+
+    return Number(apenasNumeros || 0) / 100;
+}
+
 function formatarData(valor) {
     if (!valor) return "Não informado";
 
@@ -99,6 +115,10 @@ export default function MinhasCompras() {
     const [baixandoParcela, setBaixandoParcela] = useState(false);
     const [mensagemPagamento, setMensagemPagamento] = useState("");
     const [erroPagamento, setErroPagamento] = useState("");
+    const [amortizacao, setAmortizacao] = useState(null);
+    const [salvandoAmortizacao, setSalvandoAmortizacao] = useState(false);
+    const [mensagemAmortizacao, setMensagemAmortizacao] = useState("");
+    const [erroAmortizacao, setErroAmortizacao] = useState("");
 
     async function carregarCompras({ mostrarCarregando = true } = {}) {
         try {
@@ -229,6 +249,91 @@ export default function MinhasCompras() {
         }
     }
 
+    function abrirAmortizacao(compra) {
+        setAmortizacao({
+            idFinanciamento: compra.financiamento.idFinanciamento,
+            veiculo: `${compra.marca} ${compra.modelo}`,
+            valorFinanciado: compra.financiamento.valorFinanciado || compra.valorVenda,
+            parcelasAbertas: compra.parcelas.filter((parcela) => Number(getCampo(parcela, ["status", "STATUS"], 0)) !== 1).length,
+            valor: "",
+            tipo: "1",
+        });
+        setMensagemAmortizacao("");
+        setErroAmortizacao("");
+        setSalvandoAmortizacao(false);
+    }
+
+    function fecharAmortizacao() {
+        if (salvandoAmortizacao) return;
+
+        setAmortizacao(null);
+        setMensagemAmortizacao("");
+        setErroAmortizacao("");
+        setSalvandoAmortizacao(false);
+    }
+
+    function atualizarAmortizacao(campo, valor) {
+        setErroAmortizacao("");
+        setAmortizacao((dadosAtuais) => ({
+            ...dadosAtuais,
+            [campo]: valor,
+        }));
+    }
+
+    async function confirmarAmortizacao(e) {
+        e.preventDefault();
+
+        if (!amortizacao || salvandoAmortizacao) return;
+
+        const valorAmortizado = moedaParaNumero(amortizacao.valor);
+
+        if (!amortizacao.idFinanciamento) {
+            setErroAmortizacao("Financiamento nao encontrado para esta compra.");
+            return;
+        }
+
+        if (!Number.isFinite(valorAmortizado) || valorAmortizado <= 0) {
+            setErroAmortizacao("Informe um valor de amortizacao maior que zero.");
+            return;
+        }
+
+        try {
+            setSalvandoAmortizacao(true);
+            setErroAmortizacao("");
+            setMensagemAmortizacao("");
+
+            const response = await fetch(`${API_URL}/amortizar/${amortizacao.idFinanciamento}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    tipo_amortizacao: Number(amortizacao.tipo),
+                    valor_amortizado: valorAmortizado,
+                }),
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                setErroAmortizacao(data.mensagem || "Nao foi possivel concluir a amortizacao.");
+                return;
+            }
+
+            setMensagemAmortizacao(data.mensagem || "Amortizacao concluida com sucesso.");
+            await carregarCompras({ mostrarCarregando: false });
+
+            setTimeout(() => {
+                fecharAmortizacao();
+            }, 1400);
+        } catch {
+            setErroAmortizacao("Nao foi possivel conectar com o servidor para amortizar.");
+        } finally {
+            setSalvandoAmortizacao(false);
+        }
+    }
+
     const resumo = useMemo(() => {
         const totalInvestido = compras.reduce((total, compra) => total + Number(compra.valorVenda || 0), 0);
         const financiamentos = compras.filter((compra) => Number(compra.formaPagamento) === 1).length;
@@ -340,13 +445,24 @@ export default function MinhasCompras() {
                                                 <span>{compra.parcelas.length} parcelas - {parcelasEmAberto} em aberto</span>
                                             </div>
 
-                                            <button
-                                                type="button"
-                                                className={css.botaoParcelas}
-                                                onClick={() => alternarParcelas(compra.idVenda)}
-                                            >
-                                                {parcelasVisiveis ? "Ocultar parcelas" : "Ver parcelas"}
-                                            </button>
+                                            <div className={css.acoesParcelas}>
+                                                <button
+                                                    type="button"
+                                                    className={css.botaoParcelas}
+                                                    onClick={() => alternarParcelas(compra.idVenda)}
+                                                >
+                                                    {parcelasVisiveis ? "Ocultar parcelas" : "Ver parcelas"}
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    className={css.botaoAmortizar}
+                                                    disabled={!compra.financiamento.idFinanciamento || parcelasEmAberto === 0}
+                                                    onClick={() => abrirAmortizacao(compra)}
+                                                >
+                                                    Amortizar
+                                                </button>
+                                            </div>
                                         </div>
 
                                         {parcelasVisiveis && compra.parcelas.length > 0 ? (
@@ -440,6 +556,74 @@ export default function MinhasCompras() {
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {amortizacao && (
+                <div className={css.modalFundo} role="dialog" aria-modal="true">
+                    <form className={css.modalAmortizacao} onSubmit={confirmarAmortizacao}>
+                        <div className={css.modalTopo}>
+                            <div>
+                                <span>{amortizacao.veiculo}</span>
+                                <h2>Amortizar financiamento</h2>
+                            </div>
+                            <button type="button" onClick={fecharAmortizacao} aria-label="Fechar">
+                                x
+                            </button>
+                        </div>
+
+                        <div className={css.modalDetalhes}>
+                            <span>Total financiado</span>
+                            <strong>{formatarPreco(amortizacao.valorFinanciado)}</strong>
+                            <span>Parcelas em aberto</span>
+                            <strong>{amortizacao.parcelasAbertas}</strong>
+                        </div>
+
+                        <label className={css.campoAmortizacao}>
+                            Valor a amortizar
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                placeholder="R$ 0,00"
+                                value={amortizacao.valor}
+                                onChange={(e) => atualizarAmortizacao("valor", formatarMoedaDigitada(e.target.value))}
+                            />
+                        </label>
+
+                        <div className={css.tipoAmortizacao}>
+                            <button
+                                type="button"
+                                className={amortizacao.tipo === "1" ? css.tipoAmortizacaoAtivo : ""}
+                                onClick={() => atualizarAmortizacao("tipo", "1")}
+                            >
+                                Valor menor
+                            </button>
+
+                            <button
+                                type="button"
+                                className={amortizacao.tipo === "2" ? css.tipoAmortizacaoAtivo : ""}
+                                onClick={() => atualizarAmortizacao("tipo", "2")}
+                            >
+                                Menos parcelas
+                            </button>
+                        </div>
+
+                        {erroAmortizacao && <p className={css.erroPagamento}>{erroAmortizacao}</p>}
+                        {mensagemAmortizacao && <p className={css.sucessoPagamento}>{mensagemAmortizacao}</p>}
+
+                        <div className={css.modalAcoes}>
+                            <button type="button" className={css.botaoFechar} onClick={fecharAmortizacao}>
+                                Cancelar
+                            </button>
+                            <button
+                                type="submit"
+                                className={css.botaoConcluir}
+                                disabled={salvandoAmortizacao || Boolean(mensagemAmortizacao)}
+                            >
+                                {salvandoAmortizacao ? "Amortizando..." : "Confirmar"}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             )}
 

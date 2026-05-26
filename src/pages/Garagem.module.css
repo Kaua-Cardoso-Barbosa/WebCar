@@ -116,8 +116,8 @@
     width: 100%;
     background: var(--cor-superficie);
     border: 1px solid var(--cor-borda-painel);
-    border-radius: 10px;
-    padding: 12px 14px;
+    border-radius: 8px;
+    padding: 9px 12px;
     display: flex;
     align-items: center;
     margin-bottom: 16px;
@@ -286,51 +286,36 @@
 }
 
 .paginacao {
-    margin-top: 20px;
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
 }
 
-.pagina,
-.paginaSeta {
+.paginacao button,
+.paginacao span {
     border: none;
-    min-width: 40px;
-    height: 40px;
-    padding: 0 14px;
-    border-radius: 10px;
-    cursor: pointer;
+    background: var(--cor-superficie);
+    color: var(--cor-texto-muted);
+    border-radius: 8px;
+    padding: 8px 12px;
     font-size: 14px;
     font-weight: 700;
-    transition: 0.2s;
 }
 
-.pagina {
-    background: var(--cor-superficie);
-    color: var(--cor-texto-principal);
-    border: 1px solid var(--cor-divisor);
+.paginacao button {
+    cursor: pointer;
 }
 
-.pagina:hover {
-    background: var(--cor-fundo-dashboard);
+.paginacao button:hover:not(:disabled) {
+    background: var(--cor-azul-fundo-claro);
+    color: var(--cor-azul-acao);
 }
 
-.paginaSeta {
-    background: var(--cor-azul-botao);
-    color: white;
-}
-
-.paginaSeta:disabled {
-    opacity: 0.5;
+.paginacao button:disabled {
+    opacity: 0.45;
     cursor: not-allowed;
-}
-
-.ativa {
-    background: var(--cor-azul-botao);
-    color: white;
-    border-color: var(--cor-azul-botao);
 }
 
 .erro {
@@ -519,11 +504,16 @@
         justify-content: center;
     }
 
-    .pagina,
-    .paginaSeta {
-        min-width: 36px;
-        height: 36px;
-        font-size: 13px;
+    .paginacao button {
+        flex: 1;
+        min-width: 120px;
+        padding: 12px;
+    }
+
+    .paginacao span {
+        width: 100%;
+        text-align: center;
+        background: transparent;
     }
 }
 

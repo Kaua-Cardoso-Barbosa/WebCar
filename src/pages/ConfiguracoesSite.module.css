@@ -206,6 +206,12 @@
     outline: 0;
 }
 
+.statusCep {
+    color: var(--cor-texto-muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
 .formulario,
 .preview {
     background: var(--cor-superficie);

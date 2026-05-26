@@ -487,6 +487,40 @@ function normalizarSerie(lista, labelKeys, valueKeys, valueName = "valor") {
     }));
 }
 
+function itemDocumentacaoPendente(item) {
+    const statusBruto = getCampo(item, ["documentacao", "DOCUMENTACAO", "status", "STATUS", "situacao", "SITUACAO", "nome", "tipo"], "");
+    const statusNumerico = Number(statusBruto);
+
+    if (Number.isFinite(statusNumerico) && String(statusBruto).trim() !== "") {
+        return statusNumerico === 0;
+    }
+
+    const textoStatus = String(statusBruto)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
+    if (["paga", "pago", "regularizada", "regularizado", "concluida", "concluido", "ok"].includes(textoStatus)) {
+        return false;
+    }
+
+    if (textoStatus === "pendente" || textoStatus.includes("venc") || textoStatus.includes("atras")) {
+        return true;
+    }
+
+    return !textoStatus.includes("regular") && !textoStatus.includes("pag");
+}
+
+function normalizarDocumentacaoPendente(lista) {
+    return paraArray(lista)
+        .filter(itemDocumentacaoPendente)
+        .map((item) => ({
+            nome: "Pendente",
+            valor: numero(valorPorPossiveisChaves(item, ["quantidade", "capital", "total", "valor"])),
+        }))
+        .filter((item) => item.valor > 0);
+}
+
 function normalizarVendasPorPagamento(lista) {
     const grupos = {
         vista: { nome: "À vista", valor: 0 },
@@ -573,12 +607,12 @@ function ChartCard({ titulo, subtitulo, icon = BarChart3, children, cheio = fals
     );
 }
 
-function TabelaRelatorio({ titulo, dados }) {
+function TabelaRelatorio({ titulo, dados, limiteColunas = 8 }) {
     const linhas = paraArray(dados);
     const colunas = useMemo(() => {
         const primeiraLinha = linhas.find((linha) => linha && typeof linha === "object");
-        return primeiraLinha ? Object.keys(primeiraLinha).slice(0, 8) : [];
-    }, [linhas]);
+        return primeiraLinha ? Object.keys(primeiraLinha).slice(0, limiteColunas) : [];
+    }, [linhas, limiteColunas]);
 
     return (
         <section className={styles.tableCard}>
@@ -611,6 +645,23 @@ function TabelaRelatorio({ titulo, dados }) {
                 </div>
             )}
         </section>
+    );
+}
+
+function ResumoDetalheCard({ itens }) {
+    const dados = paraArray(itens).filter(Boolean);
+
+    if (dados.length === 0) return null;
+
+    return (
+        <div className={styles.modalResumoGrid}>
+            {dados.map((item) => (
+                <div key={item.label}>
+                    <span>{item.label}</span>
+                    <strong>{formatarValor(item.valor, item.formato)}</strong>
+                </div>
+            ))}
+        </div>
     );
 }
 
@@ -677,6 +728,11 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (!modalGerencial) return;
+        if (!["qtd_financiamentos", "qtd_parcelas_atrasadas"].includes(modalGerencial)) {
+            setCarregandoModal(false);
+            setErroModal("");
+            return;
+        }
 
         let ativo = true;
 
@@ -782,7 +838,7 @@ export default function Dashboard() {
     const vendedores = normalizarSerie(graficos.performance_vendedores, ["vendedor", "nome"], ["lucro_bruto", "receita_vendas", "quantidade_vendas", "vendas", "quantidade", "total", "valor"]);
     const lucroReal = normalizarSerie(graficos.lucro_real_veiculos, ["nome", "veiculo", "modelo", "placa"], ["lucro_real", "lucro", "valor"]);
     const parcelasStatus = normalizarParcelasStatus(graficos.parcelas_status);
-    const documentacao = normalizarSerie(graficos.documentacao, ["nome", "status", "tipo"], ["quantidade", "capital", "total", "valor"]);
+    const documentacao = normalizarDocumentacaoPendente(graficos.documentacao);
     const curvaAbc = normalizarSerie(graficos.curva_abc, ["nome", "classe", "curva"], ["preco_custo", "participacao_percentual", "quantidade", "total", "valor"]);
     const manutencaoVeiculo = normalizarSerie(graficos.manutencao_por_veiculo, ["nome", "veiculo", "modelo", "placa"], ["total_manutencao", "valor", "total", "custo"]);
     const servicosUsados = normalizarSerie(graficos.servicos_mais_usados, ["servico", "nome", "descricao"], ["quantidade", "total", "valor"])
@@ -793,6 +849,139 @@ export default function Dashboard() {
     const financiamentosDetalhados = detalhesModal.financiamentos.length > 0
         ? detalhesModal.financiamentos
         : paraArray(relatorios.financiamentos);
+    const cardSelecionado = CARD_CONFIGS.find((config) => config.chaves[0] === modalGerencial);
+    const valorCardSelecionado = cardSelecionado ? primeiroValor(resumoFiltrado, cardSelecionado.chaves) : 0;
+    const parcelasAtrasadasPorCliente = Object.values(parcelasDetalhadas.reduce((acumulador, parcela) => {
+        const nome = textoPorPossiveisChaves(parcela, ["cliente", "usuario", "nome_usuario"], "Cliente");
+        const valor = numero(valorPorPossiveisChaves(parcela, ["valor_parcela", "valor", "total"]));
+
+        if (!acumulador[nome]) acumulador[nome] = { nome, valor: 0 };
+        acumulador[nome].valor += valor || 1;
+
+        return acumulador;
+    }, {})).slice(0, 12);
+    const detalheCard = cardSelecionado ? {
+        capital_estoque: {
+            titulo: "Capital em estoque",
+            descricao: "Valor parado nos carros disponiveis e principais grupos do estoque.",
+            resumo: [
+                { label: "Capital", valor: valorCardSelecionado, formato: "moeda" },
+                { label: "Carros", valor: veiculosPeriodo.length, formato: "numero" },
+            ],
+            tabelaTitulo: "Carros em estoque",
+            tabelaDados: veiculosPeriodo,
+        },
+        receita_total_gerencial: {
+            titulo: "Receita total gerencial",
+            descricao: "Receita, despesa e lucro no periodo selecionado.",
+            resumo: [
+                { label: "Receita", valor: valorCardSelecionado, formato: "moeda" },
+                { label: "Vendas", valor: vendasPeriodo.length, formato: "numero" },
+            ],
+            tabelaTitulo: "Vendas consideradas",
+            tabelaDados: vendasPeriodo,
+        },
+        despesa_total: {
+            titulo: "Despesa total",
+            descricao: "Evolucao das despesas registradas na operacao.",
+            resumo: [
+                { label: "Despesas", valor: valorCardSelecionado, formato: "moeda" },
+                { label: "Meses", valor: financeiroMensal.length, formato: "numero" },
+            ],
+            tabelaTitulo: "Financeiro mensal",
+            tabelaDados: financeiroMensalBase,
+        },
+        lucro_liquido_estimado: {
+            titulo: "Lucro liquido estimado",
+            descricao: "Resultado estimado juntando vendas, receitas extras e despesas.",
+            resumo: [
+                { label: "Lucro estimado", valor: valorCardSelecionado, formato: "moeda" },
+                { label: "Ticket medio", valor: primeiroValor(resumoFiltrado, ["ticket_medio", "ticketMedio"]), formato: "moeda" },
+            ],
+            tabelaTitulo: "Financeiro mensal",
+            tabelaDados: financeiroMensalBase,
+        },
+        lucro_bruto_vendas: {
+            titulo: "Lucro bruto de vendas",
+            descricao: "Vendas e carros com maior contribuicao de lucro.",
+            resumo: [
+                { label: "Lucro bruto", valor: valorCardSelecionado, formato: "moeda" },
+                { label: "Vendas", valor: vendasPeriodo.length, formato: "numero" },
+            ],
+            tabelaTitulo: "Vendas do periodo",
+            tabelaDados: vendasPeriodo,
+        },
+        ticket_medio: {
+            titulo: "Ticket medio",
+            descricao: "Valores das vendas que formam o ticket medio.",
+            resumo: [
+                { label: "Ticket medio", valor: valorCardSelecionado, formato: "moeda" },
+                { label: "Total vendido", valor: somar(vendasPeriodo, ["valor_venda", "VALOR_VENDA"]), formato: "moeda" },
+            ],
+            tabelaTitulo: "Vendas usadas no calculo",
+            tabelaDados: vendasPeriodo,
+        },
+        qtd_veiculos_estoque: {
+            titulo: "Carros em estoque",
+            descricao: "Distribuicao por marca e lista de carros no estoque.",
+            resumo: [
+                { label: "Em estoque", valor: valorCardSelecionado, formato: "numero" },
+                { label: "Capital", valor: primeiroValor(resumoFiltrado, ["capital_estoque", "capitalEmEstoque"]), formato: "moeda" },
+            ],
+            tabelaTitulo: "Carros",
+            tabelaDados: veiculosPeriodo,
+        },
+        qtd_vendas: {
+            titulo: "Vendas",
+            descricao: "Volume de vendas por pagamento e detalhamento operacional.",
+            resumo: [
+                { label: "Vendas", valor: valorCardSelecionado, formato: "numero" },
+                { label: "Receita", valor: somar(vendasPeriodo, ["valor_venda", "VALOR_VENDA"]), formato: "moeda" },
+            ],
+            tabelaTitulo: "Vendas",
+            tabelaDados: vendasPeriodo,
+        },
+        qtd_financiamentos: {
+            titulo: "Financiamentos",
+            descricao: "Contratos financiados, valores em aberto e situacao das parcelas.",
+            resumo: [
+                { label: "Financiamentos", valor: valorCardSelecionado, formato: "numero" },
+                { label: "A receber", valor: primeiroValor(resumoFiltrado, ["total_a_receber_financiamento", "total_a_receber", "totalAReceber"]), formato: "moeda" },
+            ],
+            tabelaTitulo: "Detalhes dos financiamentos",
+            tabelaDados: financiamentosDetalhados,
+        },
+        qtd_parcelas_atrasadas: {
+            titulo: "Parcelas atrasadas",
+            descricao: "Clientes com parcelas vencidas e valores pendentes.",
+            resumo: [
+                { label: "Atrasadas", valor: valorCardSelecionado, formato: "numero" },
+                { label: "Clientes", valor: parcelasAtrasadasPorCliente.length, formato: "numero" },
+            ],
+            tabelaTitulo: "Detalhes das parcelas",
+            tabelaDados: parcelasDetalhadas,
+        },
+        total_a_receber_financiamento: {
+            titulo: "Total a receber",
+            descricao: "Fluxo previsto de recebimentos por periodo.",
+            resumo: [
+                { label: "A receber", valor: valorCardSelecionado, formato: "moeda" },
+                { label: "Parcelas em aberto", valor: primeiroValor(resumoFiltrado, ["qtd_parcelas_atrasadas", "parcelas_atrasadas", "parcelasAtrasadas"]), formato: "numero" },
+            ],
+            tabelaTitulo: "Fluxo de recebimentos",
+            tabelaDados: fluxoRecebimentosBase,
+        },
+        inadimplencia_percentual: {
+            titulo: "Inadimplencia percentual",
+            descricao: "Comparativo entre parcelas pagas, abertas e atrasadas.",
+            resumo: [
+                { label: "Inadimplencia", valor: valorCardSelecionado, formato: "percentual" },
+                { label: "Atrasadas", valor: primeiroValor(resumoFiltrado, ["qtd_parcelas_atrasadas", "parcelas_atrasadas", "parcelasAtrasadas"]), formato: "numero" },
+            ],
+            tabelaTitulo: "Parcelas detalhadas",
+            tabelaDados: obterParcelasDetalhadas(dados),
+        },
+    }[cardSelecionado.chaves[0]] : null;
 
     return (
         <>
@@ -836,25 +1025,19 @@ export default function Dashboard() {
                             <>
                                 <section className={styles.cardsGrid}>
                                     {CARD_CONFIGS.map(({ titulo, chaves, formato, icon }) => {
-                                        const tipoModal =
-                                            titulo === "Parcelas atrasadas"
-                                                ? "parcelas_atrasadas"
-                                                : titulo === "Financiamentos"
-                                                    ? "financiamentos"
-                                                    : null;
-
+                                        const tipoModal = chaves[0];
                                         return (
                                         <article
-                                            className={`${styles.metricCard} ${tipoModal ? styles.metricCardClickable : ""}`}
+                                            className={`${styles.metricCard} ${styles.metricCardClickable}`}
                                             key={titulo}
-                                            onClick={tipoModal ? () => setModalGerencial(tipoModal) : undefined}
+                                            onClick={() => setModalGerencial(tipoModal)}
                                             onKeyDown={(event) => {
-                                                if (tipoModal && (event.key === "Enter" || event.key === " ")) {
+                                                if (event.key === "Enter" || event.key === " ") {
                                                     setModalGerencial(tipoModal);
                                                 }
                                             }}
-                                            role={tipoModal ? "button" : undefined}
-                                            tabIndex={tipoModal ? 0 : undefined}
+                                            role="button"
+                                            tabIndex={0}
                                         >
                                             <div className={styles.metricTop}>
                                                 <span>{titulo}</span>
@@ -1162,19 +1345,15 @@ export default function Dashboard() {
                                     </div>
                                 </section>
 
-                                {modalGerencial && (
+                                {modalGerencial && detalheCard && (
                                     <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="modal-gerencial-title">
                                         <section className={styles.modalBox}>
                                             <div className={styles.modalHeader}>
                                                 <div>
                                                     <h2 id="modal-gerencial-title">
-                                                        {modalGerencial === "financiamentos" ? "Financiamentos" : "Parcelas atrasadas"}
+                                                        {detalheCard.titulo}
                                                     </h2>
-                                                    <p>
-                                                        {modalGerencial === "financiamentos"
-                                                            ? "Usuários, veículos e valores dos financiamentos retornados pelo backend."
-                                                            : "Usuários e parcelas vencidas retornadas pelo backend."}
-                                                    </p>
+                                                    <p>{detalheCard.descricao}</p>
                                                 </div>
                                                 <button
                                                     className={styles.modalClose}
@@ -1195,6 +1374,12 @@ export default function Dashboard() {
                                                     <AlertTriangle size={26} />
                                                     <strong>Não foi possível carregar os detalhes.</strong>
                                                     <p>{erroModal}</p>
+                                                </div>
+                                            ) : detalheCard ? (
+                                                <div className={styles.modalConteudo}>
+                                                    <ResumoDetalheCard itens={detalheCard.resumo} />
+
+                                                    <TabelaRelatorio titulo={detalheCard.tabelaTitulo} dados={detalheCard.tabelaDados} limiteColunas={6} />
                                                 </div>
                                             ) : modalGerencial === "financiamentos" && financiamentosDetalhados.length > 0 ? (
                                                 <TabelaRelatorio titulo="Detalhes dos financiamentos" dados={financiamentosDetalhados} />
