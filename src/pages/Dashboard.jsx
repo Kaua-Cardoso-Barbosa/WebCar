@@ -577,6 +577,163 @@ async function lerRespostaJson(response) {
     }
 }
 
+async function buscarDashboard(endpoint) {
+    const response = await fetch(`${API_URL}/${endpoint}`, {
+        method: "GET",
+        credentials: "include",
+    });
+
+    const resposta = await lerRespostaJson(response);
+
+    if (!response.ok) {
+        throw new Error(mensagemErroHttp(response.status, resposta));
+    }
+
+    return resposta || {};
+}
+
+async function buscarDashboardOpcional(endpoint, fallback) {
+    try {
+        return await buscarDashboard(endpoint);
+    } catch (error) {
+        console.warn(`Falha ao carregar ${endpoint}:`, error);
+        return fallback;
+    }
+}
+
+function normalizarVeiculosDashboard(lista) {
+    return paraArray(lista).map((veiculo) => {
+        const marca = getCampo(veiculo, ["marca", "MARCA"], "");
+        const modelo = getCampo(veiculo, ["modelo", "MODELO"], "");
+        const precoCusto = numero(valorPorPossiveisChaves(veiculo, ["preco_custo", "PRECO_CUSTO"]));
+        const precoVenda = numero(valorPorPossiveisChaves(veiculo, ["preco_venda", "PRECO_VENDA"]));
+        const margemValor = precoVenda - precoCusto;
+        const margemPercentual = precoCusto > 0 ? (margemValor / precoCusto) * 100 : 0;
+        const nome = `${marca} ${modelo}`.trim() || getCampo(veiculo, ["placa", "PLACA"], "Veiculo");
+
+        return {
+            ...veiculo,
+            nome,
+            veiculo: nome,
+            marca,
+            modelo,
+            preco_custo: precoCusto,
+            preco_venda: precoVenda,
+            margem_valor: margemValor,
+            margem_percentual: margemPercentual,
+            dias_estoque: calcularDiasAteHoje(getCampo(veiculo, ["data_cadastro", "DATA_CADASTRO"], null)),
+        };
+    });
+}
+
+function agruparEstoqueParado(veiculos) {
+    const faixas = [
+        { faixa: "0-30 dias", min: 0, max: 30, quantidade: 0, capital: 0 },
+        { faixa: "31-60 dias", min: 31, max: 60, quantidade: 0, capital: 0 },
+        { faixa: "61-90 dias", min: 61, max: 90, quantidade: 0, capital: 0 },
+        { faixa: "+90 dias", min: 91, max: Infinity, quantidade: 0, capital: 0 },
+    ];
+
+    paraArray(veiculos)
+        .filter((veiculo) => Number(veiculo.status ?? veiculo.STATUS) === 0)
+        .forEach((veiculo) => {
+            const dias = veiculo.dias_estoque ?? 0;
+            const faixa = faixas.find((item) => dias >= item.min && dias <= item.max);
+            if (!faixa) return;
+
+            faixa.quantidade += 1;
+            faixa.capital += numero(veiculo.preco_custo);
+        });
+
+    return faixas.map(({ faixa, quantidade, capital }) => ({ faixa, quantidade, capital }));
+}
+
+function agruparAnaliseMarcas(veiculos) {
+    const grupos = {};
+
+    paraArray(veiculos).forEach((veiculo) => {
+        const marca = getCampo(veiculo, ["marca", "MARCA"], "Sem marca");
+        if (!grupos[marca]) {
+            grupos[marca] = { marca, qtd_total: 0, qtd_estoque: 0, capital_estoque: 0 };
+        }
+
+        grupos[marca].qtd_total += 1;
+
+        if (Number(veiculo.status ?? veiculo.STATUS) === 0) {
+            grupos[marca].qtd_estoque += 1;
+            grupos[marca].capital_estoque += numero(veiculo.preco_custo);
+        }
+    });
+
+    return Object.values(grupos).sort((a, b) => b.capital_estoque - a.capital_estoque);
+}
+
+function calcularCurvaAbc(veiculos) {
+    const estoque = paraArray(veiculos)
+        .filter((veiculo) => Number(veiculo.status ?? veiculo.STATUS) === 0)
+        .sort((a, b) => numero(b.preco_custo) - numero(a.preco_custo));
+    const total = somar(estoque, ["preco_custo", "PRECO_CUSTO"]);
+    let acumulado = 0;
+
+    return estoque.map((veiculo) => {
+        const precoCusto = numero(veiculo.preco_custo);
+        const participacao = total > 0 ? (precoCusto / total) * 100 : 0;
+        acumulado += participacao;
+
+        return {
+            id_veiculo: veiculo.id_veiculo,
+            nome: veiculo.nome,
+            preco_custo: precoCusto,
+            participacao_percentual: participacao,
+            classe: acumulado <= 80 ? "A" : acumulado <= 95 ? "B" : "C",
+        };
+    });
+}
+
+function montarDadosDashboard(respostas) {
+    const resumo = respostas.resumo || {};
+    const vendas = paraArray(respostas.vendas?.vendas);
+    const despesas = paraArray(respostas.despesas?.despesas);
+    const financiamentos = paraArray(respostas.financiamentos?.financiamentos);
+    const parcelas = paraArray(respostas.parcelas?.parcelas);
+    const veiculos = normalizarVeiculosDashboard(respostas.veiculos?.veiculos);
+    const manutencoes = paraArray(respostas.manutencoes?.manutencoes);
+    const itensManutencao = paraArray(respostas.manutencoes?.itens);
+    const graficos = respostas.graficos || {};
+    const topLucro = [...veiculos].sort((a, b) => numero(b.margem_valor) - numero(a.margem_valor)).slice(0, 10);
+    const topMargem = [...veiculos].sort((a, b) => numero(b.margem_percentual) - numero(a.margem_percentual)).slice(0, 10);
+
+    return {
+        resumo,
+        graficos: {
+            ...graficos,
+            compra_venda_veiculo: veiculos,
+            margem_veiculos_top_lucro: topLucro,
+            margem_veiculos_top_percentual: topMargem,
+            precificacao_recomendada: veiculos.map((veiculo) => ({
+                id_veiculo: veiculo.id_veiculo,
+                nome: veiculo.nome,
+                preco_recomendado: veiculo.preco_venda,
+                preco_cadastrado: veiculo.preco_venda,
+            })),
+            estoque_parado: graficos.estoque_parado || agruparEstoqueParado(veiculos),
+            analise_marcas: graficos.analise_marcas || agruparAnaliseMarcas(veiculos),
+            curva_abc: graficos.curva_abc || calcularCurvaAbc(veiculos),
+        },
+        relatorios: {
+            vendas,
+            despesas,
+            financiamentos,
+            parcelas,
+            veiculos,
+            manutencoes,
+            itens_manutencao: itensManutencao,
+            manutencao_por_veiculo: graficos.manutencao_por_veiculo || [],
+            servicos_mais_usados: graficos.servicos_mais_usados || [],
+        },
+    };
+}
+
 function formatarTooltip(valor, nome) {
     const nomeString = String(nome).toLowerCase();
     const formato = nomeString.includes("percent") || nomeString.includes("margem") ? "percentual" : "moeda";
@@ -673,6 +830,8 @@ function formatarCampoTabela(coluna, valor, linha = {}) {
     if (nome === "combustivel") return formatarCombustivel(valor);
     if (nome === "cambio") return formatarCambio(valor);
     if (nome === "status_parcela") return Number(valor) === 1 ? "Paga" : "Em aberto";
+    if (nome === "status" && linha?.id_despesa) return Number(valor) === 1 ? "Estornada" : "Ativa";
+    if (nome === "status" && linha?.id_item_financiamento) return Number(valor) === 1 ? "Paga" : "Em aberto";
     if (nome === "status") return formatarStatusVeiculo(valor);
     if (nome === "documentacao") return formatarDocumentacao(valor);
     if (nome.includes("valor") || nome.includes("preco") || nome.includes("total") || nome.includes("lucro")) return formatarMoeda(valor);
@@ -699,19 +858,38 @@ export default function Dashboard() {
                 setCarregando(true);
                 setErro("");
 
-                const response = await fetch(`${API_URL}/graficos_adm`, {
-                    method: "GET",
-                    credentials: "include",
-                });
+                const [
+                    resumo,
+                    vendas,
+                    despesas,
+                    financiamentos,
+                    parcelas,
+                    veiculos,
+                    manutencoes,
+                    graficos,
+                ] = await Promise.all([
+                    buscarDashboard("dashboard_resumo"),
+                    buscarDashboardOpcional("dashboard_vendas", { vendas: [] }),
+                    buscarDashboardOpcional("dashboard_despesas", { despesas: [] }),
+                    buscarDashboardOpcional("dashboard_financiamentos", { financiamentos: [] }),
+                    buscarDashboardOpcional("dashboard_parcelas", { parcelas: [] }),
+                    buscarDashboardOpcional("dashboard_veiculos", { veiculos: [] }),
+                    buscarDashboardOpcional("dashboard_manutencoes", { manutencoes: [], itens: [] }),
+                    buscarDashboardOpcional("dashboard_graficos", {}),
+                ]);
 
-                const resposta = await lerRespostaJson(response);
-
-                if (!response.ok) {
-                    throw new Error(mensagemErroHttp(response.status, resposta));
+                if (ativo) {
+                    setDados(montarDadosDashboard({
+                        resumo,
+                        vendas,
+                        despesas,
+                        financiamentos,
+                        parcelas,
+                        veiculos,
+                        manutencoes,
+                        graficos,
+                    }));
                 }
-
-                const payload = resposta?.dados || resposta?.data || resposta;
-                if (ativo) setDados(payload || {});
             } catch (error) {
                 if (ativo) setErro(error.message || "Erro ao carregar a dashboard.");
             } finally {
@@ -728,7 +906,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (!modalGerencial) return;
-        if (!["qtd_financiamentos", "qtd_parcelas_atrasadas"].includes(modalGerencial)) {
+        if (!["__detalhe_externo__"].includes(modalGerencial)) {
             setCarregandoModal(false);
             setErroModal("");
             return;
@@ -810,6 +988,14 @@ export default function Dashboard() {
     const vendasPeriodo = filtrarPeriodo(relatorios.vendas, periodoAtivo, ["data_venda", "DATA_VENDA"]);
     const financiamentosPeriodo = filtrarPeriodo(relatorios.financiamentos, periodoAtivo, ["data_financiamento", "DATA_FINANCIAMENTO"]);
     const veiculosPeriodo = filtrarPeriodo(relatorios.veiculos, periodoAtivo, ["data_cadastro", "DATA_CADASTRO"]);
+    const despesasRelatorio = [
+        relatorios.despesas,
+        relatorios.despesa,
+        relatorios.lista_despesas,
+        relatorios.despesas_operacionais,
+        dados?.despesas,
+    ].find(Array.isArray) || [];
+    const despesasPeriodo = filtrarPeriodo(despesasRelatorio, periodoAtivo, ["data_despesa", "DATA_DESPESA", "data", "DATA"]);
     const financeiroMensalBase = filtrarPeriodo(graficos.financeiro_mensal, periodoAtivo, ["mes"]);
     const fluxoRecebimentosBase = filtrarPeriodo(graficos.fluxo_recebimentos, periodoAtivo, ["mes", "data", "periodo", "vencimento"]);
     const compraVendaBase = periodoAtivo === "geral" ? graficos.compra_venda_veiculo : veiculosPeriodo;
@@ -845,7 +1031,7 @@ export default function Dashboard() {
         .filter((item) => item.valor > 0);
     const parcelasDetalhadas = detalhesModal.parcelasAtrasadas.length > 0
         ? detalhesModal.parcelasAtrasadas
-        : obterParcelasDetalhadas(dados, modalGerencial === "parcelas_atrasadas");
+        : obterParcelasDetalhadas(dados, modalGerencial === "qtd_parcelas_atrasadas");
     const financiamentosDetalhados = detalhesModal.financiamentos.length > 0
         ? detalhesModal.financiamentos
         : paraArray(relatorios.financiamentos);
@@ -883,23 +1069,43 @@ export default function Dashboard() {
         },
         despesa_total: {
             titulo: "Despesa total",
-            descricao: "Evolucao das despesas registradas na operacao.",
+            descricao: "Listagem das despesas registradas na operacao.",
             resumo: [
                 { label: "Despesas", valor: valorCardSelecionado, formato: "moeda" },
-                { label: "Meses", valor: financeiroMensal.length, formato: "numero" },
+                { label: "Registros", valor: despesasPeriodo.length, formato: "numero" },
             ],
-            tabelaTitulo: "Financeiro mensal",
-            tabelaDados: financeiroMensalBase,
+            tabelaTitulo: "Despesas",
+            tabelaDados: despesasPeriodo.map((despesa) => ({
+                despesa: textoPorPossiveisChaves(despesa, ["descricao", "DESCRICAO", "despesa", "nome"], "Despesa"),
+                valor: valorPorPossiveisChaves(despesa, ["valor", "VALOR", "total"]),
+            })),
         },
         lucro_liquido_estimado: {
             titulo: "Lucro liquido estimado",
             descricao: "Resultado estimado juntando vendas, receitas extras e despesas.",
             resumo: [
                 { label: "Lucro estimado", valor: valorCardSelecionado, formato: "moeda" },
-                { label: "Ticket medio", valor: primeiroValor(resumoFiltrado, ["ticket_medio", "ticketMedio"]), formato: "moeda" },
+                { label: "Despesas", valor: primeiroValor(resumoFiltrado, ["despesa_total", "despesaTotal", "total_despesas"]), formato: "moeda" },
             ],
-            tabelaTitulo: "Financeiro mensal",
-            tabelaDados: financeiroMensalBase,
+            tabelaTitulo: "Composicao do lucro",
+            tabelaDados: [
+                {
+                    indicador: "Lucro bruto vendas",
+                    valor: primeiroValor(resumoFiltrado, ["lucro_bruto_vendas", "lucroBrutoVendas", "lucro_bruto"]),
+                },
+                {
+                    indicador: "Receitas extras",
+                    valor: primeiroValor(resumoFiltrado, ["receita_extra", "receitaExtra"]),
+                },
+                {
+                    indicador: "Despesas",
+                    valor: -numero(primeiroValor(resumoFiltrado, ["despesa_total", "despesaTotal", "total_despesas"])),
+                },
+                {
+                    indicador: "Lucro liquido estimado",
+                    valor: valorCardSelecionado,
+                },
+            ],
         },
         lucro_bruto_vendas: {
             titulo: "Lucro bruto de vendas",

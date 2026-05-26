@@ -5,6 +5,8 @@ import Footer from "../components/Footer/Footer.jsx";
 import { useState } from "react";
 import Sucesso from "../components/Sucesso/Sucesso.jsx";
 import { API_URL } from "../App";
+import GoogleAuthButton from "../components/GoogleAuthButton.jsx";
+import { rotaDepoisLogin, salvarSessaoUsuario } from "../utils/authSession";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -19,6 +21,20 @@ export default function Login() {
 
     function toggleSenha() {
         setMostrarSenha(!mostrarSenha);
+    }
+
+    function concluirLogin(data) {
+        const usuario = salvarSessaoUsuario(data);
+        if (!usuario) {
+            setErro("Nao foi possivel identificar o usuario.");
+            return;
+        }
+
+        setMostrarPopup(true);
+
+        setTimeout(() => {
+            navigate(rotaDepoisLogin(usuario, voltarPara));
+        }, 1000);
     }
 
     async function fazerLogin(e) {
@@ -46,42 +62,7 @@ export default function Login() {
                 return;
             }
 
-            if (data.usuario) {
-                localStorage.setItem("usuario_id", data.usuario.id_usuario);
-                localStorage.setItem("usuario_nome", data.usuario.nome);
-                localStorage.setItem("usuario_email", data.usuario.email);
-                localStorage.setItem("usuario_tipo", data.usuario.tipo);
-
-                if (data.usuario.telefone) {
-                    localStorage.setItem("usuario_telefone", data.usuario.telefone);
-                }
-
-                if (data.usuario.cpf) {
-                    localStorage.setItem("usuario_cpf", data.usuario.cpf);
-                }
-
-                if (data.token) {
-                    localStorage.setItem("token", data.token);
-                }
-
-                window.dispatchEvent(new CustomEvent("webcar:auth", { detail: { logado: true } }));
-            }
-
-            setMostrarPopup(true);
-
-            setTimeout(() => {
-                const tipo = Number(data.usuario.tipo);
-
-                if (tipo === 0) {
-                    navigate("/dashboard");
-                } else if (tipo === 1) {
-                    navigate("/catalogo");
-                } else if (tipo === 2) {
-                    navigate(voltarPara || "/catalogo");
-                } else {
-                    navigate("/login");
-                }
-            }, 1000);
+            concluirLogin(data);
 
         }
         catch (error) {
@@ -147,6 +128,16 @@ export default function Login() {
                                 Entrar
                             </button>
                         </div>
+
+                        <div className={css.divisor}>
+                            <span>ou</span>
+                        </div>
+
+                        <GoogleAuthButton
+                            className={css.google}
+                            onSuccess={concluirLogin}
+                            onError={setErro}
+                        />
 
                         {erro && (
                             <p

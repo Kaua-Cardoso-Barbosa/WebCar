@@ -5,6 +5,8 @@ import Footer from "../components/Footer/Footer.jsx";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../App";
+import GoogleAuthButton from "../components/GoogleAuthButton.jsx";
+import { rotaDepoisLogin, salvarSessaoUsuario } from "../utils/authSession";
 
 
 export default function Cadastro() {
@@ -62,6 +64,16 @@ export default function Cadastro() {
         };
     }, [preview]);
 
+    function concluirCadastroGoogle(data) {
+        const usuario = salvarSessaoUsuario(data);
+        if (!usuario) {
+            setErro("Nao foi possivel identificar o usuario.");
+            return;
+        }
+
+        navigate(rotaDepoisLogin(usuario));
+    }
+
     async function handleSubmit(e) {
         e.preventDefault();
 
@@ -109,7 +121,7 @@ export default function Cadastro() {
                 state: { email }
             });
 
-        } catch (error) {
+        } catch {
             setErro("Não foi possível salvar as alterações.");
         }
     }
@@ -226,6 +238,16 @@ export default function Cadastro() {
                                     Cadastrar
                                 </button>
                             </div>
+
+                            <div className={css.divisor}>
+                                <span>ou</span>
+                            </div>
+
+                            <GoogleAuthButton
+                                className={css.google}
+                                onSuccess={concluirCadastroGoogle}
+                                onError={setErro}
+                            />
 
                             {erro && (
                                 <p className={css.erro}>

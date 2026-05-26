@@ -104,6 +104,44 @@
     background-color: var(--cor-azul-acao);
 }
 
+.divisor {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--cor-texto-cinza);
+    font-size: 13px;
+    margin: 0;
+}
+
+.divisor::before,
+.divisor::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--cor-borda-cinza);
+}
+
+.google {
+    display: flex;
+    justify-content: center;
+    min-height: 44px;
+}
+
+.google > div {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.google button {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid var(--cor-borda-cinza);
+    border-radius: 8px;
+    background: var(--cor-superficie);
+    color: var(--cor-texto-cinza);
+}
+
 .textoLogin {
     text-align: center;
     font-size: 13px;
