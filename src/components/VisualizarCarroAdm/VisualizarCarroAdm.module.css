@@ -580,8 +580,19 @@
 }
 
 @media (max-width: 720px) {
-    .secaoManutencoes {
+    .modalFundo {
+        align-items: flex-start;
+        padding: 12px;
+        overflow-y: auto;
+    }
+
+    .modalManutencao {
+        max-height: none;
         padding: 18px;
+    }
+
+    .secaoManutencoes {
+        padding: 16px;
     }
 
     .topoSecaoManutencoes,
@@ -601,10 +612,15 @@
     .itemManutencaoGrande {
         grid-template-columns: 1fr;
         gap: 8px;
+        padding: 12px;
     }
 
     .acoesItemManutencao {
-        justify-content: flex-start;
+        justify-content: stretch;
+    }
+
+    .acoesItemManutencao button {
+        flex: 1 1 120px;
     }
 
     .botaoManutencaoCompacta,

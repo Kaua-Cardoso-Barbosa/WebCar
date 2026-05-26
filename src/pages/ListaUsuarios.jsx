@@ -84,6 +84,19 @@ function normalizarCompra(compra) {
     };
 }
 
+function normalizarVendaUsuario(venda) {
+    return {
+        idVenda: getCampo(venda, ["id_venda", "ID_VENDA"]),
+        dataVenda: getCampo(venda, ["data_venda", "DATA_VENDA"]),
+        cliente: getCampo(venda, ["cliente", "CLIENTE", "nome_cliente"], "Sem cliente"),
+        veiculo: getCampo(venda, ["veiculo", "VEICULO"], `${getCampo(venda, ["marca", "MARCA"], "")} ${getCampo(venda, ["modelo", "MODELO"], "")}`.trim()),
+        placa: getCampo(venda, ["placa", "PLACA"], "Nao informada"),
+        formaPagamento: getCampo(venda, ["forma_pagamento", "FORMA_PAGAMENTO"], "Nao informado"),
+        valorVenda: Number(getCampo(venda, ["valor_venda", "VALOR_VENDA"], 0)),
+        lucroBruto: Number(getCampo(venda, ["lucro_bruto", "LUCRO_BRUTO", "lucro"], 0)),
+    };
+}
+
 export default function ListaUsuario() {
     const [usuarios, setUsuarios] = useState([]);
     const [busca, setBusca] = useState("");
@@ -130,6 +143,8 @@ export default function ListaUsuario() {
     const [modalCompras, setModalCompras] = useState(false);
     const [usuarioCompras, setUsuarioCompras] = useState(null);
     const [comprasUsuario, setComprasUsuario] = useState([]);
+    const [vendasUsuario, setVendasUsuario] = useState([]);
+    const [tipoModalUsuario, setTipoModalUsuario] = useState("compras");
     const [carregandoCompras, setCarregandoCompras] = useState(false);
     const [erroCompras, setErroCompras] = useState("");
     const [sucessoCompras, setSucessoCompras] = useState("");
@@ -593,16 +608,52 @@ export default function ListaUsuario() {
         }
     }
 
+    async function buscarVendasUsuario(idUsuario) {
+        try {
+            setCarregandoCompras(true);
+            setErroCompras("");
+            setVendasUsuario([]);
+
+            const response = await fetch(`${API_URL}/minhas_vendas?id_usuario=${idUsuario}`, {
+                method: "GET",
+                credentials: "include",
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                setErroCompras(data.mensagem || "NÃ£o foi possÃ­vel carregar as vendas do vendedor.");
+                return;
+            }
+
+            setVendasUsuario((data.vendas || []).map(normalizarVendaUsuario));
+        } catch {
+            setErroCompras("Erro ao conectar com o servidor.");
+        } finally {
+            setCarregandoCompras(false);
+        }
+    }
+
     function abrirModalComprasUsuario(usuario) {
+        setTipoModalUsuario("compras");
         setUsuarioCompras(usuario);
         setModalCompras(true);
         buscarComprasUsuario(usuario.id_usuario);
+    }
+
+    function abrirModalVendasUsuario(usuario) {
+        setTipoModalUsuario("vendas");
+        setUsuarioCompras(usuario);
+        setModalCompras(true);
+        buscarVendasUsuario(usuario.id_usuario);
     }
 
     function fecharModalComprasUsuario() {
         setModalCompras(false);
         setUsuarioCompras(null);
         setComprasUsuario([]);
+        setVendasUsuario([]);
+        setTipoModalUsuario("compras");
         setErroCompras("");
         setSucessoCompras("");
         setCarregandoCompras(false);
@@ -865,6 +916,16 @@ export default function ListaUsuario() {
                                                             </button>
                                                         )}
 
+                                                        {Number(usuario.tipo) === 1 && (
+                                                            <button
+                                                                type="button"
+                                                                className={css.icone}
+                                                                onClick={() => abrirModalVendasUsuario(usuario)}
+                                                            >
+                                                                Vendas
+                                                            </button>
+                                                        )}
+
                                                         <button
                                                             type="button"
                                                             className={`${css.icone} ${css.bloquear}`}
@@ -977,8 +1038,12 @@ export default function ListaUsuario() {
                     <div className={css.modalCompras}>
                         <div className={css.modalTopo}>
                             <div>
-                                <h2>Compras e parcelas</h2>
-                                <p>{usuarioCompras?.nome || "Cliente"} - acompanhe os financiamentos e baixas.</p>
+                                <h2>{tipoModalUsuario === "vendas" ? "Vendas do vendedor" : "Compras e parcelas"}</h2>
+                                <p>
+                                    {tipoModalUsuario === "vendas"
+                                        ? `${usuarioCompras?.nome || "Vendedor"} - vendas realizadas e clientes atendidos.`
+                                        : `${usuarioCompras?.nome || "Cliente"} - acompanhe os financiamentos e baixas.`}
+                                </p>
                             </div>
 
                             <button
@@ -995,7 +1060,44 @@ export default function ListaUsuario() {
                         {sucessoCompras && <p className={css.sucessoModal}>{sucessoCompras}</p>}
 
                         {carregandoCompras ? (
-                            <p className={css.estadoCompras}>Carregando compras...</p>
+                            <p className={css.estadoCompras}>
+                                {tipoModalUsuario === "vendas" ? "Carregando vendas..." : "Carregando compras..."}
+                            </p>
+                        ) : tipoModalUsuario === "vendas" ? (
+                            vendasUsuario.length === 0 && !erroCompras ? (
+                                <p className={css.estadoCompras}>Esse vendedor ainda nÃ£o possui vendas registradas.</p>
+                            ) : (
+                                <div className={css.listaCompras}>
+                                    {vendasUsuario.map((venda) => (
+                                        <article className={css.compraUsuario} key={venda.idVenda}>
+                                            <div className={css.compraTopo}>
+                                                <div>
+                                                    <span>{venda.formaPagamento}</span>
+                                                    <h3>{venda.veiculo || "VeÃ­culo nÃ£o informado"}</h3>
+                                                    <p>{venda.placa || "Placa nÃ£o informada"} - {formatarData(venda.dataVenda)}</p>
+                                                </div>
+
+                                                <strong>{formatarPreco(venda.valorVenda)}</strong>
+                                            </div>
+
+                                            <div className={css.resumoFinanciamento}>
+                                                <div>
+                                                    <span>Cliente</span>
+                                                    <strong>{venda.cliente}</strong>
+                                                </div>
+                                                <div>
+                                                    <span>Valor vendido</span>
+                                                    <strong>{formatarPreco(venda.valorVenda)}</strong>
+                                                </div>
+                                                <div>
+                                                    <span>Lucro bruto</span>
+                                                    <strong>{formatarPreco(venda.lucroBruto)}</strong>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            )
                         ) : comprasUsuario.length === 0 && !erroCompras ? (
                             <p className={css.estadoCompras}>Esse cliente ainda não possui compras registradas.</p>
                         ) : (

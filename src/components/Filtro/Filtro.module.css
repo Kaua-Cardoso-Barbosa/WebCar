@@ -100,3 +100,37 @@
     color: var(--cor-principal);
     margin-bottom: 8px;
 }
+
+@media (max-width: 760px) {
+    .filtro {
+        padding: 0;
+    }
+
+    .topo {
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .topo button {
+        flex: 0 0 auto;
+    }
+
+    .grupo {
+        margin-bottom: 18px;
+    }
+}
+
+@media (max-width: 420px) {
+    .topo {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .topo button {
+        width: 100%;
+    }
+
+    .ano {
+        flex-direction: column;
+    }
+}

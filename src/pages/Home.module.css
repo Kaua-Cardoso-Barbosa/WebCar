@@ -215,4 +215,23 @@
         padding: 28px 20px;
         background: linear-gradient(135deg, var(--cor-terciaria), var(--cor-secundaria));
     }
+
+    .botaoClaro {
+        width: 100%;
+    }
+}
+
+@media (max-width: 420px) {
+    .destaques {
+        padding-top: 32px;
+    }
+
+    .cabecalhoSecao h2,
+    .confianca h2 {
+        font-size: 26px;
+    }
+
+    .metricas div {
+        min-height: auto;
+    }
 }

@@ -206,5 +206,31 @@
 
     .paginacao {
         justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .paginacao button {
+        flex: 1;
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 420px) {
+    .sidebar,
+    .heroCatalogo {
+        padding: 16px;
+    }
+
+    .heroCatalogo h1 {
+        font-size: 28px;
+    }
+
+    .resumoCatalogo strong {
+        font-size: 34px;
+    }
+
+    .paginacao span {
+        width: 100%;
+        text-align: center;
     }
 }

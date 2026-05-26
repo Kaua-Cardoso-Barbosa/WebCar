@@ -114,6 +114,7 @@
     align-items: center;
     padding: 15px 16px;
     border-bottom: 1px solid var(--cor-fundo-frio);
+    gap: 12px;
 }
 
 .item:last-child {
@@ -211,4 +212,38 @@
     border-radius: 8px;
     margin: 18px 0;
     font-weight: 600;
+}
+
+@media (max-width: 640px) {
+    .container {
+        align-items: flex-start;
+        padding: 18px 12px;
+    }
+
+    .card {
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    .topo h2 {
+        font-size: 22px;
+    }
+
+    .linha {
+        grid-template-columns: 1fr;
+    }
+
+    .item,
+    .itemDireita,
+    .total {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .itemDireita button,
+    .btnSecundario,
+    .btn,
+    .cancelar {
+        width: 100%;
+    }
 }

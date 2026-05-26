@@ -4,6 +4,8 @@ import { API_URL } from "../App";
 const GOOGLE_SCRIPT_ID = "google-identity-services";
 
 const GOOGLE_CLIENT_ID = "92315268318-qn4id91q5o6dkg25e47h29joheito0li.apps.googleusercontent.com";
+const GOOGLE_BUTTON_HEIGHT = 44;
+const GOOGLE_BUTTON_WIDTH = 320;
 
 function carregarScriptGoogle() {
     if (window.google?.accounts?.id) return Promise.resolve();
@@ -82,9 +84,9 @@ export default function GoogleAuthButton({ className = "", onSuccess, onError })
                     theme: "outline",
                     size: "large",
                     type: "standard",
-                    shape: "rectangular",
+                    shape: "pill",
                     text: "continue_with",
-                    width: botaoRef.current.offsetWidth || 320
+                    width: botaoRef.current.offsetWidth || GOOGLE_BUTTON_WIDTH
                 });
 
                 setCarregando(false);
@@ -104,11 +106,65 @@ export default function GoogleAuthButton({ className = "", onSuccess, onError })
     }, [onError, onSuccess]);
 
     return (
-        <div className={className}>
-            <div ref={botaoRef} />
+        <div
+            className={className}
+            style={{
+                minHeight: GOOGLE_BUTTON_HEIGHT,
+                position: "relative"
+            }}
+            aria-busy={carregando}
+        >
+            <div
+                ref={botaoRef}
+                style={{
+                    width: "100%",
+                    minHeight: GOOGLE_BUTTON_HEIGHT,
+                    opacity: carregando ? 0 : 1,
+                    pointerEvents: carregando ? "none" : "auto"
+                }}
+            />
 
             {carregando && (
-                <button type="button" disabled>
+                <button
+                    type="button"
+                    disabled
+                    style={{
+                        alignItems: "center",
+                        background: "var(--cor-superficie)",
+                        border: "1px solid var(--cor-borda)",
+                        borderRadius: 999,
+                        color: "var(--cor-texto-neutro-650)",
+                        display: "flex",
+                        fontSize: 14,
+                        fontWeight: 600,
+                        gap: 10,
+                        height: GOOGLE_BUTTON_HEIGHT,
+                        justifyContent: "center",
+                        left: 0,
+                        lineHeight: 1,
+                        padding: "0 16px",
+                        position: "absolute",
+                        top: 0,
+                        width: "100%"
+                    }}
+                >
+                    <span
+                        aria-hidden="true"
+                        style={{
+                            alignItems: "center",
+                            border: "1px solid var(--cor-borda)",
+                            borderRadius: "50%",
+                            color: "#4285f4",
+                            display: "inline-flex",
+                            fontSize: 14,
+                            fontWeight: 700,
+                            height: 22,
+                            justifyContent: "center",
+                            width: 22
+                        }}
+                    >
+                        G
+                    </span>
                     Carregando Google...
                 </button>
             )}

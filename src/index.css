@@ -221,6 +221,25 @@ body {
   font-family: var(--fonte-site);
 }
 
+* {
+  box-sizing: border-box;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+@media (max-width: 600px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
 .btn-primary {
   --bs-btn-bg: var(--cor-primaria);
   --bs-btn-border-color: var(--cor-primaria);

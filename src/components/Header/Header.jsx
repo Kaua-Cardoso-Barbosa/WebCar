@@ -477,11 +477,16 @@ export default function Header({ busca = "", setBusca = null }) {
                                         )}
 
                                         {usuarioVendedor && estaLogado && (
-                                            <li className="nav-item">
-                                                <button type="button" className={css.linkBotao} onClick={abrirModalDados}>
-                                                    Meus dados
-                                                </button>
-                                            </li>
+                                            <>
+                                                <li className="nav-item">
+                                                    <Link className="nav-link" to="/minhas-vendas">Minhas vendas</Link>
+                                                </li>
+                                                <li className="nav-item">
+                                                    <button type="button" className={css.linkBotao} onClick={abrirModalDados}>
+                                                        Meus dados
+                                                    </button>
+                                                </li>
+                                            </>
                                         )}
 
                                         {!estaLogado ? (
@@ -541,9 +546,12 @@ export default function Header({ busca = "", setBusca = null }) {
                             )}
 
                             {usuarioVendedor && estaLogado && (
-                                <button type="button" className={css.linkBotao} onClick={abrirModalDados}>
-                                    Meus dados
-                                </button>
+                                <>
+                                    <Link className="nav-link" to="/minhas-vendas">Minhas vendas</Link>
+                                    <button type="button" className={css.linkBotao} onClick={abrirModalDados}>
+                                        Meus dados
+                                    </button>
+                                </>
                             )}
 
                             {!estaLogado ? (

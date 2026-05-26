@@ -33,6 +33,7 @@ import ListarMarcas from "./pages/ListarMarcas.jsx";
 import ListaUsuarios from "./pages/ListaUsuarios.jsx";
 import ConfiguracoesSite from "./pages/ConfiguracoesSite.jsx";
 import MinhasCompras from "./pages/MinhasCompras.jsx";
+import MinhasVendas from "./pages/MinhasVendas.jsx";
 
 const CONFIG_SITE_PADRAO = {
     nomeFantasia: "WebCar",
@@ -360,6 +361,14 @@ export default function App() {
                     element={
                         <RotaProtegida tiposPermitidos={[2]}>
                             <MinhasCompras />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/minhas-vendas"
+                    element={
+                        <RotaProtegida tiposPermitidos={[1]}>
+                            <MinhasVendas />
                         </RotaProtegida>
                     }
                 />

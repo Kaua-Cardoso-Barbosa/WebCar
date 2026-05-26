@@ -1022,12 +1022,10 @@ export default function Dashboard() {
     const analiseMarcas = normalizarSerie(graficos.analise_marcas, ["marca", "nome"], ["qtd_estoque", "qtd_total", "quantidade", "total", "vendas", "valor"]);
     const vendasPagamento = normalizarVendasPorPagamento(graficos.vendas_por_forma_pagamento);
     const vendedores = normalizarSerie(graficos.performance_vendedores, ["vendedor", "nome"], ["lucro_bruto", "receita_vendas", "quantidade_vendas", "vendas", "quantidade", "total", "valor"]);
-    const lucroReal = normalizarSerie(graficos.lucro_real_veiculos, ["nome", "veiculo", "modelo", "placa"], ["lucro_real", "lucro", "valor"]);
     const parcelasStatus = normalizarParcelasStatus(graficos.parcelas_status);
     const documentacao = normalizarDocumentacaoPendente(graficos.documentacao);
     const curvaAbc = normalizarSerie(graficos.curva_abc, ["nome", "classe", "curva"], ["preco_custo", "participacao_percentual", "quantidade", "total", "valor"]);
-    const manutencaoVeiculo = normalizarSerie(graficos.manutencao_por_veiculo, ["nome", "veiculo", "modelo", "placa"], ["total_manutencao", "valor", "total", "custo"]);
-    const servicosUsados = normalizarSerie(graficos.servicos_mais_usados, ["servico", "nome", "descricao"], ["quantidade", "total", "valor"])
+    const servicosUsados = normalizarSerie(graficos.servicos_mais_usados, ["servico", "nome", "descricao"], ["quantidade", "total", "valor_total", "valor"])
         .filter((item) => item.valor > 0);
     const parcelasDetalhadas = detalhesModal.parcelasAtrasadas.length > 0
         ? detalhesModal.parcelasAtrasadas
@@ -1321,6 +1319,19 @@ export default function Dashboard() {
                                             </ResponsiveContainer>
                                         )}
                                     </ChartCard>
+                                    <ChartCard titulo="Parcelas por status" icon={Receipt}>
+                                        {parcelasStatus.length === 0 ? <EmptyChart /> : (
+                                            <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+                                                <PieChart>
+                                                    <Pie data={parcelasStatus} dataKey="valor" nameKey="nome" outerRadius={125}>
+                                                        {parcelasStatus.map((_, index) => <Cell key={index} fill={CORES[index % CORES.length]} />)}
+                                                    </Pie>
+                                                    <Tooltip formatter={(v) => [formatarMoeda(v), "Valor"]} />
+                                                    <Legend />
+                                                </PieChart>
+                                            </ResponsiveContainer>
+                                        )}
+                                    </ChartCard>
                                         </>
                                     )}
 
@@ -1446,33 +1457,6 @@ export default function Dashboard() {
                                         )}
                                     </ChartCard>
 
-                                    <ChartCard titulo="Lucro real após manutenção" icon={Wrench}>
-                                        {lucroReal.length === 0 ? <EmptyChart /> : (
-                                            <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-                                                <BarChart data={lucroReal} layout="vertical">
-                                                    <CartesianGrid strokeDasharray="3 3" />
-                                                    <XAxis type="number" tickFormatter={formatarMoedaCompacta} />
-                                                    <YAxis type="category" dataKey="nome" width={150} tickFormatter={formatarRotuloCurto} />
-                                                    <Tooltip formatter={(v) => [formatarMoeda(v), "Lucro real"]} />
-                                                    <Bar dataKey="valor" fill="#16a34a" radius={[0, 8, 8, 0]} />
-                                                </BarChart>
-                                            </ResponsiveContainer>
-                                        )}
-                                    </ChartCard>
-
-                                    <ChartCard titulo="Parcelas por status" icon={Receipt}>
-                                        {parcelasStatus.length === 0 ? <EmptyChart /> : (
-                                            <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-                                                <PieChart>
-                                                    <Pie data={parcelasStatus} dataKey="valor" nameKey="nome" outerRadius={125}>
-                                                        {parcelasStatus.map((_, index) => <Cell key={index} fill={CORES[index % CORES.length]} />)}
-                                                    </Pie>
-                                                    <Tooltip formatter={(v) => [formatarMoeda(v), "Valor"]} />
-                                                    <Legend />
-                                                </PieChart>
-                                            </ResponsiveContainer>
-                                        )}
-                                    </ChartCard>
                                         </>
                                     )}
 
@@ -1501,20 +1485,6 @@ export default function Dashboard() {
                                                     <YAxis width={78} tickFormatter={formatarMoedaCompacta} />
                                                     <Tooltip formatter={(v) => [formatarMoeda(v), "Valor em estoque"]} />
                                                     <Bar dataKey="valor" fill="#2563eb" radius={[8, 8, 0, 0]} />
-                                                </BarChart>
-                                            </ResponsiveContainer>
-                                        )}
-                                    </ChartCard>
-
-                                    <ChartCard titulo="Manutenção por veículo" icon={Wrench}>
-                                        {manutencaoVeiculo.length === 0 ? <EmptyChart /> : (
-                                            <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-                                                <BarChart data={manutencaoVeiculo} layout="vertical">
-                                                    <CartesianGrid strokeDasharray="3 3" />
-                                                    <XAxis type="number" tickFormatter={formatarMoedaCompacta} />
-                                                    <YAxis type="category" dataKey="nome" width={150} tickFormatter={formatarRotuloCurto} />
-                                                    <Tooltip formatter={(v) => [formatarMoeda(v), "Manutenção"]} />
-                                                    <Bar dataKey="valor" fill="#f59e0b" radius={[0, 8, 8, 0]} />
                                                 </BarChart>
                                             </ResponsiveContainer>
                                         )}

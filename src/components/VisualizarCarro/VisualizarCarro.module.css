@@ -693,17 +693,31 @@
         width: min(100% - 20px, 1200px);
     }
 
+    .hero {
+        padding: 18px 0 30px;
+    }
+
     .barraTopo {
         align-items: flex-start;
         flex-direction: column;
     }
 
+    .voltar {
+        width: 100%;
+        text-align: center;
+    }
+
     .imagemPrincipal {
-        height: 310px;
+        height: clamp(240px, 72vw, 310px);
+    }
+
+    .miniaturas img {
+        width: 88px;
+        height: 58px;
     }
 
     .painelCompra {
-        padding: 22px;
+        padding: 18px;
     }
 
     .detalhesGrid {
@@ -720,6 +734,17 @@
 
     .duasColunas {
         grid-template-columns: 1fr;
+    }
+
+    .modalFundo {
+        align-items: flex-start;
+        padding: 12px;
+        overflow-y: auto;
+    }
+
+    .modalCompra {
+        max-height: none;
+        padding: 18px;
     }
 
     .botaoFechar,

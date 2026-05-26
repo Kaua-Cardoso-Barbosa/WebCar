@@ -7,6 +7,7 @@
 
 .main {
     flex: 1;
+    min-width: 0;
     padding: 34px;
     background: var(--cor-fundo-dashboard);
     box-sizing: border-box;
@@ -356,8 +357,28 @@ select {
 }
 
 @media (max-width: 600px) {
+    .main {
+        padding: 16px 12px;
+    }
+
+    .topo {
+        display: block;
+    }
+
+    .titulo {
+        font-size: 23px;
+    }
+
+    .uploadArea,
+    .box {
+        padding: 16px;
+        border-radius: 10px;
+    }
+
     .imagemPrincipal {
         width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 10;
     }
 
     .imagemMini {
@@ -368,6 +389,15 @@ select {
     .actions {
         flex-direction: column-reverse;
         align-items: stretch;
+    }
+
+    .campoCor {
+        grid-template-columns: minmax(0, 1fr) 48px;
+    }
+
+    .codigoCor {
+        grid-column: 1 / -1;
+        white-space: normal;
     }
 
     .cancelar,

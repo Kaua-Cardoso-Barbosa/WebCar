@@ -360,6 +360,7 @@
 
     .formDados {
         grid-template-columns: 1fr;
+        padding: 18px;
     }
 
     .fotoPerfil img,
@@ -383,10 +384,32 @@
     .salvarModal {
         width: 100%;
     }
+
+    .modalOverlay {
+        align-items: flex-start;
+        overflow-y: auto;
+        padding: 12px;
+    }
+
+    .modalDados {
+        max-height: none;
+    }
+
+    .modalTopo {
+        padding: 18px;
+    }
 }
 
 @media (max-width: 420px) {
     .buscaMobile {
         flex-direction: column;
+    }
+
+    .fotoPerfil img {
+        height: 180px;
+    }
+
+    .modalTopo h2 {
+        font-size: 20px;
     }
 }

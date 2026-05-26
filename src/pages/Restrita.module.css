@@ -4,6 +4,7 @@
     justify-content: center;
     align-items: center;
     background-color: var(--cor-fundo-restrita);
+    padding: 20px;
 }
 
 .card {
@@ -12,7 +13,7 @@
     border-radius: 12px;
     box-shadow: 0 4px 12px var(--sombra-preta-15);
     text-align: center;
-    min-width: 320px;
+    width: min(100%, 420px);
 }
 
 .titulo {
@@ -35,4 +36,18 @@
 
 .botao:hover {
     background-color: var(--cor-erro-bootstrap-hover);
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 28px 20px;
+    }
+
+    .titulo {
+        font-size: 22px;
+    }
+
+    .botao {
+        width: 100%;
+    }
 }

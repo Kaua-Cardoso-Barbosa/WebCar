@@ -268,11 +268,15 @@
 
 @media (max-width: 640px) {
     .container {
-        padding: 18px;
+        padding: 16px 12px;
     }
 
     .card {
-        padding: 22px;
+        padding: 18px;
+    }
+
+    .card h1 {
+        font-size: 24px;
     }
 
     .linha,
@@ -282,5 +286,20 @@
 
     .itemDireita {
         justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .quantidadeItem {
+        width: 100%;
+    }
+
+    .acoes {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .cancelar,
+    .salvar {
+        width: 100%;
     }
 }

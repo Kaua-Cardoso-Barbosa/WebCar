@@ -1,0 +1,266 @@
+.pagina {
+    min-height: calc(100vh - 90px);
+    background: var(--cor-fundo-login);
+    padding: 28px clamp(16px, 4vw, 44px);
+    font-family: inherit;
+}
+
+.topo,
+.cards,
+.conteudo {
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.topo {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.topo span {
+    color: var(--cor-texto-cinza);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.topo h1 {
+    margin: 4px 0;
+    color: var(--cor-texto-principal);
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.topo p,
+.cardTopo p {
+    margin: 0;
+    color: var(--cor-texto-cinza);
+    font-size: 14px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.cards div,
+.lista,
+.estado,
+.erro {
+    background: var(--cor-superficie);
+    border: 1px solid var(--cor-borda);
+    border-radius: 8px;
+    box-shadow: 0 8px 22px var(--sombra-preta-10);
+}
+
+.cards div {
+    padding: 16px;
+}
+
+.cards span {
+    display: block;
+    color: var(--cor-texto-cinza);
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.cards strong {
+    color: var(--cor-texto-principal);
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.conteudo {
+    display: block;
+}
+
+.lista {
+    padding: 18px;
+}
+
+.cardTopo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.cardTopo h2 {
+    margin: 0 0 2px;
+    color: var(--cor-texto-principal);
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.cardTopo > span {
+    color: var(--cor-texto-cinza);
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.tabelaWrap {
+    overflow-x: auto;
+}
+
+.lista table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.lista th,
+.lista td {
+    border-bottom: 1px solid var(--cor-borda);
+    padding: 13px 10px;
+    text-align: left;
+    color: var(--cor-texto-principal);
+    white-space: nowrap;
+}
+
+.lista th {
+    color: var(--cor-texto-cinza);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.lista tbody tr:hover {
+    background: var(--cor-fundo-input);
+}
+
+.vazio,
+.estado,
+.erro {
+    color: var(--cor-texto-cinza);
+    padding: 16px;
+}
+
+.estado,
+.erro {
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.erro {
+    color: var(--cor-erro-alerta);
+}
+
+@media (max-width: 900px) {
+    .cards {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .pagina {
+        padding: 18px 12px;
+    }
+
+    .topo,
+    .cardTopo {
+        display: block;
+    }
+
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .topo h1 {
+        font-size: 28px;
+    }
+
+    .lista {
+        padding: 14px;
+    }
+
+    .cardTopo > span {
+        display: block;
+        margin-top: 8px;
+        white-space: normal;
+    }
+
+    .tabelaWrap {
+        overflow: visible;
+    }
+
+    .lista table,
+    .lista thead,
+    .lista tbody,
+    .lista tr,
+    .lista td {
+        display: block;
+        width: 100%;
+    }
+
+    .lista thead {
+        display: none;
+    }
+
+    .lista tbody {
+        display: grid;
+        gap: 12px;
+    }
+
+    .lista tr {
+        border: 1px solid var(--cor-borda);
+        border-radius: 8px;
+        padding: 12px;
+        background: var(--cor-superficie);
+    }
+
+    .lista td {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 9px 0;
+        border-bottom: 1px solid var(--cor-divisor);
+        white-space: normal;
+        text-align: right;
+        overflow-wrap: anywhere;
+    }
+
+    .lista td:last-child {
+        border-bottom: none;
+    }
+
+    .lista td::before {
+        color: var(--cor-texto-cinza);
+        font-size: 12px;
+        font-weight: 800;
+        text-align: left;
+        text-transform: uppercase;
+    }
+
+    .lista td:nth-child(1)::before {
+        content: "Data";
+    }
+
+    .lista td:nth-child(2)::before {
+        content: "Cliente";
+    }
+
+    .lista td:nth-child(3)::before {
+        content: "Veiculo";
+    }
+
+    .lista td:nth-child(4)::before {
+        content: "Placa";
+    }
+
+    .lista td:nth-child(5)::before {
+        content: "Pagamento";
+    }
+
+    .lista td:nth-child(6)::before {
+        content: "Valor";
+    }
+}

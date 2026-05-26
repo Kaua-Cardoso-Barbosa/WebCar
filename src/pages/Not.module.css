@@ -15,14 +15,14 @@
 }
 
 .codigo {
-    font-size: 90px;
+    font-size: clamp(58px, 18vw, 90px);
     font-weight: bold;
     color: blue;
     margin: 0;
 }
 
 .titulo {
-    font-size: 32px;
+    font-size: clamp(24px, 7vw, 32px);
     margin-top: 10px;
     margin-bottom: 15px;
     color: var(--cor-texto-bootstrap);
@@ -49,4 +49,18 @@
 
 .botao:hover {
     background-color: blue;
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 36px 18px;
+    }
+
+    .texto {
+        font-size: 15px;
+    }
+
+    .botao {
+        width: 100%;
+    }
 }

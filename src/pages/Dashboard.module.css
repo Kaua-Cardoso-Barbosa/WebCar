@@ -617,4 +617,70 @@
     .modalResumoGrid {
         grid-template-columns: 1fr;
     }
+
+    .tableWrap table {
+        min-width: 620px;
+    }
+
+    .tableWrap th,
+    .tableWrap td {
+        padding: 12px;
+    }
+
+    .modalOverlay {
+        align-items: flex-start;
+        overflow-y: auto;
+        padding: 12px;
+    }
+
+    .modalBox {
+        max-height: none;
+        padding: 16px;
+    }
+
+    .modalHeader {
+        gap: 12px;
+    }
+
+    .modalHeader h2 {
+        font-size: 18px;
+    }
+
+    .modalConteudo .tableWrap {
+        overflow-x: auto;
+    }
+
+    .modalConteudo .tableWrap table {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard {
+        padding: 14px 10px;
+    }
+
+    .periodControls,
+    .chartControls {
+        grid-template-columns: 1fr;
+    }
+
+    .metricCard,
+    .chartCard,
+    .tableCard {
+        border-radius: 8px;
+    }
+
+    .chartCard {
+        padding: 14px;
+    }
+
+    .chartBody {
+        min-height: 300px;
+    }
+
+    .tableWrap table {
+        min-width: 540px;
+    }
 }

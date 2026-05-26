@@ -4,3 +4,9 @@
     min-height: 100vh;
     background-color: var(--cor-fundo-dashboard);
 }
+
+@media (max-width: 768px) {
+    .layout {
+        display: block;
+    }
+}

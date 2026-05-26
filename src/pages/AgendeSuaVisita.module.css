@@ -1,13 +1,14 @@
 .container {
-    height: 100vh;
+    min-height: 100vh;
     background-color: var(--cor-fundo-cinza);
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 24px 16px;
 }
 
 .card {
-    width: 420px;
+    width: min(100%, 420px);
     background: var(--cor-superficie);
     border-radius: 12px;
     padding: 25px;
@@ -83,8 +84,36 @@
 
 .seeelect{
     height: 46px;
+    width: 100%;
     border-radius: 5px;
     color: var(--cor-placeholder);
     background-color: var(--cor-fundo-input);
     border: var(--cor-borda-suave);
+}
+
+@media (max-width: 520px) {
+    .container {
+        align-items: flex-start;
+        padding-top: 18px;
+        padding-bottom: 18px;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .card h2 {
+        font-size: 20px;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 13px;
+    }
+}
+
+@media (max-height: 620px) {
+    .container {
+        align-items: flex-start;
+    }
 }

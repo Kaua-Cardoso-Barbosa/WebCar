@@ -8,6 +8,7 @@
     flex: 1;
     padding: 24px;
     color: var(--cor-texto-principal);
+    min-width: 0;
 }
 
 .topo {
@@ -33,6 +34,7 @@
     border-radius: 10px;
     padding: 28px;
     max-width: 720px;
+    width: 100%;
     box-shadow: 0 1px 3px var(--sombra-preta-05);
 }
 
@@ -108,6 +110,7 @@
 
 .mensagem {
     max-width: 720px;
+    width: 100%;
     padding: 14px 16px;
     border-radius: 8px;
     margin-bottom: 18px;
@@ -128,4 +131,31 @@
     color: var(--cor-texto-muted);
     font-weight: 600;
     margin: 0;
+}
+
+@media (max-width: 768px) {
+    .layout {
+        display: block;
+    }
+
+    .main {
+        padding: 18px 14px;
+    }
+
+    .topo h1 {
+        font-size: 26px;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .botoes {
+        flex-direction: column-reverse;
+    }
+
+    .cancelar,
+    .salvar {
+        width: 100%;
+    }
 }
