@@ -375,7 +375,7 @@ function principaisCompraVenda(lista, limite = 12) {
         .slice(0, limite);
 }
 
-function calcularResumoPeriodo(resumo, periodo, vendas, financiamentos, veiculos, financeiroMensal) {
+function calcularResumoPeriodo(resumo, periodo, vendas, financiamentos, veiculos, financeiroMensal, parcelas) {
     if (periodo === "geral") return resumo;
 
     const qtdVendas = vendas.length;
@@ -385,6 +385,19 @@ function calcularResumoPeriodo(resumo, periodo, vendas, financiamentos, veiculos
     const receitaExtra = somar(financeiroMensal, ["receita_extra"]);
     const veiculosEstoque = veiculos.filter((item) => Number(item?.status ?? item?.STATUS) === 0);
     const capitalEstoque = somar(veiculosEstoque, ["preco_custo", "PRECO_CUSTO"]);
+    const parcelasAbertas = paraArray(parcelas).filter((item) => {
+        const status = Number(primeiroValor(item, ["status", "STATUS", "status_parcela"], 0));
+        return status === 0 || status === 3;
+    });
+    const parcelasAtrasadas = parcelasAbertas.filter((item) => {
+        const dataVencimento = dataValida(primeiroValor(item, ["data_vencimento", "DATA_VENCIMENTO", "vencimento"], ""));
+        const hoje = new Date();
+        hoje.setHours(23, 59, 59, 999);
+
+        return dataVencimento && dataVencimento < hoje;
+    });
+    const totalAReceber = somar(parcelasAbertas, ["valor_parcela", "VALOR_PARCELA", "valor", "total"]);
+    const valorAtrasado = somar(parcelasAtrasadas, ["valor_parcela", "VALOR_PARCELA", "valor", "total"]);
 
     return {
         ...resumo,
@@ -398,6 +411,10 @@ function calcularResumoPeriodo(resumo, periodo, vendas, financiamentos, veiculos
         qtd_financiamentos: financiamentos.length,
         qtd_veiculos_estoque: veiculosEstoque.length,
         capital_estoque: capitalEstoque,
+        total_a_receber_financiamento: totalAReceber,
+        qtd_parcelas_atrasadas: parcelasAtrasadas.length,
+        valor_parcelas_atrasadas: valorAtrasado,
+        inadimplencia_percentual: totalAReceber > 0 ? (valorAtrasado / totalAReceber) * 100 : 0,
     };
 }
 
@@ -571,8 +588,8 @@ function normalizarCompraVenda(lista) {
 function normalizarPrecificacao(lista) {
     return paraArray(lista).map((item) => ({
         nome: textoPorPossiveisChaves(item, ["veiculo", "modelo", "nome", "placa"], "Veículo"),
-        recomendado: numero(valorPorPossiveisChaves(item, ["preco_recomendado", "recomendado", "valor_recomendado"])),
-        cadastrado: numero(valorPorPossiveisChaves(item, ["preco_cadastrado", "cadastrado", "valor_cadastrado", "preco"])),
+        recomendado: numero(valorPorPossiveisChaves(item, ["preco_recomendado", "recomendado", "valor_recomendado", "preco_venda", "PRECO_VENDA"])),
+        cadastrado: numero(valorPorPossiveisChaves(item, ["preco_cadastrado", "cadastrado", "valor_cadastrado", "preco", "preco_venda", "PRECO_VENDA"])),
     }));
 }
 
@@ -1012,6 +1029,7 @@ export default function Dashboard() {
         dados?.despesas,
     ].find(Array.isArray) || [];
     const despesasPeriodo = filtrarPeriodo(despesasRelatorio, periodoAtivo, ["data_despesa", "DATA_DESPESA", "data", "DATA"]);
+    const parcelasPeriodo = filtrarPeriodo(relatorios.parcelas, periodoAtivo, ["data_vencimento", "DATA_VENCIMENTO", "vencimento"]);
     const financeiroMensalBase = filtrarPeriodo(graficos.financeiro_mensal, periodoAtivo, ["mes"]);
     const fluxoRecebimentosBase = filtrarPeriodo(graficos.fluxo_recebimentos, periodoAtivo, ["mes", "data", "periodo", "vencimento"]);
     const compraVendaBase = periodoAtivo === "geral" ? graficos.compra_venda_veiculo : veiculosPeriodo;
@@ -1024,7 +1042,8 @@ export default function Dashboard() {
         vendasPeriodo,
         financiamentosPeriodo,
         veiculosPeriodo,
-        financeiroMensalBase
+        financeiroMensalBase,
+        parcelasPeriodo
     );
 
     const financeiroMensal = normalizarFinanceiroMensal(financeiroMensalBase);
