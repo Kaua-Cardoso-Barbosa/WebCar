@@ -259,11 +259,94 @@ function formatarDiasEstoque(valor, linha) {
 }
 
 function classeColunaTabela(coluna) {
-    const nome = coluna.toLowerCase();
+    const nome = normalizarNomeColunaTabela(coluna);
     if (nome.includes("data")) return styles.colunaData;
     if (nome.includes("nome") || nome.includes("cliente") || nome.includes("vendedor") || nome.includes("veiculo")) return styles.colunaNome;
     if (nome.includes("valor") || nome.includes("preco") || nome.includes("total") || nome.includes("lucro")) return styles.colunaValor;
     return "";
+}
+
+// funcao que limpa nome de coluna da tabela
+function normalizarNomeColunaTabela(coluna) {
+    return String(coluna || "")
+        .replace(/^[._\s]+/, "")
+        .replace(/[.\s]+/g, "_")
+        .toLowerCase();
+}
+
+// funcao que arruma acentuacao e nome das colunas da tabela
+// funcao do cabecalho amigavel da tabela
+function formatarCabecalhoTabela(coluna) {
+    const nome = normalizarNomeColunaTabela(coluna);
+    const nomes = {
+        id_veiculo: "ID do veículo",
+        id_venda: "ID da venda",
+        id_usuario: "ID do usuário",
+        id_financiamento: "ID do financiamento",
+        id_item_financiamento: "ID da parcela",
+        id_despesa: "ID da despesa",
+        id_tabela: "ID da origem",
+        cliente: "Cliente",
+        vendedor: "Vendedor",
+        veiculo: "Veículo",
+        marca: "Marca",
+        modelo: "Modelo",
+        placa: "Placa",
+        ano: "Ano",
+        cor: "Cor",
+        status: "Status",
+        status_parcela: "Status da parcela",
+        documentacao: "Documentação",
+        combustivel: "Combustível",
+        cambio: "Câmbio",
+        forma_pagamento: "Forma de pagamento",
+        numero_parcela: "Número da parcela",
+        valor_parcela: "Valor da parcela",
+        valor_venda: "Valor da venda",
+        valor_financiado: "Valor financiado",
+        valor_a_receber: "Valor a receber",
+        valor_parcelas_atrasadas: "Valor das parcelas atrasadas",
+        preco_custo: "Preço de custo",
+        preco_venda: "Preço de venda",
+        data_venda: "Data da venda",
+        data_cadastro: "Data de cadastro",
+        data_financiamento: "Data do financiamento",
+        data_vencimento: "Data de vencimento",
+        data_pagamento: "Data de pagamento",
+        data_despesa: "Data da despesa",
+        dias_estoque: "Dias em estoque",
+        saldo_devedor: "Saldo devedor",
+        qtd_parcelas: "Quantidade de parcelas",
+        parcelas_abertas: "Parcelas em aberto",
+        parcelas_pagas: "Parcelas pagas",
+        parcelas_atrasadas: "Parcelas atrasadas",
+        qtd_estoque: "Quantidade em estoque",
+        qtd_total: "Quantidade total",
+        capital_estoque: "Capital em estoque",
+        margem_valor: "Margem em valor",
+        margem_percentual: "Margem percentual",
+        lucro_bruto: "Lucro bruto",
+        lucro_real: "Lucro real",
+        total_manutencao: "Total de manutenção",
+        manutencao: "Manutenção",
+        despesa: "Despesa",
+        despesas: "Despesas",
+        descricao: "Descrição",
+        receita: "Receita",
+        indicador: "Indicador",
+        tabela: "Origem",
+        mes: "Mês",
+        periodo: "Período",
+        vencimento: "Vencimento",
+    };
+
+    if (nomes[nome]) return nomes[nome];
+
+    return nome
+        .split("_")
+        .filter(Boolean)
+        .map((parte, index) => index === 0 ? parte.charAt(0).toUpperCase() + parte.slice(1) : parte)
+        .join(" ");
 }
 
 function formatarStatusVeiculo(valor) {
@@ -640,7 +723,7 @@ function normalizarVeiculosDashboard(lista) {
         const precoVenda = numero(valorPorPossiveisChaves(veiculo, ["preco_venda", "PRECO_VENDA"]));
         const margemValor = precoVenda - precoCusto;
         const margemPercentual = precoCusto > 0 ? (margemValor / precoCusto) * 100 : 0;
-        const nome = `${marca} ${modelo}`.trim() || getCampo(veiculo, ["placa", "PLACA"], "Veiculo");
+        const nome = `${marca} ${modelo}`.trim() || getCampo(veiculo, ["placa", "PLACA"], "Veículo");
 
         return {
             ...veiculo,
@@ -817,8 +900,9 @@ function TabelaRelatorio({ titulo, dados, limiteColunas = 8 }) {
                     <table>
                         <thead>
                             <tr>
+                                {/* cabecalho amigavel da tabela */}
                                 {colunas.map((coluna) => (
-                                    <th className={classeColunaTabela(coluna)} key={coluna}>{coluna.replaceAll("_", " ")}</th>
+                                    <th className={classeColunaTabela(coluna)} key={coluna}>{formatarCabecalhoTabela(coluna)}</th>
                                 ))}
                             </tr>
                         </thead>
@@ -856,7 +940,7 @@ function ResumoDetalheCard({ itens }) {
 }
 
 function formatarCampoTabela(coluna, valor, linha = {}) {
-    const nome = coluna.toLowerCase();
+    const nome = normalizarNomeColunaTabela(coluna);
     if (nome.includes("data")) return formatarData(valor);
     if (nome === "dias_estoque") return formatarDiasEstoque(valor, linha);
     if (nome === "forma_pagamento") return formatarFormaPagamento(valor);
@@ -1093,7 +1177,7 @@ export default function Dashboard() {
         },
         receita_total_gerencial: {
             titulo: "Receita total gerencial",
-            descricao: "Receita, despesa e lucro no periodo selecionado.",
+            descricao: "Receita, despesa e lucro no período selecionado.",
             resumo: [
                 { label: "Receita", valor: valorCardSelecionado, formato: "moeda" },
                 { label: "Vendas", valor: vendasPeriodo.length, formato: "numero" },
@@ -1103,7 +1187,7 @@ export default function Dashboard() {
         },
         despesa_total: {
             titulo: "Despesa total",
-            descricao: "Listagem das despesas registradas na operacao.",
+            descricao: "Listagem das despesas registradas na operação.",
             resumo: [
                 { label: "Despesas", valor: valorCardSelecionado, formato: "moeda" },
                 { label: "Registros", valor: despesasPeriodo.length, formato: "numero" },
@@ -1115,13 +1199,13 @@ export default function Dashboard() {
             })),
         },
         lucro_liquido_estimado: {
-            titulo: "Lucro liquido estimado",
+            titulo: "Lucro líquido estimado",
             descricao: "Resultado estimado juntando vendas, receitas extras e despesas.",
             resumo: [
                 { label: "Lucro estimado", valor: valorCardSelecionado, formato: "moeda" },
                 { label: "Despesas", valor: primeiroValor(resumoFiltrado, ["despesa_total", "despesaTotal", "total_despesas"]), formato: "moeda" },
             ],
-            tabelaTitulo: "Composicao do lucro",
+            tabelaTitulo: "Composição do lucro",
             tabelaDados: [
                 {
                     indicador: "Lucro bruto vendas",
@@ -1136,34 +1220,34 @@ export default function Dashboard() {
                     valor: -numero(primeiroValor(resumoFiltrado, ["despesa_total", "despesaTotal", "total_despesas"])),
                 },
                 {
-                    indicador: "Lucro liquido estimado",
+                    indicador: "Lucro líquido estimado",
                     valor: valorCardSelecionado,
                 },
             ],
         },
         lucro_bruto_vendas: {
             titulo: "Lucro bruto de vendas",
-            descricao: "Vendas e carros com maior contribuicao de lucro.",
+            descricao: "Vendas e carros com maior contribuição de lucro.",
             resumo: [
                 { label: "Lucro bruto", valor: valorCardSelecionado, formato: "moeda" },
                 { label: "Vendas", valor: vendasPeriodo.length, formato: "numero" },
             ],
-            tabelaTitulo: "Vendas do periodo",
+            tabelaTitulo: "Vendas do período",
             tabelaDados: vendasPeriodo,
         },
         ticket_medio: {
-            titulo: "Ticket medio",
-            descricao: "Valores das vendas que formam o ticket medio.",
+            titulo: "Ticket médio",
+            descricao: "Valores das vendas que formam o ticket médio.",
             resumo: [
-                { label: "Ticket medio", valor: valorCardSelecionado, formato: "moeda" },
+                { label: "Ticket médio", valor: valorCardSelecionado, formato: "moeda" },
                 { label: "Total vendido", valor: somar(vendasPeriodo, ["valor_venda", "VALOR_VENDA"]), formato: "moeda" },
             ],
-            tabelaTitulo: "Vendas usadas no calculo",
+            tabelaTitulo: "Vendas usadas no cálculo",
             tabelaDados: vendasPeriodo,
         },
         qtd_veiculos_estoque: {
             titulo: "Carros em estoque",
-            descricao: "Distribuicao por marca e lista de carros no estoque.",
+            descricao: "Distribuição por marca e lista de carros no estoque.",
             resumo: [
                 { label: "Em estoque", valor: valorCardSelecionado, formato: "numero" },
                 { label: "Capital", valor: primeiroValor(resumoFiltrado, ["capital_estoque", "capitalEmEstoque"]), formato: "moeda" },
@@ -1183,7 +1267,7 @@ export default function Dashboard() {
         },
         qtd_financiamentos: {
             titulo: "Financiamentos",
-            descricao: "Contratos financiados, valores em aberto e situacao das parcelas.",
+            descricao: "Contratos financiados, valores em aberto e situação das parcelas.",
             resumo: [
                 { label: "Financiamentos", valor: valorCardSelecionado, formato: "numero" },
                 { label: "A receber", valor: primeiroValor(resumoFiltrado, ["total_a_receber_financiamento", "total_a_receber", "totalAReceber"]), formato: "moeda" },
@@ -1203,7 +1287,7 @@ export default function Dashboard() {
         },
         total_a_receber_financiamento: {
             titulo: "Total a receber",
-            descricao: "Fluxo previsto de recebimentos por periodo.",
+            descricao: "Fluxo previsto de recebimentos por período.",
             resumo: [
                 { label: "A receber", valor: valorCardSelecionado, formato: "moeda" },
                 { label: "Parcelas em aberto", valor: primeiroValor(resumoFiltrado, ["qtd_parcelas_atrasadas", "parcelas_atrasadas", "parcelasAtrasadas"]), formato: "numero" },
@@ -1212,10 +1296,10 @@ export default function Dashboard() {
             tabelaDados: fluxoRecebimentosBase,
         },
         inadimplencia_percentual: {
-            titulo: "Inadimplencia percentual",
+            titulo: "Inadimplência percentual",
             descricao: "Comparativo entre parcelas pagas, abertas e atrasadas.",
             resumo: [
-                { label: "Inadimplencia", valor: valorCardSelecionado, formato: "percentual" },
+                { label: "Inadimplência", valor: valorCardSelecionado, formato: "percentual" },
                 { label: "Atrasadas", valor: primeiroValor(resumoFiltrado, ["qtd_parcelas_atrasadas", "parcelas_atrasadas", "parcelasAtrasadas"]), formato: "numero" },
             ],
             tabelaTitulo: "Parcelas detalhadas",
@@ -1338,7 +1422,7 @@ export default function Dashboard() {
                                                     <Bar dataKey="receita" fill="#2563eb" name="Receita" radius={[6, 6, 0, 0]} />
                                                     <Bar dataKey="despesas" fill="#dc2626" name="Despesas" radius={[6, 6, 0, 0]} />
                                                     <Line dataKey="lucro_bruto" stroke="#0891b2" name="Lucro bruto" strokeWidth={3} />
-                                                    <Line dataKey="lucro" stroke="#16a34a" name="Lucro liquido" strokeWidth={3} />
+                                                    <Line dataKey="lucro" stroke="#16a34a" name="Lucro líquido" strokeWidth={3} />
                                                 </ComposedChart>
                                             </ResponsiveContainer>
                                         )}
@@ -1506,7 +1590,7 @@ export default function Dashboard() {
                                     </ChartCard>
 
                                     {/* grafico lucro real por veiculo */}
-                                    <ChartCard titulo="Lucro real por veiculo" subtitulo="Venda menos custo e manutencoes" icon={TrendingUp} cheio>
+                                    <ChartCard titulo="Lucro real por veículo" subtitulo="Venda menos custo e manutenções" icon={TrendingUp} cheio>
                                         {lucroRealVeiculos.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
                                                 <BarChart data={lucroRealVeiculos} layout="vertical">
