@@ -187,12 +187,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 999;
+    z-index: 9999;
+    padding: 16px;
 }
 
 .modal {
     width: 100%;
     max-width: 520px;
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
     background: var(--cor-superficie);
     border-radius: 12px;
     padding: 28px;
@@ -447,6 +450,7 @@
 
     .modal {
         width: calc(100% - 28px);
+        max-height: calc(100dvh - 28px);
         padding: 22px;
     }
 

@@ -387,12 +387,13 @@
 
     .modalOverlay {
         align-items: flex-start;
-        overflow-y: auto;
+        overflow: hidden;
         padding: 12px;
     }
 
     .modalDados {
-        max-height: none;
+        max-height: calc(100dvh - 24px);
+        overflow-y: auto;
     }
 
     .modalTopo {

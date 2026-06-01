@@ -618,12 +618,14 @@
 
     .modalFundo {
         align-items: flex-start;
-        overflow-y: auto;
+        overflow: hidden;
         padding: 12px;
     }
 
     .modalQrCode,
     .modalAmortizacao {
+        max-height: calc(100dvh - 24px);
+        overflow-y: auto;
         padding: 18px 14px;
     }
 

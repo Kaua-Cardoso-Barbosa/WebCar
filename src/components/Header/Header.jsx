@@ -234,7 +234,20 @@ export default function Header({ busca = "", setBusca = null }) {
         }
     }
 
+    function fecharMenuMobile() {
+        const offcanvasElement = document.getElementById("offcanvasNavbar");
+
+        if (!offcanvasElement || !window.bootstrap?.Offcanvas) return;
+
+        const offcanvas =
+            window.bootstrap.Offcanvas.getInstance(offcanvasElement) ||
+            window.bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
+
+        offcanvas.hide();
+    }
+
     function abrirModalDados() {
+        fecharMenuMobile();
         setModalDadosAberta(true);
         carregarDadosCliente();
     }
