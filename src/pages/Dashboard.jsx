@@ -8,6 +8,7 @@ import {
     CreditCard,
     DollarSign,
     FileWarning,
+    Info,
     Landmark,
     LineChart as LineChartIcon,
     Percent,
@@ -910,7 +911,56 @@ function EmptyChart({ texto = "Sem dados para este gráfico." }) {
     );
 }
 
-function ChartCard({ titulo, subtitulo, icon = BarChart3, children, cheio = false }) {
+// funcao dos textos de informacao dos graficos e tabelas
+function textoInfoDashboard(titulo) {
+    const textos = {
+        "Receita, despesas e lucro por mês": "Acompanha o resultado financeiro mês a mês. A receita soma vendas e entradas extras; despesas mostram saídas registradas; lucro bruto considera venda menos custo; lucro líquido considera receita menos despesas.",
+        "Fluxo futuro de recebimentos": "Mostra parcelas em aberto que ainda devem entrar no caixa. Facilita a previsão de recebimentos futuros e destaca meses com maior entrada prevista.",
+        "Parcelas por status": "Resume o valor das parcelas pagas, em aberto e atrasadas. Use para acompanhar cobrança, inadimplência e volume financeiro pendente.",
+        "Compra x venda por veículo": "Compara preço de custo e preço de venda por veículo. Ajuda a identificar margem, veículos vendidos abaixo do esperado e oportunidades de ajuste de preço.",
+        "Top veículos por lucro bruto": "Mostra os veículos com maior lucro bruto, calculado pela diferença entre valor de venda e custo do veículo.",
+        "Top veículos por margem percentual": "Mostra quais veículos tiveram melhor retorno proporcional em relação ao custo, mesmo quando o valor absoluto da venda não é o maior.",
+        "Preço recomendado x preço cadastrado": "Compara o preço recomendado com o preço cadastrado. Use para encontrar veículos fora da estratégia comercial definida.",
+        "Estoque parado por faixa de tempo": "Agrupa veículos pelo tempo em estoque. Ajuda a identificar carros parados há muito tempo e capital imobilizado.",
+        "Análise por marca": "Mostra como o estoque está distribuído por marca. Ajuda a entender concentração, variedade e peso de cada marca no pátio.",
+        "Vendas por forma de pagamento": "Mostra o total vendido por forma de pagamento, como financiamento, Pix, cartão, boleto ou à vista.",
+        "Performance dos vendedores": "Compara vendedores por resultado de vendas. Facilita o acompanhamento de produtividade, receita gerada e contribuição comercial.",
+        "Lucro real por veículo": "Calcula o lucro mais próximo do real por veículo, descontando custo e manutenções vinculadas antes da venda.",
+        "Documentação pendente": "Mostra veículos com documentação pendente e o capital associado. Ajuda a priorizar regularizações que travam venda ou entrega.",
+        "Curva ABC do estoque": "Classifica os veículos pelo peso financeiro no estoque. A curva A concentra os itens de maior impacto no capital parado.",
+        "Serviços mais usados": "Mostra quais serviços de manutenção aparecem com mais frequência. Ajuda a entender custos recorrentes e padrões de preparação dos veículos.",
+        "Vendas": "Lista vendas realizadas no período, com cliente, veículo, forma de pagamento, valor e lucro bruto quando disponível.",
+        "Financiamentos": "Lista contratos financiados, saldo devedor e situação das parcelas para acompanhamento administrativo.",
+        "Veículos": "Lista veículos cadastrados, status, documentação, preço de custo e preço de venda.",
+        "Carros em estoque": "Mostra os veículos disponíveis e o capital parado em cada item do estoque.",
+        "Vendas consideradas": "Mostra as vendas usadas para formar receita, lucro e outros indicadores do período selecionado.",
+        "Despesas": "Lista despesas registradas no sistema e consideradas nos cálculos financeiros da dashboard.",
+        "Composição do lucro": "Detalha os componentes do lucro líquido estimado: lucro bruto, receitas extras e despesas.",
+        "Vendas do período": "Lista as vendas que participam do indicador aberto, respeitando o filtro de período da dashboard.",
+        "Vendas usadas no cálculo": "Mostra as vendas utilizadas para calcular o ticket médio e o total vendido.",
+        "Carros": "Lista os veículos considerados no indicador de estoque, com dados de status, documentação e valores.",
+        "Detalhes dos financiamentos": "Mostra contratos financiados, quantidade de parcelas, saldo devedor e parcelas atrasadas.",
+        "Detalhes das parcelas": "Lista parcelas relacionadas ao indicador, incluindo vencimento, pagamento, status e valor.",
+        "Fluxo de recebimentos": "Mostra os valores previstos para entrada futura no caixa, agrupados por período.",
+        "Parcelas detalhadas": "Mostra parcelas pagas, abertas e atrasadas para análise de cobrança e inadimplência.",
+    };
+
+    return textos[titulo] || `Informações detalhadas sobre ${String(titulo || "este item").toLowerCase()}.`;
+}
+
+// componente do icone de informacao com popup
+function InfoTooltip({ texto }) {
+    if (!texto) return null;
+
+    return (
+        <span className={styles.infoTooltip}>
+            <Info size={16} />
+            <span>{texto}</span>
+        </span>
+    );
+}
+
+function ChartCard({ titulo, subtitulo, icon = BarChart3, children, cheio = false, info = "" }) {
     return (
         <section className={`${styles.chartCard} ${cheio ? styles.chartCardWide : ""}`}>
             <div className={styles.sectionHeader}>
@@ -918,14 +968,17 @@ function ChartCard({ titulo, subtitulo, icon = BarChart3, children, cheio = fals
                     <h2>{titulo}</h2>
                     {subtitulo && <p>{subtitulo}</p>}
                 </div>
-                <span className={styles.sectionIcon}>{createElement(icon, { size: 20 })}</span>
+                <span className={styles.sectionIcon}>
+                    {createElement(icon, { size: 20 })}
+                    <InfoTooltip texto={info || textoInfoDashboard(titulo)} />
+                </span>
             </div>
             <ChartBoundary resetKey={titulo}>{children}</ChartBoundary>
         </section>
     );
 }
 
-function TabelaRelatorio({ titulo, dados, limiteColunas = 8 }) {
+function TabelaRelatorio({ titulo, dados, limiteColunas = 8, info = "" }) {
     const linhas = paraArray(dados);
     const colunas = useMemo(() => {
         const primeiraLinha = linhas.find((linha) => linha && typeof linha === "object");
@@ -937,7 +990,10 @@ function TabelaRelatorio({ titulo, dados, limiteColunas = 8 }) {
     return (
         <section className={styles.tableCard}>
             <div className={styles.tableTitle}>
-                <h3>{titulo}</h3>
+                <div className={styles.tableTitleText}>
+                    <h3>{titulo}</h3>
+                    <InfoTooltip texto={info || textoInfoDashboard(titulo)} />
+                </div>
                 <span>{formatarNumero(linhas.length)} registros</span>
             </div>
             {linhas.length === 0 || colunas.length === 0 ? (
@@ -1426,7 +1482,7 @@ export default function Dashboard() {
                         {carregando && (
                             <div className={styles.stateBox}>
                                 <span className={styles.loader} />
-                                <strong>Carregando dashboard ADM...</strong>
+                                <strong>Carregando dashboard...</strong>
                             </div>
                         )}
 

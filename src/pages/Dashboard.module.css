@@ -304,6 +304,7 @@
     min-width: 0;
     min-height: 470px;
     padding: 24px;
+    overflow: visible;
 }
 
 .chartCardWide {
@@ -332,6 +333,7 @@
 }
 
 .sectionIcon {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -339,6 +341,64 @@
     height: 40px;
     border-radius: 10px;
     background: var(--cor-azul-fundo-botao);
+}
+
+.infoTooltip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--cor-principal);
+}
+
+.sectionIcon > .infoTooltip {
+    position: absolute;
+    inset: 0;
+    color: transparent;
+}
+
+.infoTooltip > span {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 10px);
+    z-index: 30;
+    width: max-content;
+    max-width: min(360px, calc(100vw - 32px));
+    padding: 11px 12px;
+    color: #fff;
+    background: #111827;
+    border-radius: 8px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, .22);
+    font-size: 12px;
+    font-weight: 750;
+    line-height: 1.45;
+    opacity: 0;
+    pointer-events: none;
+    text-align: left;
+    text-transform: none;
+    transform: translateY(4px);
+    transition: opacity .16s ease, transform .16s ease;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.infoTooltip > span::after {
+    content: "";
+    position: absolute;
+    right: 12px;
+    bottom: -6px;
+    width: 12px;
+    height: 12px;
+    background: #111827;
+    transform: rotate(45deg);
+}
+
+.infoTooltip:hover > span,
+.infoTooltip:focus-visible > span,
+.sectionIcon:hover .infoTooltip > span,
+.sectionIcon:focus-visible .infoTooltip > span {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .emptyChart,
@@ -393,22 +453,30 @@
 }
 
 .relatorios {
+    max-width: 100%;
+    min-width: 0;
     margin-top: 24px;
     padding: 22px;
 }
 
 .tablesGrid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 18px;
+    max-width: 100%;
+    min-width: 0;
 }
 
 .tableCard {
-    overflow: hidden;
+    max-width: 100%;
+    min-width: 0;
+    overflow: visible;
     box-shadow: none;
 }
 
 .tableTitle {
+    position: relative;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -424,21 +492,54 @@
     font-weight: 850;
 }
 
-.tableTitle span {
+.tableTitleText {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tableTitleText .infoTooltip {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: var(--cor-azul-fundo-botao);
+}
+
+.tableTitleText .infoTooltip > span {
+    right: auto;
+    left: 0;
+    bottom: auto;
+    top: calc(100% + 10px);
+}
+
+.tableTitleText .infoTooltip > span::after {
+    top: -6px;
+    bottom: auto;
+    right: auto;
+    left: 12px;
+}
+
+.tableTitle > span {
     color: var(--cor-texto-muted-forte);
     font-size: 12px;
     font-weight: 800;
 }
 
 .tableWrap {
+    display: block;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     overflow-x: auto;
+    overflow-y: visible;
+    overscroll-behavior-inline: contain;
 }
 
 .tableWrap table {
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     border-collapse: collapse;
-    min-width: 920px;
 }
 
 .tableWrap th,
@@ -523,6 +624,7 @@
 
 .modalBox {
     width: min(980px, 100%);
+    min-width: 0;
     max-height: min(760px, calc(100vh - 48px));
     overflow-x: hidden;
     overflow-y: auto;
@@ -592,13 +694,16 @@
 
 .modalConteudo {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 18px;
+    min-width: 0;
 }
 
 .modalResumoGrid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
+    min-width: 0;
 }
 
 .modalResumoGrid div {
@@ -624,6 +729,7 @@
 }
 
 .modalChart {
+    min-width: 0;
     min-height: 360px;
     padding: 18px;
     border: 1px solid var(--cor-borda-painel);
@@ -636,7 +742,7 @@
 }
 
 .modalConteudo .tableWrap table {
-    min-width: 920px;
+    min-width: 860px;
 }
 
 .modalConteudo .tableWrap th,
@@ -740,6 +846,17 @@
         padding: 0 10px;
     }
 
+    /* tooltip responsivo da dashboard */
+    .infoTooltip > span {
+        right: -8px;
+        max-width: min(280px, calc(100vw - 28px));
+        font-size: 11px;
+    }
+
+    .tableTitleText .infoTooltip > span {
+        left: -6px;
+    }
+
     .chartCardWide {
         grid-column: auto;
     }
@@ -787,7 +904,7 @@
 
     .modalConteudo .tableWrap table {
         min-width: 860px;
-        width: 100%;
+        width: max-content;
     }
 }
 
@@ -810,6 +927,15 @@
 
     .chartCard {
         padding: 14px;
+    }
+
+    .tableTitle {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .infoTooltip > span {
+        max-width: min(250px, calc(100vw - 24px));
     }
 
     .chartBody {
