@@ -182,7 +182,7 @@ function formatarData(valor) {
         return `${mes}/${ano}`;
     }
 
-    const data = new Date(valor);
+    const data = dataValida(valor);
     if (Number.isNaN(data.getTime())) return String(valor);
     return data.toLocaleDateString("pt-BR");
 }
@@ -309,6 +309,11 @@ function dataValida(valor) {
     if (/^\d{4}-\d{2}$/.test(String(valor))) {
         const [ano, mes] = String(valor).split("-").map(Number);
         return new Date(ano, mes - 1, 1, 12);
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(String(valor))) {
+        const [ano, mes, dia] = String(valor).split("-").map(Number);
+        return new Date(ano, mes - 1, dia, 12);
     }
 
     const data = new Date(valor);
