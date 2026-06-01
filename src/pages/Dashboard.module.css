@@ -144,7 +144,8 @@
 .tableCard,
 .stateBox,
 .errorBox,
-.relatorios {
+.relatorios,
+.controlePanel {
     background: var(--cor-superficie);
     border: 1px solid var(--cor-borda-painel);
     border-radius: 12px;
@@ -197,6 +198,100 @@
     font-weight: 850;
     line-height: 1.15;
     overflow-wrap: anywhere;
+}
+
+.controlePanel {
+    margin-bottom: 18px;
+    padding: 20px;
+}
+
+.controleForm {
+    display: grid;
+    grid-template-columns: minmax(180px, .8fr) minmax(220px, 1.4fr) minmax(150px, .8fr) minmax(150px, .8fr) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.controleTipo {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: 44px;
+    padding: 4px;
+    border: 1px solid var(--cor-borda-painel);
+    border-radius: 10px;
+    background: var(--cor-fundo-input);
+}
+
+.controleTipo button,
+.controleSubmit {
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.controleTipo button {
+    color: var(--cor-texto-muted-forte);
+    background: transparent;
+}
+
+.controleTipoAtivo {
+    color: var(--cor-principal) !important;
+    background: var(--cor-azul-fundo-botao) !important;
+}
+
+.controleForm label {
+    display: grid;
+    gap: 6px;
+    color: var(--cor-texto-muted-forte);
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.controleForm input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--cor-borda-painel);
+    border-radius: 10px;
+    color: var(--cor-texto-principal);
+    background: var(--cor-fundo-input);
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+.controleForm input:focus {
+    border-color: color-mix(in srgb, var(--cor-principal) 42%, var(--cor-borda-painel));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--cor-principal) 14%, transparent);
+}
+
+.controleSubmit {
+    min-height: 44px;
+    padding: 0 18px;
+    color: #fff;
+    background: var(--cor-principal);
+}
+
+.controleSubmit:disabled {
+    cursor: wait;
+    opacity: .7;
+}
+
+.controleErro,
+.controleSucesso {
+    margin: 12px 0 0;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.controleErro {
+    color: #b91c1c;
+}
+
+.controleSucesso {
+    color: #15803d;
 }
 
 .chartsGrid {
@@ -343,15 +438,17 @@
 .tableWrap table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 760px;
+    min-width: 920px;
 }
 
 .tableWrap th,
 .tableWrap td {
-    padding: 14px 18px;
+    box-sizing: border-box;
+    padding: 14px 22px;
     border-bottom: 1px solid var(--cor-divisor);
     text-align: left;
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 .tableWrap th {
@@ -359,6 +456,7 @@
     background: var(--cor-fundo-input);
     font-size: 12px;
     font-weight: 850;
+    letter-spacing: .02em;
     text-transform: uppercase;
 }
 
@@ -368,19 +466,44 @@
     font-weight: 650;
 }
 
+.tableWrap tbody tr:hover {
+    background: color-mix(in srgb, var(--cor-principal) 5%, transparent);
+}
+
 .tableWrap th.colunaValor,
 .tableWrap td.colunaValor {
-    text-align: left;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    min-width: 160px;
 }
 
 .tableWrap th.colunaData,
-.tableWrap td.colunaData {
+.tableWrap td.colunaData,
+.tableWrap th.colunaCentro,
+.tableWrap td.colunaCentro {
     text-align: center;
+    font-variant-numeric: tabular-nums;
+    min-width: 130px;
 }
 
 .tableWrap th.colunaNome,
 .tableWrap td.colunaNome {
-    text-align: right;
+    text-align: left;
+    white-space: normal;
+    min-width: 220px;
+}
+
+.tableWrap th.colunaId,
+.tableWrap td.colunaId {
+    min-width: 120px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.tableWrap th.colunaPagamento,
+.tableWrap td.colunaPagamento {
+    min-width: 180px;
+    text-align: center;
 }
 
 .emptyTable {
@@ -509,12 +632,11 @@
 }
 
 .modalConteudo .tableWrap {
-    overflow-x: hidden;
+    overflow-x: auto;
 }
 
 .modalConteudo .tableWrap table {
-    min-width: 0;
-    table-layout: fixed;
+    min-width: 920px;
 }
 
 .modalConteudo .tableWrap th,
@@ -548,6 +670,10 @@
 @media (max-width: 1280px) {
     .cardsGrid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .controleForm {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -596,6 +722,14 @@
         grid-template-columns: 1fr;
     }
 
+    .controleForm {
+        grid-template-columns: 1fr;
+    }
+
+    .controleSubmit {
+        width: 100%;
+    }
+
     .chartControls {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -619,7 +753,7 @@
     }
 
     .tableWrap table {
-        min-width: 620px;
+        min-width: 860px;
     }
 
     .tableWrap th,
@@ -652,7 +786,7 @@
     }
 
     .modalConteudo .tableWrap table {
-        min-width: 0;
+        min-width: 860px;
         width: 100%;
     }
 }
@@ -669,7 +803,8 @@
 
     .metricCard,
     .chartCard,
-    .tableCard {
+    .tableCard,
+    .controlePanel {
         border-radius: 8px;
     }
 
@@ -682,6 +817,6 @@
     }
 
     .tableWrap table {
-        min-width: 540px;
+        min-width: 820px;
     }
 }
