@@ -782,7 +782,9 @@ function TabelaRelatorio({ titulo, dados, limiteColunas = 8 }) {
     const linhas = paraArray(dados);
     const colunas = useMemo(() => {
         const primeiraLinha = linhas.find((linha) => linha && typeof linha === "object");
-        return primeiraLinha ? Object.keys(primeiraLinha).slice(0, limiteColunas) : [];
+        return primeiraLinha
+            ? Object.keys(primeiraLinha).filter((coluna) => coluna !== "atrasada").slice(0, limiteColunas)
+            : [];
     }, [linhas, limiteColunas]);
 
     return (
