@@ -476,11 +476,15 @@ function parcelaEstaAtrasada(parcela) {
     return Number(parcela.status_parcela) !== 1 && dataVencimento && dataVencimento < hoje;
 }
 
+// funcao do grafico receita, despesa e lucro
 function normalizarFinanceiroMensal(lista) {
     return paraArray(lista).map((item) => ({
         mes: formatarMesAno(textoPorPossiveisChaves(item, ["mes", "MES", "periodo", "data"], "Mês")),
         receita: numero(valorPorPossiveisChaves(item, ["receita", "RECEITA", "receita_total", "total_receita"])),
         despesas: numero(valorPorPossiveisChaves(item, ["despesas", "DESPESAS", "despesa", "despesa_total", "total_despesas"])),
+        custo_vendidos: numero(valorPorPossiveisChaves(item, ["custo_vendidos", "CUSTO_VENDIDOS", "custo", "custos"])),
+        manutencao: numero(valorPorPossiveisChaves(item, ["manutencao", "MANUTENCAO", "total_manutencao"])),
+        lucro_bruto: numero(valorPorPossiveisChaves(item, ["lucro_bruto", "LUCRO_BRUTO", "margem_bruta"])),
         lucro: numero(valorPorPossiveisChaves(item, ["lucro", "LUCRO", "lucro_liquido", "lucro_estimado"])),
     }));
 }
@@ -516,6 +520,7 @@ function itemDocumentacaoPendente(item) {
     return !textoStatus.includes("regular") && !textoStatus.includes("pag");
 }
 
+// funcao do grafico documentacao pendente
 function normalizarDocumentacaoPendente(lista) {
     return paraArray(lista)
         .filter(itemDocumentacaoPendente)
@@ -526,24 +531,25 @@ function normalizarDocumentacaoPendente(lista) {
         .filter((item) => item.valor > 0);
 }
 
+// funcao do grafico vendas por forma de pagamento
 function normalizarVendasPorPagamento(lista) {
-    const grupos = {
-        vista: { nome: "À vista", valor: 0 },
-        financiado: { nome: "Financiado", valor: 0 },
-    };
+    const grupos = {};
 
     paraArray(lista).forEach((item) => {
-        const forma = item?.forma_pagamento;
-        const nome = textoPorPossiveisChaves(item, ["nome", "forma", "pagamento"], "").toLowerCase();
+        const forma = primeiroValor(item, ["forma_pagamento", "FORMA_PAGAMENTO"], "");
+        const nomeInformado = textoPorPossiveisChaves(item, ["nome", "forma", "pagamento", "forma_pagamento", "FORMA_PAGAMENTO"], "");
+        const nome = nomeInformado && Number.isNaN(Number(nomeInformado)) ? nomeInformado : formatarFormaPagamento(forma);
         const valor = numero(valorPorPossiveisChaves(item, ["valor_total", "quantidade", "total", "valor"]));
-        const chave = Number(forma) === 1 || nome.includes("financi") ? "financiado" : "vista";
+        const chave = nome.toLocaleLowerCase("pt-BR");
 
+        if (!grupos[chave]) grupos[chave] = { nome, valor: 0 };
         grupos[chave].valor += valor;
     });
 
     return Object.values(grupos).filter((item) => item.valor > 0);
 }
 
+// funcao do grafico parcelas por status
 function normalizarParcelasStatus(lista) {
     return paraArray(lista).map((item) => ({
         nome: textoPorPossiveisChaves(item, ["status", "situacao", "nome"], "Status"),
@@ -552,6 +558,7 @@ function normalizarParcelasStatus(lista) {
     }));
 }
 
+// funcao do grafico compra x venda por veiculo
 function normalizarCompraVenda(lista) {
     return paraArray(lista).map((item) => ({
         nome: textoPorPossiveisChaves(item, ["veiculo", "modelo", "nome", "placa"], "Veículo"),
@@ -560,6 +567,7 @@ function normalizarCompraVenda(lista) {
     }));
 }
 
+// funcao do grafico preco recomendado x preco cadastrado
 function normalizarPrecificacao(lista) {
     return paraArray(lista).map((item) => ({
         nome: textoPorPossiveisChaves(item, ["veiculo", "modelo", "nome", "placa"], "Veículo"),
@@ -606,6 +614,7 @@ async function buscarDashboardOpcional(endpoint, fallback) {
     }
 }
 
+// funcao dos graficos de veiculos da dashboard
 function normalizarVeiculosDashboard(lista) {
     return paraArray(lista).map((veiculo) => {
         const marca = getCampo(veiculo, ["marca", "MARCA"], "");
@@ -1027,6 +1036,7 @@ export default function Dashboard() {
     const analiseMarcas = normalizarSerie(graficos.analise_marcas, ["marca", "nome"], ["qtd_estoque", "qtd_total", "quantidade", "total", "vendas", "valor"]);
     const vendasPagamento = normalizarVendasPorPagamento(graficos.vendas_por_forma_pagamento);
     const vendedores = normalizarSerie(graficos.performance_vendedores, ["vendedor", "nome"], ["lucro_bruto", "receita_vendas", "quantidade_vendas", "vendas", "quantidade", "total", "valor"]);
+    const lucroRealVeiculos = normalizarSerie(graficos.lucro_real_veiculos, ["veiculo", "nome", "modelo", "placa"], ["lucro_real", "lucro", "valor"]);
     const parcelasStatus = normalizarParcelasStatus(graficos.parcelas_status);
     const documentacao = normalizarDocumentacaoPendente(graficos.documentacao);
     const curvaAbc = normalizarSerie(graficos.curva_abc, ["nome", "classe", "curva"], ["preco_custo", "participacao_percentual", "quantidade", "total", "valor"]);
@@ -1294,6 +1304,7 @@ export default function Dashboard() {
                                 <div className={styles.chartsGrid}>
                                     {categoriaAtiva === "financeiro" && (
                                         <>
+                                    {/* grafico receita, despesa e lucro */}
                                     <ChartCard titulo="Receita, despesas e lucro por mês" subtitulo="Comparativo financeiro mensal" icon={LineChartIcon} cheio>
                                         {financeiroMensal.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -1305,12 +1316,14 @@ export default function Dashboard() {
                                                     <Legend />
                                                     <Bar dataKey="receita" fill="#2563eb" name="Receita" radius={[6, 6, 0, 0]} />
                                                     <Bar dataKey="despesas" fill="#dc2626" name="Despesas" radius={[6, 6, 0, 0]} />
-                                                    <Line dataKey="lucro" stroke="#16a34a" name="Lucro" strokeWidth={3} />
+                                                    <Line dataKey="lucro_bruto" stroke="#0891b2" name="Lucro bruto" strokeWidth={3} />
+                                                    <Line dataKey="lucro" stroke="#16a34a" name="Lucro liquido" strokeWidth={3} />
                                                 </ComposedChart>
                                             </ResponsiveContainer>
                                         )}
                                     </ChartCard>
 
+                                    {/* grafico fluxo futuro de recebimentos */}
                                     <ChartCard titulo="Fluxo futuro de recebimentos" subtitulo="Valores previstos por período" icon={Wallet}>
                                         {fluxoRecebimentos.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -1324,6 +1337,7 @@ export default function Dashboard() {
                                             </ResponsiveContainer>
                                         )}
                                     </ChartCard>
+                                    {/* grafico parcelas por status */}
                                     <ChartCard titulo="Parcelas por status" icon={Receipt}>
                                         {parcelasStatus.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -1342,6 +1356,7 @@ export default function Dashboard() {
 
                                     {categoriaAtiva === "veiculos" && (
                                         <>
+                                    {/* grafico compra x venda por veiculo */}
                                     <ChartCard titulo="Compra x venda por veículo" subtitulo="Principais veículos por valor cadastrado" icon={Car} cheio>
                                         {compraVendaPrincipais.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -1358,6 +1373,7 @@ export default function Dashboard() {
                                         )}
                                     </ChartCard>
 
+                                    {/* grafico top veiculos por lucro bruto */}
                                     <ChartCard titulo="Top veículos por lucro bruto" icon={TrendingUp}>
                                         {topLucro.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -1372,6 +1388,7 @@ export default function Dashboard() {
                                         )}
                                     </ChartCard>
 
+                                    {/* grafico top veiculos por margem percentual */}
                                     <ChartCard titulo="Top veículos por margem percentual" icon={Percent}>
                                         {topMargem.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -1386,6 +1403,7 @@ export default function Dashboard() {
                                         )}
                                     </ChartCard>
 
+                                    {/* grafico preco recomendado x preco cadastrado */}
                                     <ChartCard titulo="Preço recomendado x preço cadastrado" icon={DollarSign}>
                                         {precificacao.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -1402,6 +1420,7 @@ export default function Dashboard() {
                                         )}
                                     </ChartCard>
 
+                                    {/* grafico estoque parado por faixa de tempo */}
                                     <ChartCard titulo="Estoque parado por faixa de tempo" icon={ClipboardList}>
                                         {estoqueParado.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -1416,6 +1435,7 @@ export default function Dashboard() {
                                         )}
                                     </ChartCard>
 
+                                    {/* grafico analise por marca */}
                                     <ChartCard titulo="Análise por marca" icon={BarChart3} cheio>
                                         {analiseMarcas.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -1434,6 +1454,7 @@ export default function Dashboard() {
 
                                     {categoriaAtiva === "comercial" && (
                                         <>
+                                    {/* grafico vendas por forma de pagamento */}
                                     <ChartCard titulo="Vendas por forma de pagamento" icon={CreditCard}>
                                         {vendasPagamento.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -1448,6 +1469,7 @@ export default function Dashboard() {
                                         )}
                                     </ChartCard>
 
+                                    {/* grafico performance dos vendedores */}
                                     <ChartCard titulo="Performance dos vendedores" icon={Users}>
                                         {vendedores.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -1462,11 +1484,27 @@ export default function Dashboard() {
                                         )}
                                     </ChartCard>
 
+                                    {/* grafico lucro real por veiculo */}
+                                    <ChartCard titulo="Lucro real por veiculo" subtitulo="Venda menos custo e manutencoes" icon={TrendingUp} cheio>
+                                        {lucroRealVeiculos.length === 0 ? <EmptyChart /> : (
+                                            <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+                                                <BarChart data={lucroRealVeiculos} layout="vertical">
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis type="number" tickFormatter={formatarMoedaCompacta} />
+                                                    <YAxis type="category" dataKey="nome" width={170} tickFormatter={formatarRotuloCurto} />
+                                                    <Tooltip formatter={(v) => [formatarMoeda(v), "Lucro real"]} />
+                                                    <Bar dataKey="valor" fill="#16a34a" radius={[0, 8, 8, 0]} />
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        )}
+                                    </ChartCard>
+
                                         </>
                                     )}
 
                                     {categoriaAtiva === "operacao" && (
                                         <>
+                                    {/* grafico documentacao pendente */}
                                     <ChartCard titulo="Documentação pendente" icon={FileWarning}>
                                         {documentacao.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -1481,6 +1519,7 @@ export default function Dashboard() {
                                         )}
                                     </ChartCard>
 
+                                    {/* grafico curva ABC do estoque */}
                                     <ChartCard titulo="Curva ABC do estoque" icon={BarChart3}>
                                         {curvaAbc.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -1495,6 +1534,7 @@ export default function Dashboard() {
                                         )}
                                     </ChartCard>
 
+                                    {/* grafico servicos mais usados */}
                                     <ChartCard titulo="Serviços mais usados" icon={Wrench} cheio>
                                         {servicosUsados.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>

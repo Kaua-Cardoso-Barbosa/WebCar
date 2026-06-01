@@ -258,6 +258,8 @@ export default function MinhasCompras() {
         }
     }
 
+    // funcao da amortizacao no front
+    // funcao da mortizacao no front
     function abrirAmortizacao(compra) {
         setAmortizacao({
             idFinanciamento: compra.financiamento.idFinanciamento,
@@ -272,6 +274,7 @@ export default function MinhasCompras() {
         setSalvandoAmortizacao(false);
     }
 
+    // fecha modal de amortizacao
     function fecharAmortizacao() {
         if (salvandoAmortizacao) return;
 
@@ -281,6 +284,7 @@ export default function MinhasCompras() {
         setSalvandoAmortizacao(false);
     }
 
+    // atualiza campos da amortizacao
     function atualizarAmortizacao(campo, valor) {
         setErroAmortizacao("");
         setAmortizacao((dadosAtuais) => ({
@@ -289,6 +293,7 @@ export default function MinhasCompras() {
         }));
     }
 
+    // envia amortizacao para o backend
     async function confirmarAmortizacao(e) {
         e.preventDefault();
 
@@ -311,6 +316,7 @@ export default function MinhasCompras() {
             setErroAmortizacao("");
             setMensagemAmortizacao("");
 
+            // chamada da rota de amortizacao
             const response = await fetch(`${API_URL}/amortizar/${amortizacao.idFinanciamento}`, {
                 method: "PUT",
                 headers: {
@@ -568,6 +574,8 @@ export default function MinhasCompras() {
                 </div>
             )}
 
+            {/* modal de amortizacao do financiamento */}
+            {/* modal de mortizacao do financiamento */}
             {amortizacao && (
                 <div className={css.modalFundo} role="dialog" aria-modal="true">
                     <form className={css.modalAmortizacao} onSubmit={confirmarAmortizacao}>
@@ -599,6 +607,7 @@ export default function MinhasCompras() {
                             />
                         </label>
 
+                        {/* tipos de amortizacao: valor menor ou menos parcelas */}
                         <div className={css.tipoAmortizacao}>
                             <button
                                 type="button"
