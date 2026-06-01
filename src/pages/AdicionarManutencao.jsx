@@ -18,7 +18,7 @@ export default function AdicionarManutencao() {
     const [erro, setErro] = useState("");
     const [sucesso, setSucesso] = useState("");
     const [salvando, setSalvando] = useState(false);
-    const hoje = new Date().toISOString().split("T")[0];
+    const hoje = dataHojeLocal();
 
     function chaveManutencoesPendentes(idVeiculo) {
         return `webcar:manutencoes-sem-itens:${idVeiculo}`;
@@ -53,6 +53,15 @@ export default function AdicionarManutencao() {
     function formatarDataParaBack(dataInput) {
         const [ano, mes, dia] = dataInput.split("-");
         return `${dia}/${mes}/${ano}`;
+    }
+
+    function dataHojeLocal() {
+        const hojeLocal = new Date();
+        const ano = hojeLocal.getFullYear();
+        const mes = String(hojeLocal.getMonth() + 1).padStart(2, "0");
+        const dia = String(hojeLocal.getDate()).padStart(2, "0");
+
+        return `${ano}-${mes}-${dia}`;
     }
 
     function guardarManutencaoCriada(manutencaoCriada) {

@@ -57,13 +57,20 @@ export default function Servicos() {
             return String(valor);
         }
 
-        try {
-            return new Date(valor).toLocaleDateString("pt-BR", {
-                timeZone: "UTC",
-            });
-        } catch {
-            return String(valor);
+        const data = dataLocal(valor);
+
+        if (Number.isNaN(data.getTime())) return String(valor);
+
+        return data.toLocaleDateString("pt-BR");
+    }
+
+    function dataLocal(valor) {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(String(valor))) {
+            const [ano, mes, dia] = String(valor).split("-").map(Number);
+            return new Date(ano, mes - 1, dia, 12);
         }
+
+        return new Date(valor);
     }
 
     function valorHistoricoDe(item) {

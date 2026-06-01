@@ -700,13 +700,20 @@ export default function VisualizarCarroAdm() {
             return String(data);
         }
 
-        try {
-            return new Date(data).toLocaleDateString("pt-BR", {
-                timeZone: "UTC",
-            });
-        } catch {
-            return String(data);
+        const dataConvertida = dataLocal(data);
+
+        if (Number.isNaN(dataConvertida.getTime())) return String(data);
+
+        return dataConvertida.toLocaleDateString("pt-BR");
+    }
+
+    function dataLocal(valor) {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(String(valor))) {
+            const [ano, mes, dia] = String(valor).split("-").map(Number);
+            return new Date(ano, mes - 1, dia, 12);
         }
+
+        return new Date(valor);
     }
 
     function textoCambio(valor) {
