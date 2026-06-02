@@ -73,6 +73,24 @@ function dataLocal(valor) {
     return new Date(valor);
 }
 
+function statusParcela(parcela) {
+    return Number(getCampo(parcela, ["status", "STATUS"], 0));
+}
+
+function parcelaQuitada(parcela) {
+    return [1, 2].includes(statusParcela(parcela));
+}
+
+function textoStatusParcela(parcela) {
+    const status = statusParcela(parcela);
+    const pagamento = getCampo(parcela, ["data_pagamento", "DATA_PAGAMENTO"]);
+
+    if (status === 2) return "Amortizada";
+    if (status === 1) return `Pago em ${formatarData(pagamento)}`;
+
+    return "Em aberto";
+}
+
 function normalizarCompra(compra) {
     const parcelas = getCampo(compra, ["parcelas", "PARCELAS", "itens_financiamento", "ITENS_FINANCIAMENTO"], []);
 
@@ -1114,9 +1132,7 @@ export default function ListaUsuario() {
                                 {comprasUsuario.map((compra) => {
                                     const ehFinanciamento = Number(compra.formaPagamento) === 1;
                                     const parcelasVisiveis = Boolean(parcelasComprasAbertas[compra.idVenda]);
-                                    const parcelasPagas = compra.parcelas.filter((parcela) =>
-                                        Number(getCampo(parcela, ["status", "STATUS"], 0)) === 1
-                                    ).length;
+                                    const parcelasPagas = compra.parcelas.filter(parcelaQuitada).length;
 
                                     return (
                                         <article className={css.compraUsuario} key={compra.idVenda}>
@@ -1165,8 +1181,9 @@ export default function ListaUsuario() {
                                                                 const numero = getCampo(parcela, ["numero_parcela", "NUMERO_PARCELA"]);
                                                                 const valor = getCampo(parcela, ["valor_parcela", "VALOR_PARCELA"], 0);
                                                                 const vencimento = getCampo(parcela, ["data_vencimento", "DATA_VENCIMENTO"]);
-                                                                const pagamento = getCampo(parcela, ["data_pagamento", "DATA_PAGAMENTO"]);
-                                                                const paga = Number(getCampo(parcela, ["status", "STATUS"], 0)) === 1;
+                                                                const status = statusParcela(parcela);
+                                                                const paga = parcelaQuitada(parcela);
+                                                                const amortizada = status === 2;
                                                                 const chaveBaixa = `${compra.financiamento.idFinanciamento}-${numero}`;
 
                                                                 return (
@@ -1179,25 +1196,27 @@ export default function ListaUsuario() {
                                                                         <div>
                                                                             <strong>{formatarPreco(valor)}</strong>
                                                                             <span className={paga ? css.parcelaPaga : css.parcelaAberta}>
-                                                                                {paga ? `Pago em ${formatarData(pagamento)}` : "Em aberto"}
+                                                                                {textoStatusParcela(parcela)}
                                                                             </span>
                                                                         </div>
 
                                                                         <button
                                                                             type="button"
                                                                             className={`${css.baixarParcela} ${paga ? css.retirarBaixa : ""}`}
-                                                                            disabled={baixandoParcela === chaveBaixa}
+                                                                            disabled={baixandoParcela === chaveBaixa || amortizada}
                                                                             onClick={() =>
                                                                                 paga
                                                                                     ? retirarBaixaParcela(compra.financiamento.idFinanciamento, numero)
                                                                                     : darBaixaParcela(compra.financiamento.idFinanciamento, numero)
                                                                             }
                                                                         >
-                                                                            {baixandoParcela === chaveBaixa
-                                                                                ? "Salvando..."
-                                                                                : paga
-                                                                                    ? "Retirar baixa"
-                                                                                    : "Dar baixa"}
+                                                                            {amortizada
+                                                                                ? "Amortizada"
+                                                                                : baixandoParcela === chaveBaixa
+                                                                                    ? "Salvando..."
+                                                                                    : paga
+                                                                                        ? "Retirar baixa"
+                                                                                        : "Dar baixa"}
                                                                         </button>
                                                                     </div>
                                                                 );

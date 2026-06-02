@@ -91,6 +91,24 @@ function formaPagamentoTexto(valor) {
     return Number(valor) === 1 ? "Financiamento" : "à vista";
 }
 
+function statusParcela(parcela) {
+    return Number(getCampo(parcela, ["status", "STATUS"], 0));
+}
+
+function parcelaQuitada(parcela) {
+    return [1, 2].includes(statusParcela(parcela));
+}
+
+function textoStatusParcela(parcela) {
+    const status = statusParcela(parcela);
+    const pagamento = getCampo(parcela, ["data_pagamento", "DATA_PAGAMENTO"]);
+
+    if (status === 2) return "Amortizada";
+    if (status === 1) return `Pago em ${formatarData(pagamento)}`;
+
+    return "Em aberto";
+}
+
 function normalizarCompra(compra) {
     const parcelas = getCampo(compra, ["parcelas", "PARCELAS", "itens_financiamento", "ITENS_FINANCIAMENTO"], []);
 
@@ -265,7 +283,7 @@ export default function MinhasCompras() {
             idFinanciamento: compra.financiamento.idFinanciamento,
             veiculo: `${compra.marca} ${compra.modelo}`,
             valorFinanciado: compra.financiamento.valorFinanciado || compra.valorVenda,
-            parcelasAbertas: compra.parcelas.filter((parcela) => Number(getCampo(parcela, ["status", "STATUS"], 0)) !== 1).length,
+            parcelasAbertas: compra.parcelas.filter((parcela) => !parcelaQuitada(parcela)).length,
             valor: "",
             tipo: "1",
         });
@@ -353,7 +371,7 @@ export default function MinhasCompras() {
         const totalInvestido = compras.reduce((total, compra) => total + Number(compra.valorVenda || 0), 0);
         const financiamentos = compras.filter((compra) => Number(compra.formaPagamento) === 1).length;
         const parcelasAbertas = compras.reduce((total, compra) => {
-            return total + compra.parcelas.filter((parcela) => Number(getCampo(parcela, ["status", "STATUS"], 0)) !== 1).length;
+            return total + compra.parcelas.filter((parcela) => !parcelaQuitada(parcela)).length;
         }, 0);
 
         return { totalInvestido, financiamentos, parcelasAbertas };
@@ -404,7 +422,7 @@ export default function MinhasCompras() {
                         const imagens = imagensVeiculo(compra.idVeiculo);
                         const ehFinanciamento = Number(compra.formaPagamento) === 1;
                         const parcelasVisiveis = Boolean(parcelasAbertas[compra.idVenda]);
-                        const parcelasPagas = compra.parcelas.filter((parcela) => Number(getCampo(parcela, ["status", "STATUS"], 0)) === 1).length;
+                        const parcelasPagas = compra.parcelas.filter(parcelaQuitada).length;
                         const parcelasEmAberto = Math.max(0, compra.parcelas.length - parcelasPagas);
 
                         return (
@@ -486,8 +504,7 @@ export default function MinhasCompras() {
                                                     const numero = getCampo(parcela, ["numero_parcela", "NUMERO_PARCELA"]);
                                                     const valor = getCampo(parcela, ["valor_parcela", "VALOR_PARCELA"], 0);
                                                     const vencimento = getCampo(parcela, ["data_vencimento", "DATA_VENCIMENTO"]);
-                                                    const pagamento = getCampo(parcela, ["data_pagamento", "DATA_PAGAMENTO"]);
-                                                    const pago = Number(getCampo(parcela, ["status", "STATUS"], 0)) === 1;
+                                                    const pago = parcelaQuitada(parcela);
                                                     const qrcodeUrl = urlQrCodeParcela(compra, parcela);
 
                                                     return (
@@ -499,7 +516,7 @@ export default function MinhasCompras() {
                                                             <div>
                                                                 <strong>{formatarPreco(valor)}</strong>
                                                                 <span className={pago ? css.pago : css.aberto}>
-                                                                    {pago ? `Pago em ${formatarData(pagamento)}` : "Em aberto"}
+                                                                    {textoStatusParcela(parcela)}
                                                                 </span>
                                                                 {!pago && qrcodeUrl && (
                                                                     <button
