@@ -85,6 +85,23 @@ function formatarInscricaoEstadual(valor) {
     return somenteDigitos(valor).slice(0, 14);
 }
 
+function normalizarDecimal(valor) {
+    const texto = String(valor ?? "")
+        .replace(/[^\d,.]/g, "")
+        .replace(",", ".");
+    const partes = texto.split(".");
+
+    if (partes.length <= 1) return partes[0];
+
+    return `${partes[0]}.${partes.slice(1).join("")}`;
+}
+
+function decimalParaBackend(valor) {
+    const numero = Number(normalizarDecimal(valor));
+
+    return Number.isFinite(numero) ? String(numero) : "0";
+}
+
 async function criarArquivoPadrao(caminho, nome) {
     const response = await fetch(caminho);
 
@@ -329,9 +346,9 @@ export default function ConfiguracoesSite() {
             banco: (novoValor) => formatarInteiro(novoValor, 3),
             agencia: (novoValor) => formatarInteiro(novoValor, 6),
             conta: formatarContaBancaria,
-            porcentagemJuro: (novoValor) => String(novoValor).replace(",", "."),
-            porcentagemLucro: (novoValor) => String(novoValor).replace(",", "."),
-            descontoAVista: (novoValor) => String(novoValor).replace(",", "."),
+            porcentagemJuro: normalizarDecimal,
+            porcentagemLucro: normalizarDecimal,
+            descontoAVista: normalizarDecimal,
         };
 
         return mascaras[campo] ? mascaras[campo](valor) : valor;
@@ -384,11 +401,11 @@ export default function ConfiguracoesSite() {
         formData.append("numero_endereco", somenteDigitos(dados.numeroEndereco));
         formData.append("chave_pix", dados.chavePix);
         formData.append("banco", somenteDigitos(dados.banco));
-        formData.append("porcentagem_juro", dados.porcentagemJuro);
+        formData.append("porcentagem_juro", decimalParaBackend(dados.porcentagemJuro));
         formData.append("agencia", somenteDigitos(dados.agencia));
         formData.append("conta", somenteDigitos(dados.conta));
-        formData.append("porcentagem_lucro", dados.porcentagemLucro);
-        formData.append("desconto_a_vista", dados.descontoAVista);
+        formData.append("porcentagem_lucro", decimalParaBackend(dados.porcentagemLucro));
+        formData.append("desconto_a_vista", decimalParaBackend(dados.descontoAVista));
         formData.append("descricao", dados.textoBanner);
         formData.append("cor_primaria", dados.corPrimaria);
         formData.append("cor_secundaria", dados.corSecundaria);
@@ -712,21 +729,21 @@ export default function ConfiguracoesSite() {
                                     <label>
                                         Juros
                                         <input
-                                            type="number"
+                                            type="text"
+                                            inputMode="decimal"
                                             min="0"
-                                            step="0.01"
                                             value={form.porcentagemJuro}
                                             onChange={(e) => atualizarCampo("porcentagemJuro", e.target.value)}
-                                            placeholder="Ex: 1.5"
+                                            placeholder="Ex: 1,5"
                                         />
                                     </label>
 
                                     <label>
                                         Lucro
                                         <input
-                                            type="number"
+                                            type="text"
+                                            inputMode="decimal"
                                             min="0"
-                                            step="0.01"
                                             value={form.porcentagemLucro}
                                             onChange={(e) => atualizarCampo("porcentagemLucro", e.target.value)}
                                             placeholder="Ex: 20"
@@ -736,9 +753,9 @@ export default function ConfiguracoesSite() {
                                     <label>
                                         Desconto à vista
                                         <input
-                                            type="number"
+                                            type="text"
+                                            inputMode="decimal"
                                             min="0"
-                                            step="0.01"
                                             value={form.descontoAVista}
                                             onChange={(e) => atualizarCampo("descontoAVista", e.target.value)}
                                             placeholder="Ex: 5"
