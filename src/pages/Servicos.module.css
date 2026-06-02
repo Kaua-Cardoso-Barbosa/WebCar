@@ -6,8 +6,10 @@
 
 .main {
     flex: 1;
+    min-width: 0;
     padding: 24px;
     color: var(--cor-texto-principal);
+    overflow-x: hidden;
 }
 
 .topo {
@@ -15,6 +17,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 18px;
+    gap: 16px;
 }
 
 .topo h1 {
@@ -22,6 +25,7 @@
     font-weight: 800;
     margin: 0;
     color: var(--cor-texto-principal);
+    overflow-wrap: anywhere;
 }
 
 .botoes {
@@ -93,6 +97,7 @@
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 1px 3px var(--sombra-preta-05);
+    min-width: 0;
 }
 
 .tabelaCard table {
@@ -126,6 +131,7 @@
     display: flex;
     justify-content: flex-end;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .icone {

@@ -122,6 +122,15 @@ export default function SidebarMenu() {
                         <span>Usuários</span>
                     </Link>
 
+                    <Link
+                        to="/financeiro"
+                        className={`${styles.item} ${location.pathname === "/financeiro" ? styles.active : ""}`}
+                        onClick={fecharMenu}
+                    >
+                        <FinanceIcon />
+                        <span>Financeiro</span>
+                    </Link>
+
                     <Link to="/listarmarcas" className={styles.item} onClick={fecharMenu}>
                         <span className={styles.icon}>⊕</span>
                         <span>Marcas</span>
@@ -196,6 +205,18 @@ function UserIcon() {
             <circle cx="9.5" cy="7" r="3" />
             <path d="M20 21v-2a4 4 0 0 0-3-3.87" />
             <path d="M16 4.13a4 4 0 0 1 0 7.75" />
+        </svg>
+    );
+}
+
+function FinanceIcon() {
+    return (
+        <svg className={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M4 19h16" />
+            <path d="M7 16V9" />
+            <path d="M12 16V5" />
+            <path d="M17 16v-4" />
+            <path d="M5 9l7-5 7 5" />
         </svg>
     );
 }

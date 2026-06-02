@@ -6,6 +6,7 @@
 
 .main {
     flex: 1;
+    min-width: 0;
     padding: 24px;
     color: var(--cor-texto-principal);
 }
@@ -469,8 +470,4 @@
         width: auto;
         text-align: center;
     }
-}
-
-.layout {
-    display: block;
 }

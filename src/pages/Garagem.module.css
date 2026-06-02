@@ -7,12 +7,14 @@
 
 .garagem {
     flex: 1;
+    min-width: 0;
     min-height: 100vh;
     background-color: var(--cor-fundo-dashboard);
     padding: 24px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
 }
 
 .topo {
@@ -28,6 +30,7 @@
     font-weight: 800;
     margin: 0;
     color: var(--cor-texto-principal);
+    overflow-wrap: anywhere;
 }
 
 .botaoNovo {
@@ -68,6 +71,7 @@
     gap: 14px;
     box-shadow: 0 1px 2px var(--sombra-preta-03);
     box-sizing: border-box;
+    min-width: 0;
 }
 
 .iconeBox {
@@ -169,6 +173,7 @@
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 1px 2px var(--sombra-preta-03);
+    min-width: 0;
 }
 
 .tableResponsive {
@@ -206,6 +211,7 @@
     gap: 12px;
     font-weight: 600;
     color: var(--cor-texto-secundario-escuro);
+    min-width: 0;
 }
 
 .modeloCell img {
@@ -213,6 +219,7 @@
     height: 42px;
     border-radius: 8px;
     object-fit: cover;
+    flex: 0 0 auto;
 }
 
 .preco {

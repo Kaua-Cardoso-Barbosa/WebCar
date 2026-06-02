@@ -32,6 +32,7 @@ import AtualizarValores from "./pages/AtualizarValores.jsx";
 import ListarMarcas from "./pages/ListarMarcas.jsx";
 import ListaUsuarios from "./pages/ListaUsuarios.jsx";
 import ConfiguracoesSite from "./pages/ConfiguracoesSite.jsx";
+import Financeiro from "./pages/Financeiro.jsx";
 import MinhasCompras from "./pages/MinhasCompras.jsx";
 import MinhasVendas from "./pages/MinhasVendas.jsx";
 
@@ -346,6 +347,14 @@ export default function App() {
                     element={
                         <RotaProtegida tiposPermitidos={[0]}>
                             <ConfiguracoesSite />
+                        </RotaProtegida>
+                    }
+                />
+                <Route
+                    path="/financeiro"
+                    element={
+                        <RotaProtegida tiposPermitidos={[0]}>
+                            <Financeiro />
                         </RotaProtegida>
                     }
                 />

@@ -751,17 +751,6 @@ async function buscarDadosDashboard() {
     });
 }
 
-function hojeInputData() {
-    return new Date().toISOString().slice(0, 10);
-}
-
-function dataInputParaApi(valor) {
-    if (!valor) return "";
-    const [ano, mes, dia] = String(valor).split("-");
-    if (!ano || !mes || !dia) return valor;
-    return `${dia}/${mes}/${ano}`;
-}
-
 // funcao dos graficos de veiculos da dashboard
 function normalizarVeiculosDashboard(lista) {
     return paraArray(lista).map((veiculo) => {
@@ -1069,15 +1058,6 @@ export default function Dashboard() {
     const [carregandoModal, setCarregandoModal] = useState(false);
     const [erroModal, setErroModal] = useState("");
     const [detalhesModal, setDetalhesModal] = useState({ financiamentos: [], parcelasAtrasadas: [] });
-    const [controle, setControle] = useState({
-        tipo: "despesa",
-        descricao: "",
-        valor: "",
-        data: hojeInputData(),
-    });
-    const [salvandoControle, setSalvandoControle] = useState(false);
-    const [mensagemControle, setMensagemControle] = useState("");
-    const [erroControle, setErroControle] = useState("");
 
     useEffect(() => {
         let ativo = true;
@@ -1104,79 +1084,6 @@ export default function Dashboard() {
             ativo = false;
         };
     }, []);
-
-    // funcao do controle de receita e despesa
-    function atualizarControle(campo, valor) {
-        setErroControle("");
-        setMensagemControle("");
-        setControle((atual) => ({
-            ...atual,
-            [campo]: valor,
-        }));
-    }
-
-    // envia receita ou despesa pelo controle da dashboard
-    async function salvarControle(event) {
-        event.preventDefault();
-        if (salvandoControle) return;
-
-        const valorControle = numero(controle.valor);
-        const descricao = controle.descricao.trim();
-
-        if (!descricao) {
-            setErroControle("Informe uma descrição.");
-            return;
-        }
-
-        if (!Number.isFinite(valorControle) || valorControle <= 0) {
-            setErroControle("Informe um valor maior que zero.");
-            return;
-        }
-
-        if (!controle.data) {
-            setErroControle("Informe uma data.");
-            return;
-        }
-
-        const ehReceita = controle.tipo === "receita";
-        const endpoint = ehReceita ? "adicionar_receita" : "adicionar_despesa";
-        const campoData = ehReceita ? "data_receita" : "data_despesa";
-
-        try {
-            setSalvandoControle(true);
-            setErroControle("");
-            setMensagemControle("");
-
-            const response = await fetch(`${API_URL}/${endpoint}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({
-                    descricao,
-                    valor: valorControle,
-                    [campoData]: dataInputParaApi(controle.data),
-                }),
-            });
-            const data = await lerRespostaJson(response);
-
-            if (!response.ok) {
-                throw new Error(data?.mensagem || "Não foi possível salvar o lançamento.");
-            }
-
-            setMensagemControle(data?.mensagem || "Lançamento cadastrado com sucesso.");
-            setControle((atual) => ({
-                ...atual,
-                descricao: "",
-                valor: "",
-                data: hojeInputData(),
-            }));
-            setDados(await buscarDadosDashboard());
-        } catch (error) {
-            setErroControle(error.message || "Erro ao salvar lançamento.");
-        } finally {
-            setSalvandoControle(false);
-        }
-    }
 
     useEffect(() => {
         if (!modalGerencial) return;
@@ -1528,76 +1435,6 @@ export default function Dashboard() {
                                         </article>
                                         );
                                     })}
-                                </section>
-
-                                {/* controle para adicionar receita ou despesa */}
-                                <section className={styles.controlePanel}>
-                                    <div className={styles.sectionHeader}>
-                                        <div>
-                                            <h2>Controle</h2>
-                                            <p>Cadastre receitas e despesas avulsas da operação.</p>
-                                        </div>
-                                        <span className={styles.sectionIcon}>{controle.tipo === "receita" ? <DollarSign size={20} /> : <Receipt size={20} />}</span>
-                                    </div>
-
-                                    <form className={styles.controleForm} onSubmit={salvarControle}>
-                                        <div className={styles.controleTipo} aria-label="Tipo do lançamento">
-                                            <button
-                                                className={controle.tipo === "despesa" ? styles.controleTipoAtivo : ""}
-                                                onClick={() => atualizarControle("tipo", "despesa")}
-                                                type="button"
-                                            >
-                                                Despesa
-                                            </button>
-                                            <button
-                                                className={controle.tipo === "receita" ? styles.controleTipoAtivo : ""}
-                                                onClick={() => atualizarControle("tipo", "receita")}
-                                                type="button"
-                                            >
-                                                Receita
-                                            </button>
-                                        </div>
-
-                                        <label>
-                                            Descrição
-                                            <input
-                                                onChange={(event) => atualizarControle("descricao", event.target.value)}
-                                                placeholder="Ex: Aluguel da loja"
-                                                type="text"
-                                                value={controle.descricao}
-                                            />
-                                        </label>
-
-                                        <label>
-                                            Valor
-                                            <input
-                                                inputMode="decimal"
-                                                onChange={(event) => atualizarControle("valor", event.target.value)}
-                                                placeholder="0,00"
-                                                type="text"
-                                                value={controle.valor}
-                                            />
-                                        </label>
-
-                                        <label>
-                                            Data
-                                            <input
-                                                onChange={(event) => atualizarControle("data", event.target.value)}
-                                                type="date"
-                                                value={controle.data}
-                                            />
-                                        </label>
-
-                                        <button className={styles.controleSubmit} disabled={salvandoControle} type="submit">
-                                            {salvandoControle ? "Salvando..." : "Adicionar"}
-                                        </button>
-                                    </form>
-
-                                    {(erroControle || mensagemControle) && (
-                                        <p className={erroControle ? styles.controleErro : styles.controleSucesso}>
-                                            {erroControle || mensagemControle}
-                                        </p>
-                                    )}
                                 </section>
 
                                 <section className={styles.periodPanel}>

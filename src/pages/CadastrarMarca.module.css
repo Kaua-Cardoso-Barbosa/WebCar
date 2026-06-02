@@ -6,13 +6,16 @@
 
 .paginaCadastro {
     flex: 1;
+    min-width: 0;
     padding: 24px;
     color: var(--cor-texto-principal);
+    overflow-x: hidden;
 }
 
 .areaCadastro {
     width: 100%;
     max-width: 720px;
+    min-width: 0;
 }
 
 .topo {
@@ -24,6 +27,7 @@
     font-weight: 800;
     color: var(--cor-texto-principal);
     margin: 0;
+    overflow-wrap: anywhere;
 }
 
 .subtituloCadastro {
@@ -180,5 +184,10 @@
 
     .botoes {
         flex-direction: column-reverse;
+    }
+
+    .cancelar,
+    .botaoCadastro {
+        width: 100%;
     }
 }

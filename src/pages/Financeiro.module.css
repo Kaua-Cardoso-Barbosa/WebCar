@@ -1,0 +1,519 @@
+.layout {
+    display: flex;
+    min-height: calc(100vh - 70px);
+    background: var(--cor-fundo-dashboard);
+}
+
+.main {
+    flex: 1;
+    min-width: 0;
+    padding: 32px;
+    color: var(--cor-texto-principal);
+    overflow-x: hidden;
+}
+
+.topo {
+    margin-bottom: 24px;
+}
+
+.topo span {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: var(--cor-principal);
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+.topo h1 {
+    margin: 0;
+    color: var(--cor-texto-dashboard);
+    font-size: 30px;
+    font-weight: 850;
+    overflow-wrap: anywhere;
+}
+
+.topo p {
+    max-width: 760px;
+    margin: 8px 0 0;
+    color: var(--cor-texto-muted-forte);
+    font-size: 15px;
+}
+
+.card {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 18px;
+    padding: 24px 28px;
+    background: var(--cor-superficie);
+    border: 1px solid var(--cor-borda-painel);
+    border-radius: 12px;
+    box-shadow: 0 12px 28px var(--sombra-escura-04);
+}
+
+.cardTopo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 20px;
+    min-width: 0;
+}
+
+.cardTopo h2 {
+    margin: 0;
+    color: var(--cor-texto-dashboard);
+    font-size: 19px;
+    font-weight: 850;
+    overflow-wrap: anywhere;
+}
+
+.cardTopo p {
+    margin: 5px 0 0;
+    color: var(--cor-texto-muted-forte);
+    font-size: 13px;
+}
+
+.icone {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    color: var(--cor-principal);
+    background: var(--cor-azul-fundo-botao);
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.form {
+    display: grid;
+    grid-template-columns: minmax(170px, .8fr) minmax(220px, 1.3fr) minmax(150px, .8fr) minmax(150px, .8fr) auto;
+    gap: 12px;
+    align-items: end;
+    min-width: 0;
+}
+
+.tipo {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: 44px;
+    padding: 4px;
+    border: 1px solid var(--cor-borda-painel);
+    border-radius: 10px;
+    background: var(--cor-fundo-input);
+}
+
+.tipo button,
+.submit {
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.tipo button {
+    color: var(--cor-texto-muted-forte);
+    background: transparent;
+}
+
+.tipoAtivo {
+    color: var(--cor-principal) !important;
+    background: var(--cor-azul-fundo-botao) !important;
+}
+
+.form label {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    color: var(--cor-texto-muted-forte);
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.form input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--cor-borda-painel);
+    border-radius: 10px;
+    color: var(--cor-texto-principal);
+    background: var(--cor-fundo-input);
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+.form input:focus {
+    border-color: color-mix(in srgb, var(--cor-principal) 42%, var(--cor-borda-painel));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--cor-principal) 14%, transparent);
+}
+
+.submit {
+    min-height: 44px;
+    padding: 0 18px;
+    color: #fff;
+    background: var(--cor-principal);
+}
+
+.submit:disabled {
+    cursor: wait;
+    opacity: .7;
+}
+
+.erro,
+.sucesso {
+    margin: 14px 0 0;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.erro {
+    color: #b91c1c;
+}
+
+.sucesso {
+    color: #15803d;
+}
+
+.graficoCard,
+.tabelaCard {
+    min-width: 0;
+    background: var(--cor-superficie);
+    border: 1px solid var(--cor-borda-painel);
+    border-radius: 12px;
+    box-shadow: 0 12px 28px var(--sombra-escura-04);
+}
+
+.graficoCard {
+    margin-bottom: 18px;
+    padding: 22px;
+}
+
+.secaoTopo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 16px;
+}
+
+.secaoTopo h2 {
+    margin: 0;
+    color: var(--cor-texto-dashboard);
+    font-size: 18px;
+    font-weight: 850;
+}
+
+.secaoTopo p {
+    margin: 5px 0 0;
+    color: var(--cor-texto-muted-forte);
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.grafico {
+    width: 100%;
+    height: 340px;
+    min-width: 0;
+}
+
+.tabelasGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+}
+
+.tabelaCard {
+    padding: 0;
+    overflow: hidden;
+}
+
+.tabelaCard .secaoTopo {
+    margin: 0;
+    padding: 20px 22px;
+    border-bottom: 1px solid var(--cor-borda-painel);
+    background: var(--cor-fundo-tabela-head);
+}
+
+.tabelaWrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.tabelaWrap table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.tabelaWrap th,
+.tabelaWrap td {
+    padding: 14px 22px;
+    border-bottom: 1px solid var(--cor-divisor);
+    text-align: left;
+}
+
+.tabelaWrap th {
+    color: var(--cor-texto-muted-azulado);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.tabelaWrap td {
+    color: var(--cor-texto-principal);
+    font-size: 14px;
+    font-weight: 750;
+    word-break: normal;
+    overflow-wrap: break-word;
+}
+
+.tabelaWrap tbody tr:hover {
+    background: var(--cor-fundo-input);
+}
+
+.tabelaWrap th:nth-child(1) {
+    width: 46%;
+}
+
+.tabelaWrap th:nth-child(2) {
+    width: 15%;
+}
+
+.tabelaWrap th:nth-child(3) {
+    width: 12%;
+}
+
+.tabelaWrap th:nth-child(4) {
+    width: 15%;
+}
+
+.tabelaWrap th:nth-child(5) {
+    width: 12%;
+}
+
+.colDescricao {
+    line-height: 1.45;
+}
+
+.valorReceita {
+    color: #15803d !important;
+    white-space: nowrap;
+}
+
+.valorDespesa {
+    color: #b91c1c !important;
+    white-space: nowrap;
+}
+
+.colData,
+.colOrigem,
+.colStatus {
+    white-space: nowrap;
+}
+
+.colOrigem {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vazio,
+.vazioTabela {
+    color: var(--cor-texto-muted-forte);
+    font-size: 14px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.vazio {
+    display: grid;
+    min-height: 100%;
+    place-items: center;
+    margin: 0;
+}
+
+.vazioTabela {
+    padding: 24px 12px !important;
+}
+
+.statusAtivo,
+.statusInativo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    min-width: 84px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.statusAtivo {
+    color: var(--cor-sucesso-texto);
+    background: var(--cor-sucesso-fundo);
+}
+
+.statusInativo {
+    color: var(--cor-erro-texto);
+    background: var(--cor-erro-fundo);
+}
+
+@media (max-width: 980px) {
+    .form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tabelasGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .submit {
+        width: 100%;
+    }
+}
+
+@media (max-width: 720px) {
+    .layout {
+        display: block;
+    }
+
+    .main {
+        padding: 24px 16px;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .cardTopo {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .topo h1 {
+        font-size: 26px;
+    }
+
+    .form {
+        grid-template-columns: 1fr;
+    }
+
+    .tabelasGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .graficoCard {
+        padding: 18px;
+    }
+
+    .tabelaCard .secaoTopo {
+        padding: 18px;
+    }
+
+    .grafico {
+        height: 320px;
+    }
+}
+
+@media (max-width: 420px) {
+    .main {
+        padding: 20px 12px;
+    }
+
+    .card {
+        padding: 16px;
+    }
+
+    .graficoCard,
+    .tabelaCard {
+        border-radius: 10px;
+    }
+
+    .tipo {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    .tabelaWrap {
+        overflow: visible;
+    }
+
+    .tabelaWrap table,
+    .tabelaWrap thead,
+    .tabelaWrap tbody,
+    .tabelaWrap tr,
+    .tabelaWrap td {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        table-layout: auto;
+    }
+
+    .tabelaWrap thead {
+        display: none;
+    }
+
+    .tabelaWrap tbody {
+        display: grid;
+        gap: 12px;
+    }
+
+    .tabelaWrap tr {
+        padding: 12px;
+        border: 1px solid var(--cor-borda-painel);
+        border-radius: 10px;
+        background: var(--cor-superficie);
+    }
+
+    .tabelaWrap td {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--cor-divisor);
+        text-align: right;
+    }
+
+    .colDescricao,
+    .valorReceita,
+    .valorDespesa,
+    .colData,
+    .colOrigem,
+    .colStatus {
+        white-space: normal;
+    }
+
+    .colData,
+    .colStatus {
+        white-space: nowrap;
+    }
+
+    .tabelaWrap td:last-child {
+        border-bottom: none;
+    }
+
+    .tabelaWrap td::before {
+        content: attr(data-label);
+        color: var(--cor-texto-muted-forte);
+        font-size: 12px;
+        font-weight: 900;
+        text-align: left;
+    }
+
+    .vazioTabela {
+        display: block !important;
+        text-align: center;
+    }
+
+    .vazioTabela::before {
+        content: none !important;
+    }
+}
