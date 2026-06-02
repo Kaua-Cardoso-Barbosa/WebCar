@@ -61,6 +61,7 @@ const CARD_CONFIGS = [
 ];
 
 const CHART_HEIGHT = 380;
+const REGISTROS_POR_PAGINA_RELATORIO = 10;
 
 const CATEGORIAS_GRAFICOS = [
     { id: "financeiro", label: "Financeiro", icon: LineChartIcon },
@@ -262,10 +263,10 @@ function formatarDiasEstoque(valor, linha) {
 function classeColunaTabela(coluna) {
     const nome = normalizarNomeColunaTabela(coluna);
     if (nome.startsWith("id_")) return styles.colunaId;
-    if (nome === "forma_pagamento") return styles.colunaPagamento;
     if (nome.includes("data")) return styles.colunaData;
+    if (nome === "forma_pagamento") return styles.colunaPagamento;
     if (nome === "status" || nome.includes("status") || nome.includes("documentacao") || nome.includes("forma_pagamento")) return styles.colunaCentro;
-    if (nome.includes("valor") || nome.includes("preco") || nome.includes("total") || nome.includes("lucro") || nome.includes("saldo") || nome.includes("margem") || nome.includes("qtd") || nome.includes("quantidade") || nome.includes("parcelas") || nome.includes("dias")) return styles.colunaValor;
+    if (nome.includes("valor") || nome.includes("preco") || nome.includes("total") || nome.includes("lucro") || nome.includes("saldo") || nome.includes("margem") || nome.includes("qtd") || nome.includes("quantidade") || nome.includes("parcela") || nome.includes("numero") || nome.includes("dias") || nome === "ano" || nome.includes("km") || nome.includes("quilometragem")) return styles.colunaValor;
     if (nome.includes("nome") || nome.includes("cliente") || nome.includes("vendedor") || nome.includes("veiculo") || nome.includes("marca") || nome.includes("modelo") || nome.includes("descricao") || nome.includes("indicador") || nome.includes("origem")) return styles.colunaNome;
     return "";
 }
@@ -919,7 +920,7 @@ function textoInfoDashboard(titulo) {
         "Curva ABC do estoque": "Classifica os veículos pelo peso financeiro no estoque. A curva A concentra os itens de maior impacto no capital parado.",
         "Serviços mais usados": "Mostra quais serviços de manutenção aparecem com mais frequência. Ajuda a entender custos recorrentes e padrões de preparação dos veículos.",
         "Vendas": "Lista vendas realizadas no período, com cliente, veículo, forma de pagamento, valor e lucro bruto quando disponível.",
-        "Financiamentos": "Lista contratos financiados, saldo devedor e situação das parcelas para acompanhamento administrativo.",
+        "Financiamentos": "Lista contratos financiados e situação das parcelas para acompanhamento administrativo.",
         "Veículos": "Lista veículos cadastrados, status, documentação, preço de custo e preço de venda.",
         "Carros em estoque": "Mostra os veículos disponíveis e o capital parado em cada item do estoque.",
         "Vendas consideradas": "Mostra as vendas usadas para formar receita, lucro e outros indicadores do período selecionado.",
@@ -928,7 +929,7 @@ function textoInfoDashboard(titulo) {
         "Vendas do período": "Lista as vendas que participam do indicador aberto, respeitando o filtro de período da dashboard.",
         "Vendas usadas no cálculo": "Mostra as vendas utilizadas para calcular o ticket médio e o total vendido.",
         "Carros": "Lista os veículos considerados no indicador de estoque, com dados de status, documentação e valores.",
-        "Detalhes dos financiamentos": "Mostra contratos financiados, quantidade de parcelas, saldo devedor e parcelas atrasadas.",
+        "Detalhes dos financiamentos": "Mostra contratos financiados, quantidade de parcelas e parcelas atrasadas.",
         "Detalhes das parcelas": "Lista parcelas relacionadas ao indicador, incluindo vencimento, pagamento, status e valor.",
         "Fluxo de recebimentos": "Mostra os valores previstos para entrada futura no caixa, agrupados por período.",
         "Parcelas detalhadas": "Mostra parcelas pagas, abertas e atrasadas para análise de cobrança e inadimplência.",
@@ -969,12 +970,24 @@ function ChartCard({ titulo, subtitulo, icon = BarChart3, children, cheio = fals
 
 function TabelaRelatorio({ titulo, dados, limiteColunas = 8, info = "" }) {
     const linhas = paraArray(dados);
+    const [paginaAtual, setPaginaAtual] = useState(1);
     const colunas = useMemo(() => {
         const primeiraLinha = linhas.find((linha) => linha && typeof linha === "object");
         return primeiraLinha
             ? Object.keys(primeiraLinha).filter((coluna) => coluna !== "atrasada").slice(0, limiteColunas)
             : [];
     }, [linhas, limiteColunas]);
+    const totalPaginas = Math.max(1, Math.ceil(linhas.length / REGISTROS_POR_PAGINA_RELATORIO));
+    const inicioPagina = (paginaAtual - 1) * REGISTROS_POR_PAGINA_RELATORIO;
+    const linhasPagina = linhas.slice(inicioPagina, inicioPagina + REGISTROS_POR_PAGINA_RELATORIO);
+
+    useEffect(() => {
+        setPaginaAtual(1);
+    }, [titulo, dados]);
+
+    useEffect(() => {
+        setPaginaAtual((pagina) => Math.min(pagina, totalPaginas));
+    }, [totalPaginas]);
 
     return (
         <section className={styles.tableCard}>
@@ -999,8 +1012,8 @@ function TabelaRelatorio({ titulo, dados, limiteColunas = 8, info = "" }) {
                             </tr>
                         </thead>
                         <tbody>
-                            {linhas.slice(0, 10).map((linha, index) => (
-                                <tr key={`${titulo}-${index}`}>
+                            {linhasPagina.map((linha, index) => (
+                                <tr key={`${titulo}-${inicioPagina + index}`}>
                                     {colunas.map((coluna) => (
                                         <td className={classeColunaTabela(coluna)} key={coluna}>{formatarCampoTabela(coluna, linha[coluna], linha)}</td>
                                     ))}
@@ -1008,6 +1021,25 @@ function TabelaRelatorio({ titulo, dados, limiteColunas = 8, info = "" }) {
                             ))}
                         </tbody>
                     </table>
+                    {totalPaginas > 1 && (
+                        <div className={styles.paginacaoTabela}>
+                            <button
+                                type="button"
+                                disabled={paginaAtual === 1}
+                                onClick={() => setPaginaAtual((pagina) => Math.max(1, pagina - 1))}
+                            >
+                                Anterior
+                            </button>
+                            <span>{paginaAtual} / {totalPaginas}</span>
+                            <button
+                                type="button"
+                                disabled={paginaAtual === totalPaginas}
+                                onClick={() => setPaginaAtual((pagina) => Math.min(totalPaginas, pagina + 1))}
+                            >
+                                Proxima
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </section>

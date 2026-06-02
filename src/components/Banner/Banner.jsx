@@ -48,8 +48,13 @@ function lerConfiguracoesSiteCache() {
     }
 }
 
+function usuarioEstaLogado() {
+    return Boolean(localStorage.getItem("usuario_id") || localStorage.getItem("token"));
+}
+
 export default function Banner() {
     const [config, setConfig] = useState(() => lerConfiguracoesSiteCache() || CONFIG_SITE_PADRAO);
+    const [logado, setLogado] = useState(usuarioEstaLogado);
 
     useEffect(() => {
         async function buscarConfiguracoes() {
@@ -95,6 +100,22 @@ export default function Banner() {
         };
     }, []);
 
+    useEffect(() => {
+        function atualizarAuth() {
+            setLogado(usuarioEstaLogado());
+        }
+
+        window.addEventListener("webcar:auth", atualizarAuth);
+        window.addEventListener("storage", atualizarAuth);
+        window.addEventListener("focus", atualizarAuth);
+
+        return () => {
+            window.removeEventListener("webcar:auth", atualizarAuth);
+            window.removeEventListener("storage", atualizarAuth);
+            window.removeEventListener("focus", atualizarAuth);
+        };
+    }, []);
+
     return (
         <section className={css.banner}>
             <div className={css.bannerMedia}>
@@ -113,9 +134,11 @@ export default function Banner() {
                         <Link to="/catalogo" className={css.primario}>
                             Ver catálogo
                         </Link>
-                        <Link to="/Login" className={css.secundario}>
-                            Entrar
-                        </Link>
+                        {!logado && (
+                            <Link to="/Login" className={css.secundario}>
+                                Entrar
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>

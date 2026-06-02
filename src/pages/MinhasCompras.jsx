@@ -95,18 +95,35 @@ function statusParcela(parcela) {
     return Number(getCampo(parcela, ["status", "STATUS"], 0));
 }
 
+function parcelaPaga(parcela) {
+    return statusParcela(parcela) === 1;
+}
+
+function parcelaAmortizada(parcela) {
+    return statusParcela(parcela) === 2;
+}
+
 function parcelaQuitada(parcela) {
-    return [1, 2].includes(statusParcela(parcela));
+    return parcelaPaga(parcela) || parcelaAmortizada(parcela);
 }
 
 function textoStatusParcela(parcela) {
     const status = statusParcela(parcela);
     const pagamento = getCampo(parcela, ["data_pagamento", "DATA_PAGAMENTO"]);
 
-    if (status === 2) return "Amortizada";
     if (status === 1) return `Pago em ${formatarData(pagamento)}`;
+    if (status === 2) return "Amortizada";
 
     return "Em aberto";
+}
+
+function encontrarParcela(compras, idFinanciamento, numeroParcela) {
+    return compras
+        .flatMap((compra) => compra.parcelas.map((parcela) => ({ compra, parcela })))
+        .find(({ compra, parcela }) => (
+            String(compra.financiamento.idFinanciamento) === String(idFinanciamento)
+            && Number(getCampo(parcela, ["numero_parcela", "NUMERO_PARCELA"])) === Number(numeroParcela)
+        ))?.parcela;
 }
 
 function normalizarCompra(compra) {
@@ -162,13 +179,16 @@ export default function MinhasCompras() {
             if (!response.ok) {
                 setErro(data.mensagem || "Não foi possível carregar suas compras.");
                 setCompras([]);
-                return;
+                return [];
             }
 
-            setCompras((data.compras || data.vendas || data || []).map(normalizarCompra));
+            const comprasNormalizadas = (data.compras || data.vendas || data || []).map(normalizarCompra);
+            setCompras(comprasNormalizadas);
+            return comprasNormalizadas;
         } catch {
             setErro("Não foi possível conectar com o servidor.");
             setCompras([]);
+            return [];
         } finally {
             if (mostrarCarregando) setCarregando(false);
         }
@@ -179,7 +199,7 @@ export default function MinhasCompras() {
     }, []);
 
     useEffect(() => {
-        if (!qrCodeParcela || baixandoParcela || mensagemPagamento) {
+        if (!qrCodeParcela || baixandoParcela || mensagemPagamento || erroPagamento) {
             return;
         }
 
@@ -190,14 +210,14 @@ export default function MinhasCompras() {
         }, 1000);
 
         const expiracao = setTimeout(() => {
-            concluirPagamentoParcela();
+            setErroPagamento("QR Code expirou. Abra o pagamento novamente antes de confirmar.");
         }, 60000);
 
         return () => {
             clearInterval(contador);
             clearTimeout(expiracao);
         };
-    }, [qrCodeParcela, baixandoParcela, mensagemPagamento]);
+    }, [qrCodeParcela, baixandoParcela, mensagemPagamento, erroPagamento]);
 
     function alternarParcelas(idVenda) {
         setParcelasAbertas((atuais) => ({
@@ -238,21 +258,22 @@ export default function MinhasCompras() {
         setBaixandoParcela(false);
     }
 
-    async function concluirPagamentoParcela() {
+    async function atualizarStatusPagamentoParcela() {
         if (!qrCodeParcela || baixandoParcela || mensagemPagamento) return;
+        const pagamentoAtual = qrCodeParcela;
 
         try {
             setBaixandoParcela(true);
             setErroPagamento("");
 
-            const response = await fetch(`${API_URL}/adicionar_baixa/${qrCodeParcela.idFinanciamento}`, {
+            const response = await fetch(`${API_URL}/adicionar_baixa/${pagamentoAtual.idFinanciamento}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 credentials: "include",
                 body: JSON.stringify({
-                    parcela: Number(qrCodeParcela.numero),
+                    parcela: Number(pagamentoAtual.numero),
                 }),
             });
 
@@ -263,8 +284,19 @@ export default function MinhasCompras() {
                 return;
             }
 
-            setMensagemPagamento(data.mensagem || "Pagamento concluido com sucesso.");
-            await carregarCompras({ mostrarCarregando: false });
+            const comprasAtualizadas = await carregarCompras({ mostrarCarregando: false });
+            const parcelaAtualizada = encontrarParcela(
+                comprasAtualizadas,
+                pagamentoAtual.idFinanciamento,
+                pagamentoAtual.numero
+            );
+
+            if (!parcelaAtualizada || !parcelaPaga(parcelaAtualizada)) {
+                setErroPagamento("O servidor respondeu, mas a parcela ainda nao aparece como paga. O pagamento nao foi confirmado.");
+                return;
+            }
+
+            setMensagemPagamento(data.mensagem || "Pagamento confirmado com sucesso.");
 
             setTimeout(() => {
                 fecharPagamentoParcela();

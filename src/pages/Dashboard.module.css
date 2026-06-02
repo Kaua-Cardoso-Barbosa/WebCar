@@ -5,7 +5,7 @@
     padding: 32px;
     background: var(--cor-fundo-dashboard);
     color: var(--cor-texto-principal);
-    overflow-x: hidden;
+    overflow-x: auto;
 }
 
 .hero {
@@ -535,7 +535,7 @@
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: visible;
     overscroll-behavior-inline: contain;
 }
@@ -601,7 +601,7 @@
 .tableWrap th.colunaId,
 .tableWrap td.colunaId {
     min-width: 120px;
-    text-align: center;
+    text-align: right;
     font-variant-numeric: tabular-nums;
 }
 
@@ -613,6 +613,42 @@
 
 .emptyTable {
     min-height: 120px;
+}
+
+.paginacaoTabela {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 16px;
+    border-top: 1px solid var(--cor-divisor);
+}
+
+.paginacaoTabela button,
+.paginacaoTabela span {
+    min-height: 36px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    color: var(--cor-texto-muted-forte);
+    background: var(--cor-fundo-input);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.paginacaoTabela button {
+    cursor: pointer;
+    transition: background .18s ease, color .18s ease;
+}
+
+.paginacaoTabela button:hover:not(:disabled) {
+    color: var(--cor-principal);
+    background: var(--cor-azul-fundo-botao);
+}
+
+.paginacaoTabela button:disabled {
+    cursor: not-allowed;
+    opacity: .45;
 }
 
 .modalOverlay {
@@ -742,11 +778,13 @@
 }
 
 .modalConteudo .tableWrap {
-    overflow-x: auto;
+    overflow-x: hidden;
 }
 
 .modalConteudo .tableWrap table {
-    min-width: 860px;
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
 }
 
 .modalConteudo .tableWrap th,
@@ -754,6 +792,22 @@
     padding: 12px;
     overflow-wrap: anywhere;
     word-break: break-word;
+    white-space: normal;
+}
+
+.modalConteudo .tableWrap th.colunaValor,
+.modalConteudo .tableWrap td.colunaValor,
+.modalConteudo .tableWrap th.colunaData,
+.modalConteudo .tableWrap td.colunaData,
+.modalConteudo .tableWrap th.colunaCentro,
+.modalConteudo .tableWrap td.colunaCentro,
+.modalConteudo .tableWrap th.colunaNome,
+.modalConteudo .tableWrap td.colunaNome,
+.modalConteudo .tableWrap th.colunaId,
+.modalConteudo .tableWrap td.colunaId,
+.modalConteudo .tableWrap th.colunaPagamento,
+.modalConteudo .tableWrap td.colunaPagamento {
+    min-width: 0;
 }
 
 :global(.recharts-wrapper) {
@@ -905,12 +959,12 @@
     }
 
     .modalConteudo .tableWrap {
-        overflow-x: auto;
+        overflow-x: hidden;
     }
 
     .modalConteudo .tableWrap table {
-        min-width: 860px;
-        width: max-content;
+        width: 100%;
+        min-width: 0;
     }
 }
 
@@ -950,5 +1004,10 @@
 
     .tableWrap table {
         min-width: 820px;
+    }
+
+    .paginacaoTabela {
+        justify-content: center;
+        padding-inline: 10px;
     }
 }
