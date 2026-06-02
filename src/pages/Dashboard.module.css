@@ -558,6 +558,11 @@
     word-break: break-word;
 }
 
+.tableWrap td.paginacaoCelula {
+    padding: 0;
+    border-bottom: none;
+}
+
 .tableWrap th {
     color: var(--cor-texto-muted-forte);
     background: var(--cor-fundo-input);
@@ -617,6 +622,8 @@
     align-items: center;
     justify-content: flex-end;
     gap: 10px;
+    box-sizing: border-box;
+    width: 100%;
     padding: 14px 16px;
     border-top: 1px solid var(--cor-divisor);
 }
@@ -992,7 +999,6 @@
     }
 
     .paginacaoTabela {
-        justify-content: center;
         padding-inline: 10px;
     }
 }

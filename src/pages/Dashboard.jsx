@@ -1020,26 +1020,32 @@ function TabelaRelatorio({ titulo, dados, limiteColunas = 8, info = "" }) {
                                 </tr>
                             ))}
                         </tbody>
+                        {totalPaginas > 1 && (
+                            <tfoot>
+                                <tr>
+                                    <td className={styles.paginacaoCelula} colSpan={colunas.length}>
+                                        <div className={styles.paginacaoTabela}>
+                                            <button
+                                                type="button"
+                                                disabled={paginaAtual === 1}
+                                                onClick={() => setPaginaAtual((pagina) => Math.max(1, pagina - 1))}
+                                            >
+                                                Anterior
+                                            </button>
+                                            <span>{paginaAtual} / {totalPaginas}</span>
+                                            <button
+                                                type="button"
+                                                disabled={paginaAtual === totalPaginas}
+                                                onClick={() => setPaginaAtual((pagina) => Math.min(totalPaginas, pagina + 1))}
+                                            >
+                                                Proxima
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        )}
                     </table>
-                    {totalPaginas > 1 && (
-                        <div className={styles.paginacaoTabela}>
-                            <button
-                                type="button"
-                                disabled={paginaAtual === 1}
-                                onClick={() => setPaginaAtual((pagina) => Math.max(1, pagina - 1))}
-                            >
-                                Anterior
-                            </button>
-                            <span>{paginaAtual} / {totalPaginas}</span>
-                            <button
-                                type="button"
-                                disabled={paginaAtual === totalPaginas}
-                                onClick={() => setPaginaAtual((pagina) => Math.min(totalPaginas, pagina + 1))}
-                            >
-                                Proxima
-                            </button>
-                        </div>
-                    )}
                 </div>
             )}
         </section>
