@@ -306,7 +306,7 @@ export default function ConfiguracoesSite() {
                 const data = await response.json().catch(() => ({}));
 
                 if (!response.ok || data.erro) {
-                    setStatusCep("CEP nao encontrado.");
+                    setStatusCep("CEP não encontrado.");
                     return;
                 }
 
@@ -320,7 +320,7 @@ export default function ConfiguracoesSite() {
                 setStatusCep("Endereco preenchido pelo CEP.");
             } catch (error) {
                 if (error.name !== "AbortError") {
-                    setStatusCep("Nao foi possivel buscar o CEP.");
+                    setStatusCep("Não foi possível buscar o CEP.");
                 }
             }
         }

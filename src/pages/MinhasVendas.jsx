@@ -22,7 +22,7 @@ function formatarMoeda(valor) {
 }
 
 function formatarData(valor) {
-    if (!valor) return "Nao informado";
+    if (!valor) return "Não informado";
     const data = dataLocal(valor);
     if (Number.isNaN(data.getTime())) return String(valor);
     return data.toLocaleDateString("pt-BR");
@@ -43,8 +43,8 @@ function normalizarVenda(venda) {
         dataVenda: getCampo(venda, ["data_venda", "DATA_VENDA"]),
         cliente: getCampo(venda, ["cliente", "CLIENTE", "nome_cliente"], "Sem cliente"),
         veiculo: getCampo(venda, ["veiculo", "VEICULO"], `${getCampo(venda, ["marca", "MARCA"], "")} ${getCampo(venda, ["modelo", "MODELO"], "")}`.trim()),
-        placa: getCampo(venda, ["placa", "PLACA"], "Nao informada"),
-        formaPagamento: getCampo(venda, ["forma_pagamento", "FORMA_PAGAMENTO"], "Nao informado"),
+        placa: getCampo(venda, ["placa", "PLACA"], "Não informada"),
+        formaPagamento: getCampo(venda, ["forma_pagamento", "FORMA_PAGAMENTO"], "Não informado"),
         valorVenda: Number(getCampo(venda, ["valor_venda", "VALOR_VENDA"], 0)),
         lucroBruto: Number(getCampo(venda, ["lucro_bruto", "LUCRO_BRUTO", "lucro"], 0)),
     };
@@ -69,7 +69,7 @@ export default function MinhasVendas() {
                 const data = await response.json().catch(() => ({}));
 
                 if (!response.ok) {
-                    setErro(data.mensagem || "Nao foi possivel carregar suas vendas.");
+                    setErro(data.mensagem || "Não foi possível carregar suas vendas.");
                     setDados({ resumo: {}, vendas: [] });
                     return;
                 }
@@ -79,7 +79,7 @@ export default function MinhasVendas() {
                     vendas: (data.vendas || []).map(normalizarVenda),
                 });
             } catch {
-                setErro("Nao foi possivel conectar com o servidor.");
+                setErro("Não foi possível conectar com o servidor.");
                 setDados({ resumo: {}, vendas: [] });
             } finally {
                 setCarregando(false);
@@ -111,7 +111,7 @@ export default function MinhasVendas() {
                     <div>
                         <span>Area do vendedor</span>
                         <h1>Minhas vendas</h1>
-                        <p>Veja as vendas que voce realizou e os clientes atendidos.</p>
+                        <p>Veja as vendas que você realizou e os clientes atendidos.</p>
                     </div>
                 </section>
 
@@ -145,13 +145,13 @@ export default function MinhasVendas() {
                                 <div className={css.cardTopo}>
                                     <div>
                                         <h2>Vendas realizadas</h2>
-                                        <p>Cliente, veiculo e valor de cada venda.</p>
+                                        <p>Cliente, veículo e valor de cada venda.</p>
                                     </div>
                                     <span>{dados.vendas.length} registros</span>
                                 </div>
 
                                 {dados.vendas.length === 0 ? (
-                                    <p className={css.vazio}>Nenhuma venda registrada para voce ainda.</p>
+                                    <p className={css.vazio}>Nenhuma venda registrada para você ainda.</p>
                                 ) : (
                                     <div className={css.tabelaWrap}>
                                         <table>
@@ -159,7 +159,7 @@ export default function MinhasVendas() {
                                                 <tr>
                                                     <th>Data</th>
                                                     <th>Cliente</th>
-                                                    <th>Veiculo</th>
+                                                    <th>Veículo</th>
                                                     <th>Placa</th>
                                                     <th>Pagamento</th>
                                                     <th>Valor</th>

@@ -189,6 +189,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
     const [erro, setErro] = useState("");
     const [carregando, setCarregando] = useState(true);
     const [modalCompraAberta, setModalCompraAberta] = useState(false);
+    const [modalConfirmacaoCompraAberta, setModalConfirmacaoCompraAberta] = useState(false);
     const [qrCodeUrl, setQrCodeUrl] = useState("");
     const [erroCompra, setErroCompra] = useState("");
     const [gerandoQrCode, setGerandoQrCode] = useState(false);
@@ -473,6 +474,24 @@ export default function VisualizarCarro({ modoVendedor = false }) {
         }
     }
 
+    function clicarCompraPrincipal() {
+        if (modoVendedor) {
+            abrirCompra();
+            return;
+        }
+
+        setModalConfirmacaoCompraAberta(true);
+    }
+
+    function cancelarConfirmacaoCompra() {
+        setModalConfirmacaoCompraAberta(false);
+    }
+
+    function confirmarCompraCliente() {
+        setModalConfirmacaoCompraAberta(false);
+        abrirCompra();
+    }
+
     function fecharCompra() {
         setModalCompraAberta(false);
         setErroCompra("");
@@ -639,7 +658,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
         }
 
         if (cadastroClienteVenda.senha !== cadastroClienteVenda.confirmarSenha) {
-            setErroCadastroCliente("As senhas nao coincidem.");
+                setErroCadastroCliente("As senhas não coincidem.");
             return;
         }
 
@@ -664,7 +683,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                setErroCadastroCliente(data.mensagem || "Nao foi possivel cadastrar o cliente.");
+                setErroCadastroCliente(data.mensagem || "Não foi possível cadastrar o cliente.");
                 return;
             }
 
@@ -680,7 +699,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
         e.preventDefault();
 
         if (!cadastroClienteVenda.codigo.trim()) {
-            setErroCadastroCliente("Digite o codigo enviado para o email.");
+            setErroCadastroCliente("Digite o código enviado para o e-mail.");
             return;
         }
 
@@ -792,7 +811,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                                 src={imagemSelecionada.urls[0]}
                                 data-indice="0"
                                 onError={(e) => tentarProximaImagem(e, imagemSelecionada.urls)}
-                                alt={`${carro.MARCA || "Veiculo"} ${carro.MODELO || ""}`}
+                                alt={`${carro.MARCA || "Veículo"} ${carro.MODELO || ""}`}
                             />
                         </div>
 
@@ -849,7 +868,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                             <button
                                 type="button"
                                 className={css.comprar}
-                                onClick={abrirCompra}
+                                onClick={clicarCompraPrincipal}
                             >
                                 {modoVendedor ? "Vender" : "Comprar"}
                             </button>
@@ -897,6 +916,45 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                 </div>
             </section>
 
+            {modalConfirmacaoCompraAberta && (
+                <div className={css.modalFundo}>
+                    <div className={`${css.modalCompra} ${css.modalConfirmacao}`}>
+                        <div className={css.modalTopo}>
+                            <div>
+                                <span className={css.etiquetaEscura}>Confirmação</span>
+                                <h3>Tem certeza que deseja comprar?</h3>
+                            </div>
+                        </div>
+
+                        <div className={css.resumoModal}>
+                            <strong>{carro.MARCA} {carro.MODELO}</strong>
+                            <span>{formatarPreco(valorAVista)}</span>
+                        </div>
+
+                        <p className={css.textoModal}>
+                            Ao confirmar, a compra será registrada e o QR Code Pix será gerado para pagamento.
+                        </p>
+
+                        <div className={css.modalAcoes}>
+                            <button
+                                type="button"
+                                className={css.botaoFechar}
+                                onClick={cancelarConfirmacaoCompra}
+                            >
+                                Não
+                            </button>
+                            <button
+                                type="button"
+                                className={css.botaoConcluir}
+                                onClick={confirmarCompraCliente}
+                            >
+                                Sim, comprar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {modalCompraAberta && (
                 <div className={css.modalFundo}>
                     <div className={css.modalCompra}>
@@ -905,14 +963,16 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                                 <span className={css.etiquetaEscura}>{modoVendedor ? "Venda" : "Pagamento Pix"}</span>
                                 <h3>{modoVendedor ? "Registrar venda" : "Finalize sua compra"}</h3>
                             </div>
-                            <button
-                                type="button"
-                                className={css.fecharIcone}
-                                onClick={fecharCompra}
-                                aria-label="Fechar modal"
-                            >
-                                x
-                            </button>
+                            {modoVendedor && (
+                                <button
+                                    type="button"
+                                    className={css.fecharIcone}
+                                    onClick={fecharCompra}
+                                    aria-label="Fechar modal"
+                                >
+                                    x
+                                </button>
+                            )}
                         </div>
 
                         <div className={css.resumoModal}>
@@ -1044,13 +1104,15 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                         )}
 
                         <div className={css.modalAcoes}>
-                            <button
-                                type="button"
-                                className={css.botaoFechar}
-                                onClick={fecharCompra}
-                            >
-                                Fechar
-                            </button>
+                            {modoVendedor && (
+                                <button
+                                    type="button"
+                                    className={css.botaoFechar}
+                                    onClick={fecharCompra}
+                                >
+                                    Fechar
+                                </button>
+                            )}
                             <button
                                 type="button"
                                 className={css.botaoConcluir}
@@ -1159,7 +1221,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                         ) : (
                             <form className={css.formaPagamento} onSubmit={verificarCadastroClienteVenda}>
                                 <p className={css.textoModal}>
-                                    Digite o codigo enviado para {cadastroClienteVenda.email}.
+                                    Digite o código enviado para {cadastroClienteVenda.email}.
                                 </p>
 
                                 <label className={css.campoVenda}>

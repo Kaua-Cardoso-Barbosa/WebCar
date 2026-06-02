@@ -41,6 +41,13 @@
     gap: 12px;
 }
 
+.avisoObrigatorio {
+    color: var(--cor-texto-cinza);
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+}
+
 .grupoCampo {
     display: flex;
     flex-direction: column;
@@ -71,6 +78,18 @@
 
 .inputCadastro:focus {
     border-color: var(--cor-principal);
+}
+
+.inputErro,
+.inputErro:focus {
+    border-color: var(--cor-erro-alerta);
+}
+
+.erroCampo {
+    color: var(--cor-erro-alerta);
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 5px;
 }
 
 .linhaSenha {

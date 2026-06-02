@@ -26,7 +26,7 @@ export default function Login() {
     function concluirLogin(data) {
         const usuario = salvarSessaoUsuario(data);
         if (!usuario) {
-            setErro("Nao foi possivel identificar o usuario.");
+            setErro("Não foi possível identificar o usuário.");
             return;
         }
 

@@ -403,6 +403,10 @@
     box-shadow: 0 24px 60px var(--sombra-preta-22);
 }
 
+.modalConfirmacao {
+    width: min(460px, 100%);
+}
+
 .modalTopo {
     display: flex;
     justify-content: space-between;

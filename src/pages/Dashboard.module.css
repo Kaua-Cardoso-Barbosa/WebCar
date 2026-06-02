@@ -5,7 +5,7 @@
     padding: 32px;
     background: var(--cor-fundo-dashboard);
     color: var(--cor-texto-principal);
-    overflow-x: auto;
+    overflow-x: hidden;
 }
 
 .hero {
@@ -535,25 +535,27 @@
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: visible;
-    overscroll-behavior-inline: contain;
 }
 
 .tableWrap table {
-    width: max-content;
-    min-width: 100%;
+    width: 100%;
+    min-width: 1050px;
     border-collapse: collapse;
+    table-layout: auto;
 }
 
 .tableWrap th,
 .tableWrap td {
     box-sizing: border-box;
-    padding: 14px 22px;
+    padding: 12px 10px;
     border-bottom: 1px solid var(--cor-divisor);
     text-align: left;
     vertical-align: middle;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .tableWrap th {
@@ -567,7 +569,7 @@
 
 .tableWrap td {
     color: var(--cor-texto-principal);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 650;
 }
 
@@ -579,7 +581,6 @@
 .tableWrap td.colunaValor {
     text-align: right;
     font-variant-numeric: tabular-nums;
-    min-width: 160px;
 }
 
 .tableWrap th.colunaData,
@@ -588,26 +589,22 @@
 .tableWrap td.colunaCentro {
     text-align: center;
     font-variant-numeric: tabular-nums;
-    min-width: 130px;
 }
 
 .tableWrap th.colunaNome,
 .tableWrap td.colunaNome {
     text-align: left;
     white-space: normal;
-    min-width: 220px;
 }
 
 .tableWrap th.colunaId,
 .tableWrap td.colunaId {
-    min-width: 120px;
     text-align: right;
     font-variant-numeric: tabular-nums;
 }
 
 .tableWrap th.colunaPagamento,
 .tableWrap td.colunaPagamento {
-    min-width: 180px;
     text-align: center;
 }
 
@@ -807,7 +804,7 @@
 .modalConteudo .tableWrap td.colunaId,
 .modalConteudo .tableWrap th.colunaPagamento,
 .modalConteudo .tableWrap td.colunaPagamento {
-    min-width: 0;
+    min-width: revert;
 }
 
 :global(.recharts-wrapper) {
@@ -928,13 +925,10 @@
         grid-template-columns: 1fr;
     }
 
-    .tableWrap table {
-        min-width: 860px;
-    }
-
     .tableWrap th,
     .tableWrap td {
-        padding: 12px;
+        padding: 10px 8px;
+        font-size: 12px;
     }
 
     .modalOverlay {
@@ -960,11 +954,6 @@
 
     .modalConteudo .tableWrap {
         overflow-x: hidden;
-    }
-
-    .modalConteudo .tableWrap table {
-        width: 100%;
-        min-width: 0;
     }
 }
 
@@ -1002,12 +991,73 @@
         min-height: 300px;
     }
 
-    .tableWrap table {
-        min-width: 820px;
-    }
-
     .paginacaoTabela {
         justify-content: center;
         padding-inline: 10px;
     }
+}
+
+/* AJUSTE SOMENTE DAS TABELAS DOS RELATÓRIOS */
+.relatorios .tableCard {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.relatorios .tableWrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+.relatorios .tableWrap table {
+    width: 100%;
+    min-width: 1050px;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.relatorios .tableWrap th,
+.relatorios .tableWrap td {
+    white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: normal;
+    vertical-align: middle;
+}
+
+/* Colunas de texto maior podem quebrar de forma bonita */
+.relatorios .tableWrap th.colunaNome,
+.relatorios .tableWrap td.colunaNome {
+    min-width: 170px;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+}
+
+/* Colunas de dinheiro, data, ID e pagamento não quebram */
+.relatorios .tableWrap th.colunaValor,
+.relatorios .tableWrap td.colunaValor,
+.relatorios .tableWrap th.colunaData,
+.relatorios .tableWrap td.colunaData,
+.relatorios .tableWrap th.colunaId,
+.relatorios .tableWrap td.colunaId,
+.relatorios .tableWrap th.colunaPagamento,
+.relatorios .tableWrap td.colunaPagamento,
+.relatorios .tableWrap th.colunaCentro,
+.relatorios .tableWrap td.colunaCentro {
+    white-space: nowrap;
+}
+
+/* Scroll mais bonito */
+.relatorios .tableWrap::-webkit-scrollbar {
+    height: 8px;
+}
+
+.relatorios .tableWrap::-webkit-scrollbar-thumb {
+    background: var(--cor-borda-painel);
+    border-radius: 999px;
+}
+
+.relatorios .tableWrap::-webkit-scrollbar-track {
+    background: transparent;
 }

@@ -20,7 +20,7 @@ export default function RecuperarSenhaEmail() {
         setErro("");
 
         if (!email) {
-            setErro("Digite seu email");
+            setErro("Digite seu e-mail");
             return;
         }
 
@@ -44,7 +44,7 @@ export default function RecuperarSenhaEmail() {
             localStorage.setItem("tipoVerificacao", "recuperacao");
 
 
-            setMensagemSucesso("Código enviado para seu email!");
+            setMensagemSucesso("Código enviado para seu e-mail!");
             setMostrarPopup(true);
 
 
@@ -63,13 +63,13 @@ export default function RecuperarSenhaEmail() {
 
             <div className={css.loginFundo}>
                 <div className={css.cartao}>
-                    <h2 className={css.h2}>Digite o email para receber o código</h2>
+                    <h2 className={css.h2}>Digite o e-mail para receber o código</h2>
 
                     <form onSubmit={avancar}>
                         <div className={css.grupoInput}>
                             <label className={css.label}>E-mail</label>
                             <div className={css.input}>
-                                <img src="/email.png" alt="Ícone do email" />
+                                <img src="/email.png" alt="Ícone do e-mail" />
                                 <input
                                     type="email"
                                     placeholder="User@gmail.com"

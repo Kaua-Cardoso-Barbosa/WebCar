@@ -249,7 +249,7 @@
     }
 
     .lista td:nth-child(3)::before {
-        content: "Veiculo";
+        content: "Veículo";
     }
 
     .lista td:nth-child(4)::before {

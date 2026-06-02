@@ -21,6 +21,16 @@ function getCampo(objeto, nomes, fallback = "") {
     return fallback;
 }
 
+function getCampoPresente(objeto, nomes, fallback = "") {
+    for (const nome of nomes) {
+        if (Object.prototype.hasOwnProperty.call(objeto || {}, nome)) {
+            return objeto[nome];
+        }
+    }
+
+    return fallback;
+}
+
 function imagensVeiculo(idVeiculo) {
     if (!idVeiculo) return [IMAGEM_PADRAO];
 
@@ -92,7 +102,14 @@ function formaPagamentoTexto(valor) {
 }
 
 function statusParcela(parcela) {
-    return Number(getCampo(parcela, ["status", "STATUS"], 0));
+    return Number(getCampoPresente(parcela, [
+        "status_parcela",
+        "STATUS_PARCELA",
+        "status_item_financiamento",
+        "STATUS_ITEM_FINANCIAMENTO",
+        "STATUS",
+        "status",
+    ], 0));
 }
 
 function parcelaPaga(parcela) {
@@ -107,14 +124,60 @@ function parcelaQuitada(parcela) {
     return parcelaPaga(parcela) || parcelaAmortizada(parcela);
 }
 
+function valorParcela(parcela) {
+    return Number(getCampo(parcela, ["valor_parcela", "VALOR_PARCELA"], 0));
+}
+
+function valorPrincipalParcela(parcela) {
+    return Number(getCampo(parcela, [
+        "saldo_devedor_parcela",
+        "SALDO_DEVEDOR_PARCELA",
+        "valor_parcela_original",
+        "VALOR_PARCELA_ORIGINAL",
+        "valor_original_parcela",
+        "VALOR_ORIGINAL_PARCELA",
+        "saldo_devedor",
+        "SALDO_DEVEDOR",
+    ], valorParcela(parcela)));
+}
+
+function calcularSaldoDevedor(parcelas, financiamento) {
+    const saldoFinanciamento = Number(financiamento?.saldoDevedor || 0);
+
+    if (saldoFinanciamento > 0) {
+        return saldoFinanciamento;
+    }
+
+    return parcelas.reduce((total, parcela) => {
+        if (parcelaQuitada(parcela)) return total;
+        return total + valorPrincipalParcela(parcela);
+    }, 0);
+}
+
 function textoStatusParcela(parcela) {
     const status = statusParcela(parcela);
-    const pagamento = getCampo(parcela, ["data_pagamento", "DATA_PAGAMENTO"]);
+    const pagamento = getCampoPresente(parcela, [
+        "data_pagamento_parcela",
+        "DATA_PAGAMENTO_PARCELA",
+        "DATA_PAGAMENTO",
+        "data_pagamento",
+    ]);
 
-    if (status === 1) return `Pago em ${formatarData(pagamento)}`;
+    if (status === 1) return pagamento ? `Pago em ${formatarData(pagamento)}` : "Pago";
     if (status === 2) return "Amortizada";
 
     return "Em aberto";
+}
+
+function respostaComErroBackend(data) {
+    return String(data?.mensagem || "").trim().toLowerCase().startsWith("erro");
+}
+
+function tempoCompra(compra) {
+    const data = dataLocal(compra.dataVenda);
+    const tempo = data.getTime();
+
+    return Number.isNaN(tempo) ? 0 : tempo;
 }
 
 function encontrarParcela(compras, idFinanciamento, numeroParcela) {
@@ -144,6 +207,7 @@ function normalizarCompra(compra) {
             idFinanciamento: getCampo(compra, ["id_financiamento", "ID_FINANCIAMENTO"]),
             valorOriginal: Number(getCampo(compra, ["valor_original", "VALOR_ORIGINAL", "valor_venda_original", "VALOR_VENDA_ORIGINAL"], 0)),
             valorFinanciado: Number(getCampo(compra, ["valor_financiado", "VALOR_FINANCIADO", "valor_venda_financiamento", "VALOR_VENDA_FINANCIAMENTO"], 0)),
+            saldoDevedor: Number(getCampo(compra, ["saldo_devedor", "SALDO_DEVEDOR"], 0)),
         },
         parcelas: Array.isArray(parcelas) ? parcelas : [],
     };
@@ -163,15 +227,50 @@ export default function MinhasCompras() {
     const [salvandoAmortizacao, setSalvandoAmortizacao] = useState(false);
     const [mensagemAmortizacao, setMensagemAmortizacao] = useState("");
     const [erroAmortizacao, setErroAmortizacao] = useState("");
+    const [saldosDevedores, setSaldosDevedores] = useState({});
+
+    async function carregarSaldosDevedores(comprasNormalizadas) {
+        const ids = [...new Set(comprasNormalizadas
+            .map((compra) => compra.financiamento.idFinanciamento)
+            .filter(Boolean))];
+
+        if (ids.length === 0) {
+            setSaldosDevedores({});
+            return {};
+        }
+
+        const resultados = await Promise.all(ids.map(async (idFinanciamento) => {
+            try {
+                const response = await fetch(`${API_URL}/saldo_devedor/${idFinanciamento}?_=${Date.now()}`, {
+                    method: "GET",
+                    credentials: "include",
+                    cache: "no-store",
+                });
+
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) return null;
+
+                return [idFinanciamento, Number(data.saldo_devedor || data.SALDO_DEVEDOR || 0)];
+            } catch {
+                return null;
+            }
+        }));
+
+        const saldos = Object.fromEntries(resultados.filter(Boolean));
+        setSaldosDevedores(saldos);
+        return saldos;
+    }
 
     async function carregarCompras({ mostrarCarregando = true } = {}) {
         try {
             if (mostrarCarregando) setCarregando(true);
             setErro("");
 
-            const response = await fetch(`${API_URL}/minhas_compras`, {
+            const response = await fetch(`${API_URL}/minhas_compras?_=${Date.now()}`, {
                 method: "GET",
                 credentials: "include",
+                cache: "no-store",
             });
 
             const data = await response.json().catch(() => ({}));
@@ -179,15 +278,20 @@ export default function MinhasCompras() {
             if (!response.ok) {
                 setErro(data.mensagem || "Não foi possível carregar suas compras.");
                 setCompras([]);
+                setSaldosDevedores({});
                 return [];
             }
 
-            const comprasNormalizadas = (data.compras || data.vendas || data || []).map(normalizarCompra);
+            const comprasNormalizadas = (data.compras || data.vendas || data || [])
+                .map(normalizarCompra)
+                .sort((a, b) => tempoCompra(b) - tempoCompra(a));
             setCompras(comprasNormalizadas);
+            await carregarSaldosDevedores(comprasNormalizadas);
             return comprasNormalizadas;
         } catch {
             setErro("Não foi possível conectar com o servidor.");
             setCompras([]);
+            setSaldosDevedores({});
             return [];
         } finally {
             if (mostrarCarregando) setCarregando(false);
@@ -278,9 +382,10 @@ export default function MinhasCompras() {
             });
 
             const data = await response.json().catch(() => ({}));
+            const backendIndicouErro = !response.ok || respostaComErroBackend(data);
 
-            if (!response.ok) {
-                setErroPagamento(data.mensagem || "Não foi possível confirmar o pagamento.");
+            if (backendIndicouErro) {
+                setErroPagamento("Pagamento não confirmado. Atualize a página e tente novamente.");
                 return;
             }
 
@@ -292,11 +397,11 @@ export default function MinhasCompras() {
             );
 
             if (!parcelaAtualizada || !parcelaPaga(parcelaAtualizada)) {
-                setErroPagamento("O servidor respondeu, mas a parcela ainda nao aparece como paga. O pagamento nao foi confirmado.");
+                setErroPagamento("O servidor respondeu, mas a parcela ainda não aparece como paga. O pagamento não foi confirmado.");
                 return;
             }
 
-            setMensagemPagamento(data.mensagem || "Pagamento confirmado com sucesso.");
+            setMensagemPagamento("Pagamento confirmado com sucesso.");
 
             setTimeout(() => {
                 fecharPagamentoParcela();
@@ -352,7 +457,7 @@ export default function MinhasCompras() {
         const valorAmortizado = moedaParaNumero(amortizacao.valor);
 
         if (!amortizacao.idFinanciamento) {
-            setErroAmortizacao("Financiamento nao encontrado para esta compra.");
+            setErroAmortizacao("Financiamento não encontrado para esta compra.");
             return;
         }
 
@@ -382,18 +487,18 @@ export default function MinhasCompras() {
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                setErroAmortizacao(data.mensagem || "Nao foi possivel concluir a amortizacao.");
+                setErroAmortizacao(data.mensagem || "Não foi possível concluir a amortização.");
                 return;
             }
 
-            setMensagemAmortizacao(data.mensagem || "Amortizacao concluida com sucesso.");
+            setMensagemAmortizacao(data.mensagem || "Amortização concluída com sucesso.");
             await carregarCompras({ mostrarCarregando: false });
 
             setTimeout(() => {
                 fecharAmortizacao();
             }, 1400);
         } catch {
-            setErroAmortizacao("Nao foi possivel conectar com o servidor para amortizar.");
+            setErroAmortizacao("Não foi possível conectar com o servidor para amortizar.");
         } finally {
             setSalvandoAmortizacao(false);
         }
@@ -456,6 +561,10 @@ export default function MinhasCompras() {
                         const parcelasVisiveis = Boolean(parcelasAbertas[compra.idVenda]);
                         const parcelasPagas = compra.parcelas.filter(parcelaQuitada).length;
                         const parcelasEmAberto = Math.max(0, compra.parcelas.length - parcelasPagas);
+                        const idFinanciamento = compra.financiamento.idFinanciamento;
+                        const saldoDevedor = Object.prototype.hasOwnProperty.call(saldosDevedores, idFinanciamento)
+                            ? saldosDevedores[idFinanciamento]
+                            : calcularSaldoDevedor(compra.parcelas, compra.financiamento);
 
                         return (
                             <article className={css.compra} key={compra.idVenda}>
@@ -507,7 +616,10 @@ export default function MinhasCompras() {
                                         <div className={css.parcelasTopo}>
                                             <div>
                                                 <h3>Parcelas do financiamento</h3>
-                                                <span>{compra.parcelas.length} parcelas - {parcelasEmAberto} em aberto</span>
+                                                <div className={css.resumoParcelas}>
+                                                    <span>{parcelasPagas} de {compra.parcelas.length} parcelas pagas</span>
+                                                    <strong>Saldo devedor: {formatarPreco(saldoDevedor)}</strong>
+                                                </div>
                                             </div>
 
                                             <div className={css.acoesParcelas}>
@@ -534,7 +646,7 @@ export default function MinhasCompras() {
                                             <div className={css.gradeParcelas}>
                                                 {compra.parcelas.map((parcela) => {
                                                     const numero = getCampo(parcela, ["numero_parcela", "NUMERO_PARCELA"]);
-                                                    const valor = getCampo(parcela, ["valor_parcela", "VALOR_PARCELA"], 0);
+                                                    const valor = valorParcela(parcela);
                                                     const vencimento = getCampo(parcela, ["data_vencimento", "DATA_VENCIMENTO"]);
                                                     const pago = parcelaQuitada(parcela);
                                                     const qrcodeUrl = urlQrCodeParcela(compra, parcela);
@@ -583,9 +695,6 @@ export default function MinhasCompras() {
                                 <span>Parcela {qrCodeParcela.numero}</span>
                                 <h2>Pagamento Pix</h2>
                             </div>
-                            <button type="button" onClick={fecharPagamentoParcela} aria-label="Fechar">
-                                x
-                            </button>
                         </div>
 
                         {!mensagemPagamento && (
@@ -607,13 +716,10 @@ export default function MinhasCompras() {
                         {mensagemPagamento && <p className={css.sucessoPagamento}>{mensagemPagamento}</p>}
 
                         <div className={css.modalAcoes}>
-                            <button type="button" className={css.botaoFechar} onClick={fecharPagamentoParcela}>
-                                Fechar
-                            </button>
                             <button
                                 type="button"
                                 className={css.botaoConcluir}
-                                onClick={concluirPagamentoParcela}
+                                onClick={atualizarStatusPagamentoParcela}
                                 disabled={baixandoParcela || Boolean(mensagemPagamento)}
                             >
                                 {baixandoParcela ? "Confirmando..." : "Concluir"}

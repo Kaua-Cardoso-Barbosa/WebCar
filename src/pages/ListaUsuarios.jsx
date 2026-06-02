@@ -47,6 +47,16 @@ function getCampo(objeto, nomes, fallback = "") {
     return fallback;
 }
 
+function getCampoPresente(objeto, nomes, fallback = "") {
+    for (const nome of nomes) {
+        if (Object.prototype.hasOwnProperty.call(objeto || {}, nome)) {
+            return objeto[nome];
+        }
+    }
+
+    return fallback;
+}
+
 function formatarPreco(valor) {
     return Number(valor || 0).toLocaleString("pt-BR", {
         style: "currency",
@@ -74,21 +84,50 @@ function dataLocal(valor) {
 }
 
 function statusParcela(parcela) {
-    return Number(getCampo(parcela, ["status", "STATUS"], 0));
+    return Number(getCampoPresente(parcela, [
+        "status_parcela",
+        "STATUS_PARCELA",
+        "status_item_financiamento",
+        "STATUS_ITEM_FINANCIAMENTO",
+        "STATUS",
+        "status",
+    ], 0));
 }
 
 function parcelaQuitada(parcela) {
     return [1, 2].includes(statusParcela(parcela));
 }
 
+function parcelaPaga(parcela) {
+    return statusParcela(parcela) === 1;
+}
+
+function encontrarParcela(compras, idFinanciamento, numeroParcela) {
+    return compras
+        .flatMap((compra) => compra.parcelas.map((parcela) => ({ compra, parcela })))
+        .find(({ compra, parcela }) => (
+            String(compra.financiamento.idFinanciamento) === String(idFinanciamento)
+            && Number(getCampo(parcela, ["numero_parcela", "NUMERO_PARCELA"])) === Number(numeroParcela)
+        ))?.parcela;
+}
+
 function textoStatusParcela(parcela) {
     const status = statusParcela(parcela);
-    const pagamento = getCampo(parcela, ["data_pagamento", "DATA_PAGAMENTO"]);
+    const pagamento = getCampoPresente(parcela, [
+        "data_pagamento_parcela",
+        "DATA_PAGAMENTO_PARCELA",
+        "DATA_PAGAMENTO",
+        "data_pagamento",
+    ]);
 
     if (status === 2) return "Amortizada";
-    if (status === 1) return `Pago em ${formatarData(pagamento)}`;
+    if (status === 1) return pagamento ? `Pago em ${formatarData(pagamento)}` : "Pago";
 
     return "Em aberto";
+}
+
+function respostaComErroBackend(data) {
+    return String(data?.mensagem || "").trim().toLowerCase().startsWith("erro");
 }
 
 function normalizarCompra(compra) {
@@ -117,8 +156,8 @@ function normalizarVendaUsuario(venda) {
         dataVenda: getCampo(venda, ["data_venda", "DATA_VENDA"]),
         cliente: getCampo(venda, ["cliente", "CLIENTE", "nome_cliente"], "Sem cliente"),
         veiculo: getCampo(venda, ["veiculo", "VEICULO"], `${getCampo(venda, ["marca", "MARCA"], "")} ${getCampo(venda, ["modelo", "MODELO"], "")}`.trim()),
-        placa: getCampo(venda, ["placa", "PLACA"], "Nao informada"),
-        formaPagamento: getCampo(venda, ["forma_pagamento", "FORMA_PAGAMENTO"], "Nao informado"),
+        placa: getCampo(venda, ["placa", "PLACA"], "Não informada"),
+        formaPagamento: getCampo(venda, ["forma_pagamento", "FORMA_PAGAMENTO"], "Não informado"),
         valorVenda: Number(getCampo(venda, ["valor_venda", "VALOR_VENDA"], 0)),
         lucroBruto: Number(getCampo(venda, ["lucro_bruto", "LUCRO_BRUTO", "lucro"], 0)),
     };
@@ -484,8 +523,8 @@ export default function ListaUsuario() {
 
             setSucesso(
                 novaSituacao === 1
-                    ? data.mensagem || "Usuario bloqueado e e-mail enviado com sucesso."
-                    : "Usuario desbloqueado com sucesso."
+                    ? data.mensagem || "Usuário bloqueado e e-mail enviado com sucesso."
+                    : "Usuário desbloqueado com sucesso."
             );
             fecharModalSituacao();
             buscarUsuarios();
@@ -506,7 +545,7 @@ export default function ListaUsuario() {
             !cadastro.senha ||
             !cadastro.confirma
         ) {
-            setErroCadastro("Preencha todos os campos obrigatorios.");
+            setErroCadastro("Preencha todos os campos obrigatórios.");
             return;
         }
 
@@ -546,7 +585,7 @@ export default function ListaUsuario() {
                 return;
             }
 
-            setSucesso("Usuario cadastrado com sucesso.");
+            setSucesso("Usuário cadastrado com sucesso.");
             fecharModalCadastro();
             buscarUsuarios();
         } catch {
@@ -562,7 +601,7 @@ export default function ListaUsuario() {
         if (!usuarioEdicao?.id_usuario || salvandoEdicao) return;
 
         if (!edicao.nome.trim() || !edicao.email.trim() || !edicao.telefone.trim() || !edicao.cpf.trim()) {
-            setErroEdicao("Preencha nome, email, telefone e CPF.");
+            setErroEdicao("Preencha nome, e-mail, telefone e CPF.");
             return;
         }
 
@@ -599,7 +638,7 @@ export default function ListaUsuario() {
                 return;
             }
 
-            setSucesso(data.mensagem || "Usuario atualizado com sucesso.");
+            setSucesso(data.mensagem || "Usuário atualizado com sucesso.");
             fecharModalEdicao();
             buscarUsuarios();
         } catch {
@@ -615,21 +654,25 @@ export default function ListaUsuario() {
             setErroCompras("");
             setComprasUsuario([]);
 
-            const response = await fetch(`${API_URL}/minhas_compras?id_usuario=${idUsuario}`, {
+            const response = await fetch(`${API_URL}/minhas_compras?id_usuario=${idUsuario}&_=${Date.now()}`, {
                 method: "GET",
                 credentials: "include",
+                cache: "no-store",
             });
 
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
                 setErroCompras(data.mensagem || "Não foi possível carregar as compras do usuário.");
-                return;
+                return [];
             }
 
-            setComprasUsuario((data.compras || data.vendas || []).map(normalizarCompra));
+            const comprasNormalizadas = (data.compras || data.vendas || []).map(normalizarCompra);
+            setComprasUsuario(comprasNormalizadas);
+            return comprasNormalizadas;
         } catch {
             setErroCompras("Erro ao conectar com o servidor.");
+            return [];
         } finally {
             setCarregandoCompras(false);
         }
@@ -712,18 +755,25 @@ export default function ListaUsuario() {
             });
 
             const data = await response.json().catch(() => ({}));
+            const backendIndicouErro = !response.ok || respostaComErroBackend(data);
 
-            if (!response.ok) {
-                setErroCompras(data.mensagem || "Não foi possível dar baixa na parcela.");
+            if (backendIndicouErro) {
+                setErroCompras("Baixa não confirmada. Atualize a lista e tente novamente.");
                 return;
             }
 
-            setSucesso(data.mensagem || "Baixa realizada com sucesso.");
-            setSucessoCompras(data.mensagem || "Baixa realizada com sucesso.");
+            const comprasAtualizadas = usuarioCompras?.id_usuario
+                ? await buscarComprasUsuario(usuarioCompras.id_usuario)
+                : [];
+            const parcelaAtualizada = encontrarParcela(comprasAtualizadas, idFinanciamento, numeroParcela);
 
-            if (usuarioCompras?.id_usuario) {
-                await buscarComprasUsuario(usuarioCompras.id_usuario);
+            if (!parcelaAtualizada || !parcelaPaga(parcelaAtualizada)) {
+                setErroCompras("O servidor respondeu, mas a parcela ainda não aparece como paga no banco. A baixa não foi confirmada.");
+                return;
             }
+
+            setSucesso("Baixa realizada com sucesso.");
+            setSucessoCompras("Baixa realizada com sucesso.");
         } catch {
             setErroCompras("Erro ao dar baixa na parcela.");
         } finally {
@@ -750,16 +800,22 @@ export default function ListaUsuario() {
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                setErroCompras(data.mensagem || "Não foi possível retirar a baixa da parcela.");
+                setErroCompras("Retirada da baixa não confirmada. Atualize a lista e tente novamente.");
                 return;
             }
 
-            setSucesso(data.mensagem || "Baixa retirada com sucesso.");
-            setSucessoCompras(data.mensagem || "Baixa retirada com sucesso.");
+            const comprasAtualizadas = usuarioCompras?.id_usuario
+                ? await buscarComprasUsuario(usuarioCompras.id_usuario)
+                : [];
+            const parcelaAtualizada = encontrarParcela(comprasAtualizadas, idFinanciamento, numeroParcela);
 
-            if (usuarioCompras?.id_usuario) {
-                await buscarComprasUsuario(usuarioCompras.id_usuario);
+            if (!parcelaAtualizada || parcelaQuitada(parcelaAtualizada)) {
+                setErroCompras("O servidor respondeu, mas a parcela ainda aparece como paga no banco. A retirada da baixa não foi confirmada.");
+                return;
             }
+
+            setSucesso("Baixa retirada com sucesso.");
+            setSucessoCompras("Baixa retirada com sucesso.");
         } catch {
             setErroCompras("Erro ao retirar baixa da parcela.");
         } finally {
@@ -832,7 +888,7 @@ export default function ListaUsuario() {
                         <div className={css.busca}>
                             <input
                                 type="text"
-                                placeholder="Buscar por nome, email, telefone ou tipo..."
+                                placeholder="Buscar por nome, e-mail, telefone ou tipo..."
                                 value={busca}
                                 onChange={(e) => setBusca(e.target.value)}
                             />
@@ -1021,7 +1077,7 @@ export default function ListaUsuario() {
                                         setMotivoBloqueio(e.target.value);
                                         setErroSituacao("");
                                     }}
-                                    placeholder="Explique o motivo que sera enviado por e-mail"
+                                    placeholder="Explique o motivo que será enviado por e-mail"
                                     rows={4}
                                     disabled={salvandoSituacao}
                                 />

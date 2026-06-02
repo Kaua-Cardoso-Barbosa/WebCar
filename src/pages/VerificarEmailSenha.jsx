@@ -70,7 +70,7 @@ export default function VerificarEmailSenha() {
 
             <div className={css.verificacaoFundo}>
                 <div className={css.cartaoVerificacao}>
-                    <h2 className={css.tituloVerificacao}>Digite o código enviado no seu email</h2>
+                    <h2 className={css.tituloVerificacao}>Digite o código enviado no seu e-mail</h2>
 
                     <form onSubmit={avancar}>
                         <div className={css.grupoInput}>

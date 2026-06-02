@@ -227,6 +227,20 @@
     font-weight: 800;
 }
 
+.resumoParcelas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    margin-top: 6px;
+}
+
+.resumoParcelas strong {
+    color: var(--cor-sucesso-texto);
+    font-size: 13px;
+    font-weight: 900;
+}
+
 .acoesParcelas {
     display: flex;
     align-items: center;

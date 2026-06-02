@@ -168,16 +168,22 @@
 .erro,
 .sucesso {
     margin: 14px 0 0;
+    padding: 12px 14px;
+    border-radius: 10px;
     font-size: 13px;
     font-weight: 800;
 }
 
 .erro {
     color: #b91c1c;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
 }
 
 .sucesso {
     color: #15803d;
+    background: #dcfce7;
+    border: 1px solid #bbf7d0;
 }
 
 .graficoCard,
@@ -240,21 +246,50 @@
     background: var(--cor-fundo-tabela-head);
 }
 
+.filtrosTabela {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px;
+    border: 1px solid var(--cor-borda-painel);
+    border-radius: 10px;
+    background: var(--cor-superficie);
+}
+
+.filtrosTabela button {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 8px;
+    color: var(--cor-texto-muted-forte);
+    background: transparent;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 850;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.filtroAtivo {
+    color: var(--cor-principal) !important;
+    background: var(--cor-azul-fundo-botao) !important;
+}
+
 .tabelaWrap {
     width: 100%;
-    overflow-x: auto;
+    overflow-x: hidden;
 }
 
 .tabelaWrap table {
     width: 100%;
-    min-width: 900px;
+    min-width: 0;
     border-collapse: collapse;
     table-layout: fixed;
 }
 
 .tabelaWrap th,
 .tabelaWrap td {
-    padding: 14px 22px;
+    padding: 12px 14px;
     border-bottom: 1px solid var(--cor-divisor);
     text-align: left;
 }
@@ -268,10 +303,10 @@
 
 .tabelaWrap td {
     color: var(--cor-texto-principal);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 750;
     word-break: normal;
-    overflow-wrap: break-word;
+    overflow-wrap: anywhere;
 }
 
 .tabelaWrap tbody tr:hover {
@@ -279,11 +314,11 @@
 }
 
 .tabelaWrap th:nth-child(1) {
-    width: 46%;
+    width: 10%;
 }
 
 .tabelaWrap th:nth-child(2) {
-    width: 15%;
+    width: 30%;
 }
 
 .tabelaWrap th:nth-child(3) {
@@ -291,15 +326,48 @@
 }
 
 .tabelaWrap th:nth-child(4) {
-    width: 15%;
+    width: 12%;
 }
 
 .tabelaWrap th:nth-child(5) {
-    width: 12%;
+    width: 11%;
+}
+
+.tabelaWrap th:nth-child(6) {
+    width: 11%;
+}
+
+.tabelaWrap th:nth-child(7) {
+    width: 14%;
 }
 
 .colDescricao {
     line-height: 1.45;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.tipoReceita,
+.tipoDespesa {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    min-width: 76px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.tipoReceita {
+    color: #15803d;
+    background: #dcfce7;
+}
+
+.tipoDespesa {
+    color: #b91c1c;
+    background: #fee2e2;
 }
 
 .valorReceita {
@@ -314,7 +382,8 @@
 
 .colData,
 .colOrigem,
-.colStatus {
+.colStatus,
+.colTipo {
     white-space: nowrap;
 }
 
@@ -363,6 +432,179 @@
 .statusInativo {
     color: var(--cor-erro-texto);
     background: var(--cor-erro-fundo);
+}
+
+.colAcoes {
+    white-space: nowrap;
+}
+
+.acaoBotao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin-right: 6px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+.acaoEditar {
+    color: var(--cor-principal);
+    background: var(--cor-azul-fundo-botao);
+}
+
+.acaoExcluir {
+    color: #b91c1c;
+    background: #fee2e2;
+}
+
+.paginacao {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 16px 22px;
+    border-top: 1px solid var(--cor-borda-painel);
+    color: var(--cor-texto-muted-forte);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.paginacao div {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.paginacao button {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--cor-borda-painel);
+    border-radius: 9px;
+    color: var(--cor-principal);
+    background: var(--cor-superficie);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.paginacao button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+}
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgba(15, 23, 42, .46);
+}
+
+.modalCard {
+    width: min(100%, 460px);
+    padding: 22px;
+    border: 1px solid var(--cor-borda-painel);
+    border-radius: 12px;
+    background: var(--cor-superficie);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, .22);
+}
+
+.modalTopo {
+    margin-bottom: 18px;
+}
+
+.modalTopo span {
+    display: inline-flex;
+    min-height: 28px;
+    align-items: center;
+    padding: 0 10px;
+    border-radius: 999px;
+    color: var(--cor-principal);
+    background: var(--cor-azul-fundo-botao);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.modalTopo h2 {
+    margin: 10px 0 0;
+    color: var(--cor-texto-dashboard);
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.modalTopo p {
+    margin: 6px 0 0;
+    color: var(--cor-texto-muted-forte);
+    font-size: 14px;
+    font-weight: 750;
+    line-height: 1.45;
+}
+
+.modalCard label {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 12px;
+    color: var(--cor-texto-muted-forte);
+    font-size: 12px;
+    font-weight: 850;
+}
+
+.modalCard input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid var(--cor-borda-painel);
+    border-radius: 10px;
+    color: var(--cor-texto-principal);
+    background: var(--cor-fundo-input);
+    font: inherit;
+    outline: none;
+}
+
+.modalAcoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.botaoSecundario,
+.botaoPrimario,
+.botaoPerigo {
+    min-height: 42px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 10px;
+    font: inherit;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.botaoSecundario {
+    color: var(--cor-texto-dashboard);
+    background: var(--cor-fundo-input);
+}
+
+.botaoPrimario {
+    color: #fff;
+    background: var(--cor-principal);
+}
+
+.botaoPerigo {
+    color: #fff;
+    background: #dc2626;
+}
+
+.botaoPrimario:disabled,
+.botaoPerigo:disabled {
+    cursor: wait;
+    opacity: .72;
 }
 
 @media (max-width: 980px) {
@@ -414,11 +656,32 @@
     }
 
     .tabelaCard .secaoTopo {
+        align-items: stretch;
+        flex-direction: column;
         padding: 18px;
+    }
+
+    .filtrosTabela {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .filtrosTabela button {
+        flex: 1 0 auto;
     }
 
     .grafico {
         height: 320px;
+    }
+
+    .paginacao {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .paginacao div {
+        justify-content: space-between;
+        width: 100%;
     }
 }
 
@@ -480,20 +743,46 @@
         padding: 10px 0;
         border-bottom: 1px solid var(--cor-divisor);
         text-align: right;
+        font-size: 14px;
     }
 
     .colDescricao,
+    .colTipo,
     .valorReceita,
     .valorDespesa,
     .colData,
     .colOrigem,
-    .colStatus {
+    .colStatus,
+    .colAcoes {
         white-space: normal;
     }
 
     .colData,
     .colStatus {
         white-space: nowrap;
+    }
+
+    .colAcoes {
+        align-items: center !important;
+    }
+
+    .acaoBotao {
+        margin-right: 0;
+        margin-left: 8px;
+    }
+
+    .modalOverlay {
+        align-items: end;
+        padding: 12px;
+    }
+
+    .modalCard {
+        padding: 18px;
+    }
+
+    .modalAcoes {
+        display: grid;
+        grid-template-columns: 1fr;
     }
 
     .tabelaWrap td:last-child {

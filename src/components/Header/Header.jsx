@@ -280,7 +280,7 @@ export default function Header({ busca = "", setBusca = null }) {
         }
 
         if (!dadosCliente.nome.trim() || !dadosCliente.email.trim() || !dadosCliente.telefone.trim() || !dadosCliente.cpf.trim()) {
-            setErroCliente("Preencha nome, email, telefone e CPF para salvar.");
+            setErroCliente("Preencha nome, e-mail, telefone e CPF para salvar.");
             return;
         }
 

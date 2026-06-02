@@ -96,7 +96,7 @@ export default function Footer() {
 
     return (
         <footer className="container py-5">
-            <div className="row justify-content-between">
+            <div className="row">
                 <div className="col-md-4 mb-4">
                     <div className="d-flex align-items-center gap-2 mb-3">
                         <img src={logoUrl} alt="Logo" width="60" height="40" />
@@ -109,21 +109,6 @@ export default function Footer() {
                     </p>
                 </div>
 
-                <div className="col-md-2">
-                    <h6 className="fw-bold">Empresa</h6>
-                    <ul className="nav flex-column">
-                        <li className="nav-item mb-2">
-                            <a href="#" className="nav-link p-0 text-secondary">
-                                Sobre nós
-                            </a>
-                        </li>
-                        <li className="nav-item">
-                            <a href="#" className="nav-link p-0 text-secondary">
-                                Contato
-                            </a>
-                        </li>
-                    </ul>
-                </div>
             </div>
 
             <hr className="my-4" />

@@ -23,6 +23,7 @@ export default function Cadastro() {
     const [preview, setPreview] = useState(null);
 
     const [erro, setErro] = useState("");
+    const [errosCampos, setErrosCampos] = useState({});
 
     function apenasNumeros(valor) {
         return valor.replace(/\D/g, "");
@@ -67,7 +68,7 @@ export default function Cadastro() {
     function concluirCadastroGoogle(data) {
         const usuario = salvarSessaoUsuario(data);
         if (!usuario) {
-            setErro("Nao foi possivel identificar o usuario.");
+            setErro("Não foi possível identificar o usuário.");
             return;
         }
 
@@ -78,14 +79,25 @@ export default function Cadastro() {
         e.preventDefault();
 
         setErro("");
+        setErrosCampos({});
 
-        if (!nome || !email || !cpf || !senha || !confirmarSenha) {
-            setErro("Preencha todos os campos.");
+        const camposObrigatorios = [
+            { chave: "nome", valor: nome, mensagem: "Informe seu nome completo." },
+            { chave: "telefone", valor: telefone, mensagem: "Informe seu telefone." },
+            { chave: "email", valor: email, mensagem: "Informe seu e-mail." },
+            { chave: "cpf", valor: cpf, mensagem: "Informe seu CPF." },
+            { chave: "senha", valor: senha, mensagem: "Informe sua senha." },
+            { chave: "confirmarSenha", valor: confirmarSenha, mensagem: "Confirme sua senha." },
+        ];
+        const campoVazio = camposObrigatorios.find((campo) => !String(campo.valor || "").trim());
+
+        if (campoVazio) {
+            setErrosCampos({ [campoVazio.chave]: campoVazio.mensagem });
             return;
         }
 
         if (senha !== confirmarSenha) {
-            setErro("As senhas não coincidem.");
+            setErrosCampos({ confirmarSenha: "As senhas não coincidem." });
             return;
         }
 
@@ -140,16 +152,21 @@ export default function Cadastro() {
 
                     <div className={css.cardCadastro}>
                         <form className={css.formularioCadastro} onSubmit={handleSubmit}>
+                            <p className={css.avisoObrigatorio}>Todos os campos são obrigatórios.</p>
 
                             <div className={css.grupoCampo}>
                                 <label>Nome Completo</label>
                                 <input
                                     type="text"
                                     placeholder="Digite seu nome completo"
-                                    className={css.inputCadastro}
+                                    className={`${css.inputCadastro} ${errosCampos.nome ? css.inputErro : ""}`}
                                     value={nome}
-                                    onChange={(e) => setNome(e.target.value)}
+                                    onChange={(e) => {
+                                        setNome(e.target.value);
+                                        setErrosCampos((atuais) => ({ ...atuais, nome: "" }));
+                                    }}
                                 />
+                                {errosCampos.nome && <span className={css.erroCampo}>{errosCampos.nome}</span>}
                             </div>
 
                             <div className={css.grupoCampo}>
@@ -157,12 +174,16 @@ export default function Cadastro() {
                                 <input
                                     type="text"
                                     placeholder="(11) 99999-9999"
-                                    className={css.inputCadastro}
+                                    className={`${css.inputCadastro} ${errosCampos.telefone ? css.inputErro : ""}`}
                                     value={telefone}
-                                    onChange={(e) => setTelefone(formatarTelefone(e.target.value))}
+                                    onChange={(e) => {
+                                        setTelefone(formatarTelefone(e.target.value));
+                                        setErrosCampos((atuais) => ({ ...atuais, telefone: "" }));
+                                    }}
                                     inputMode="numeric"
                                     maxLength={15}
                                 />
+                                {errosCampos.telefone && <span className={css.erroCampo}>{errosCampos.telefone}</span>}
                             </div>
 
                             <div className={css.grupoCampo}>
@@ -170,10 +191,14 @@ export default function Cadastro() {
                                 <input
                                     type="email"
                                     placeholder="seuemail@exemplo.com"
-                                    className={css.inputCadastro}
+                                    className={`${css.inputCadastro} ${errosCampos.email ? css.inputErro : ""}`}
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={(e) => {
+                                        setEmail(e.target.value);
+                                        setErrosCampos((atuais) => ({ ...atuais, email: "" }));
+                                    }}
                                 />
+                                {errosCampos.email && <span className={css.erroCampo}>{errosCampos.email}</span>}
                             </div>
 
                             <div className={css.grupoCampo}>
@@ -181,12 +206,16 @@ export default function Cadastro() {
                                 <input
                                     type="text"
                                     placeholder="000.000.000-00"
-                                    className={css.inputCadastro}
+                                    className={`${css.inputCadastro} ${errosCampos.cpf ? css.inputErro : ""}`}
                                     value={cpf}
-                                    onChange={(e) => setCpf(formatarCpf(e.target.value))}
+                                    onChange={(e) => {
+                                        setCpf(formatarCpf(e.target.value));
+                                        setErrosCampos((atuais) => ({ ...atuais, cpf: "" }));
+                                    }}
                                     inputMode="numeric"
                                     maxLength={14}
                                 />
+                                {errosCampos.cpf && <span className={css.erroCampo}>{errosCampos.cpf}</span>}
                             </div>
 
                             <div className={css.linhaSenha}>
@@ -195,10 +224,14 @@ export default function Cadastro() {
                                     <input
                                         type="password"
                                         placeholder="••••••••"
-                                        className={css.inputCadastro}
+                                        className={`${css.inputCadastro} ${errosCampos.senha ? css.inputErro : ""}`}
                                         value={senha}
-                                        onChange={(e) => setSenha(e.target.value)}
+                                        onChange={(e) => {
+                                            setSenha(e.target.value);
+                                            setErrosCampos((atuais) => ({ ...atuais, senha: "" }));
+                                        }}
                                     />
+                                    {errosCampos.senha && <span className={css.erroCampo}>{errosCampos.senha}</span>}
                                 </div>
 
                                 <div className={css.grupoCampo}>
@@ -206,10 +239,14 @@ export default function Cadastro() {
                                     <input
                                         type="password"
                                         placeholder="••••••••"
-                                        className={css.inputCadastro}
+                                        className={`${css.inputCadastro} ${errosCampos.confirmarSenha ? css.inputErro : ""}`}
                                         value={confirmarSenha}
-                                        onChange={(e) => setConfirmarSenha(e.target.value)}
+                                        onChange={(e) => {
+                                            setConfirmarSenha(e.target.value);
+                                            setErrosCampos((atuais) => ({ ...atuais, confirmarSenha: "" }));
+                                        }}
                                     />
+                                    {errosCampos.confirmarSenha && <span className={css.erroCampo}>{errosCampos.confirmarSenha}</span>}
                                 </div>
                             </div>
 
