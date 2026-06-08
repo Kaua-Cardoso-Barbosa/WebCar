@@ -154,6 +154,22 @@ function calcularSaldoDevedor(parcelas, financiamento) {
     }, 0);
 }
 
+function calcularValorAPagarCompra(compra) {
+    if (Number(compra.formaPagamento) !== 1) {
+        return compra.valorVenda;
+    }
+
+    const totalParcelas = compra.parcelas.reduce((total, parcela) => {
+        return total + valorParcela(parcela);
+    }, 0);
+
+    if (totalParcelas > 0) {
+        return totalParcelas;
+    }
+
+    return compra.financiamento.valorFinanciado || compra.valorVenda;
+}
+
 function textoStatusParcela(parcela) {
     const status = statusParcela(parcela);
     const pagamento = getCampoPresente(parcela, [
@@ -565,6 +581,7 @@ export default function MinhasCompras() {
                         const saldoDevedor = Object.prototype.hasOwnProperty.call(saldosDevedores, idFinanciamento)
                             ? saldosDevedores[idFinanciamento]
                             : calcularSaldoDevedor(compra.parcelas, compra.financiamento);
+                        const valorAPagar = calcularValorAPagarCompra(compra);
 
                         return (
                             <article className={css.compra} key={compra.idVenda}>
@@ -583,8 +600,8 @@ export default function MinhasCompras() {
                                     </div>
 
                                     <div className={css.valorCompra}>
-                                        <span>Valor da compra</span>
-                                        <strong>{formatarPreco(compra.valorVenda)}</strong>
+                                        <span>Valor a pagar</span>
+                                        <strong>{formatarPreco(valorAPagar)}</strong>
                                     </div>
                                 </div>
 
