@@ -62,6 +62,15 @@ const CARD_CONFIGS = [
 
 const CHART_HEIGHT = 380;
 const REGISTROS_POR_PAGINA_RELATORIO = 10;
+const EIXO_X_LABELS_ROTACIONADOS = {
+    interval: 0,
+    height: 86,
+    tickMargin: 14,
+    tick: {
+        angle: -45,
+        textAnchor: "end",
+    },
+};
 
 const CATEGORIAS_GRAFICOS = [
     { id: "financeiro", label: "Financeiro", icon: LineChartIcon },
@@ -601,6 +610,12 @@ function normalizarSerie(lista, labelKeys, valueKeys, valueName = "valor") {
     }));
 }
 
+function normalizarAnaliseMarcas(lista) {
+    return normalizarSerie(lista, ["marca", "nome"], ["qtd_estoque", "quantidade", "total", "valor"])
+        .filter((item) => item.valor > 0)
+        .sort((a, b) => b.valor - a.valor);
+}
+
 function itemDocumentacaoPendente(item) {
     const statusBruto = getCampo(item, ["documentacao", "DOCUMENTACAO", "status", "STATUS", "situacao", "SITUACAO", "nome", "tipo"], "");
     const statusNumerico = Number(statusBruto);
@@ -627,13 +642,21 @@ function itemDocumentacaoPendente(item) {
 
 // funcao do grafico documentacao pendente
 function normalizarDocumentacaoPendente(lista) {
-    return paraArray(lista)
+    const resumo = paraArray(lista)
         .filter(itemDocumentacaoPendente)
-        .map((item) => ({
-            nome: "Pendente",
-            valor: numero(valorPorPossiveisChaves(item, ["quantidade", "capital", "total", "valor"])),
-        }))
-        .filter((item) => item.valor > 0);
+        .reduce((acumulador, item) => {
+            const quantidadeInformada = valorPorPossiveisChaves(item, ["quantidade", "qtd", "total_veiculos"]);
+            const capital = numero(valorPorPossiveisChaves(item, ["capital", "preco_custo", "PRECO_CUSTO", "valor_estoque"]));
+
+            acumulador.valor += quantidadeInformada === undefined || quantidadeInformada === null || quantidadeInformada === ""
+                ? 1
+                : Math.max(1, numero(quantidadeInformada));
+            acumulador.capital += capital;
+
+            return acumulador;
+        }, { nome: "Pendente", valor: 0, capital: 0 });
+
+    return resumo.valor > 0 ? [resumo] : [];
 }
 
 // funcao do grafico vendas por forma de pagamento
@@ -803,19 +826,17 @@ function agruparEstoqueParado(veiculos) {
 function agruparAnaliseMarcas(veiculos) {
     const grupos = {};
 
-    paraArray(veiculos).forEach((veiculo) => {
-        const marca = getCampo(veiculo, ["marca", "MARCA"], "Sem marca");
-        if (!grupos[marca]) {
-            grupos[marca] = { marca, qtd_total: 0, qtd_estoque: 0, capital_estoque: 0 };
-        }
+    paraArray(veiculos)
+        .filter((veiculo) => Number(veiculo.status ?? veiculo.STATUS) === 0)
+        .forEach((veiculo) => {
+            const marca = getCampo(veiculo, ["marca", "MARCA"], "Sem marca");
+            if (!grupos[marca]) {
+                grupos[marca] = { marca, qtd_estoque: 0, capital_estoque: 0 };
+            }
 
-        grupos[marca].qtd_total += 1;
-
-        if (Number(veiculo.status ?? veiculo.STATUS) === 0) {
             grupos[marca].qtd_estoque += 1;
             grupos[marca].capital_estoque += numero(veiculo.preco_custo);
-        }
-    });
+        });
 
     return Object.values(grupos).sort((a, b) => b.capital_estoque - a.capital_estoque);
 }
@@ -913,10 +934,11 @@ function textoInfoDashboard(titulo) {
         "Preço recomendado x preço cadastrado": "Compara o preço recomendado com o preço cadastrado. Use para encontrar veículos fora da estratégia comercial definida.",
         "Estoque parado por faixa de tempo": "Agrupa veículos pelo tempo em estoque. Ajuda a identificar carros parados há muito tempo e capital imobilizado.",
         "Análise por marca": "Mostra como o estoque está distribuído por marca. Ajuda a entender concentração, variedade e peso de cada marca no pátio.",
+        "Veículos à venda por marca": "Mostra somente veículos disponíveis para venda, agrupados por marca. Veículos vendidos, reservados ou inativos não entram nesta contagem.",
         "Vendas por forma de pagamento": "Mostra o total vendido por forma de pagamento, como financiamento, Pix, cartão, boleto ou à vista.",
         "Performance dos vendedores": "Compara vendedores por resultado de vendas. Facilita o acompanhamento de produtividade, receita gerada e contribuição comercial.",
         "Lucro real por veículo": "Calcula o lucro mais próximo do real por veículo, descontando custo e manutenções vinculadas antes da venda.",
-        "Documentação pendente": "Mostra veículos com documentação pendente e o capital associado. Ajuda a priorizar regularizações que travam venda ou entrega.",
+        "Documentação pendente dos veículos à venda": "Mostra somente veículos disponíveis para venda com documentação pendente. Veículos vendidos, reservados ou inativos não entram nesta contagem.",
         "Curva ABC do estoque": "Classifica os veículos pelo peso financeiro no estoque. A curva A concentra os itens de maior impacto no capital parado.",
         "Serviços mais usados": "Mostra quais serviços de manutenção aparecem com mais frequência. Ajuda a entender custos recorrentes e padrões de preparação dos veículos.",
         "Vendas": "Lista vendas realizadas no período, com cliente, veículo, forma de pagamento, valor e lucro bruto quando disponível.",
@@ -1015,7 +1037,13 @@ function TabelaRelatorio({ titulo, dados, limiteColunas = 8, info = "" }) {
                             {linhasPagina.map((linha, index) => (
                                 <tr key={`${titulo}-${inicioPagina + index}`}>
                                     {colunas.map((coluna) => (
-                                        <td className={classeColunaTabela(coluna)} key={coluna}>{formatarCampoTabela(coluna, linha[coluna], linha)}</td>
+                                        <td
+                                            className={classeColunaTabela(coluna)}
+                                            data-label={formatarCabecalhoTabela(coluna)}
+                                            key={coluna}
+                                        >
+                                            {formatarCampoTabela(coluna, linha[coluna], linha)}
+                                        </td>
                                     ))}
                                 </tr>
                             ))}
@@ -1240,7 +1268,8 @@ export default function Dashboard() {
     const topMargem = normalizarSerie(topMargemBase, ["nome", "veiculo", "modelo", "placa"], ["margem_percentual", "percentual", "margem"], "percentual");
     const precificacao = normalizarPrecificacao(periodoAtivo === "geral" ? graficos.precificacao_recomendada : veiculosPeriodo);
     const estoqueParado = normalizarSerie(graficos.estoque_parado, ["faixa", "tempo", "periodo", "nome"], ["quantidade", "total", "valor"]);
-    const analiseMarcas = normalizarSerie(graficos.analise_marcas, ["marca", "nome"], ["qtd_estoque", "qtd_total", "quantidade", "total", "vendas", "valor"]);
+    const veiculosAnaliseMarcasBase = periodoAtivo === "geral" ? relatorios.veiculos : veiculosPeriodo;
+    const analiseMarcas = normalizarAnaliseMarcas(agruparAnaliseMarcas(veiculosAnaliseMarcasBase));
     const vendasPagamento = normalizarVendasPorPagamento(graficos.vendas_por_forma_pagamento);
     const vendedores = normalizarSerie(graficos.performance_vendedores, ["vendedor", "nome"], ["lucro_bruto", "receita_vendas", "quantidade_vendas", "vendas", "quantidade", "total", "valor"]);
     const lucroRealVeiculos = normalizarSerie(graficos.lucro_real_veiculos, ["veiculo", "nome", "modelo", "placa"], ["lucro_real", "lucro", "valor"]);
@@ -1517,7 +1546,7 @@ export default function Dashboard() {
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
                                                 <ComposedChart data={financeiroMensal}>
                                                     <CartesianGrid strokeDasharray="3 3" />
-                                                    <XAxis dataKey="mes" tickMargin={10} />
+                                                    <XAxis dataKey="mes" {...EIXO_X_LABELS_ROTACIONADOS} />
                                                     <YAxis width={78} tickFormatter={formatarMoedaCompacta} />
                                                     <Tooltip formatter={formatarTooltip} />
                                                     <Legend />
@@ -1567,14 +1596,14 @@ export default function Dashboard() {
                                     <ChartCard titulo="Compra x venda por veículo" subtitulo="Principais veículos por valor cadastrado" icon={Car} cheio>
                                         {compraVendaPrincipais.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-                                                <BarChart data={compraVendaPrincipais} margin={{ left: 8, right: 18 }}>
+                                                <BarChart data={compraVendaPrincipais} layout="vertical" margin={{ top: 8, right: 18, bottom: 8, left: 18 }}>
                                                     <CartesianGrid strokeDasharray="3 3" />
-                                                    <XAxis dataKey="nome" tickFormatter={formatarRotuloVeiculo} tickMargin={10} interval={0} />
-                                                    <YAxis width={78} tickFormatter={formatarMoedaCompacta} />
+                                                    <XAxis type="number" tickFormatter={formatarMoedaCompacta} />
+                                                    <YAxis type="category" dataKey="nome" width={128} tickFormatter={formatarRotuloVeiculo} />
                                                     <Tooltip formatter={formatarTooltip} />
-                                                    <Legend />
-                                                    <Bar dataKey="compra" fill="#64748b" name="Compra" radius={[6, 6, 0, 0]} />
-                                                    <Bar dataKey="venda" fill="#16a34a" name="Venda" radius={[6, 6, 0, 0]} />
+                                                    <Legend verticalAlign="top" height={28} />
+                                                    <Bar dataKey="compra" fill="#64748b" name="Compra" radius={[0, 6, 6, 0]} />
+                                                    <Bar dataKey="venda" fill="#16a34a" name="Venda" radius={[0, 6, 6, 0]} />
                                                 </BarChart>
                                             </ResponsiveContainer>
                                         )}
@@ -1633,7 +1662,7 @@ export default function Dashboard() {
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
                                                 <BarChart data={estoqueParado}>
                                                     <CartesianGrid strokeDasharray="3 3" />
-                                                    <XAxis dataKey="nome" tickMargin={10} />
+                                                    <XAxis dataKey="nome" {...EIXO_X_LABELS_ROTACIONADOS} />
                                                     <YAxis width={58} tickFormatter={formatarNumeroCompacto} />
                                                     <Tooltip formatter={(v) => [formatarNumero(v), "Veículos"]} />
                                                     <Bar dataKey="valor" fill="#f59e0b" radius={[8, 8, 0, 0]} />
@@ -1643,13 +1672,13 @@ export default function Dashboard() {
                                     </ChartCard>
 
                                     {/* grafico analise por marca */}
-                                    <ChartCard titulo="Análise por marca" icon={BarChart3} cheio>
+                                    <ChartCard titulo="Veículos à venda por marca" subtitulo="Somente carros disponíveis para venda" icon={BarChart3} cheio>
                                         {analiseMarcas.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
                                                 <BarChart data={analiseMarcas}>
                                                     <CartesianGrid strokeDasharray="3 3" />
-                                                    <XAxis dataKey="nome" tickFormatter={formatarRotuloCurto} tickMargin={10} />
-                                                    <YAxis width={58} tickFormatter={formatarNumeroCompacto} />
+                                                    <XAxis dataKey="nome" tickFormatter={formatarRotuloCurto} {...EIXO_X_LABELS_ROTACIONADOS} />
+                                                    <YAxis width={58} allowDecimals={false} tickFormatter={formatarNumeroCompacto} />
                                                     <Tooltip formatter={(v) => [formatarNumero(v), "Veículos"]} />
                                                     <Bar dataKey="valor" fill="#2563eb" radius={[8, 8, 0, 0]} />
                                                 </BarChart>
@@ -1682,7 +1711,7 @@ export default function Dashboard() {
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
                                                 <BarChart data={vendedores}>
                                                     <CartesianGrid strokeDasharray="3 3" />
-                                                    <XAxis dataKey="nome" tickFormatter={formatarRotuloCurto} tickMargin={10} />
+                                                    <XAxis dataKey="nome" tickFormatter={formatarRotuloCurto} {...EIXO_X_LABELS_ROTACIONADOS} />
                                                     <YAxis width={78} tickFormatter={formatarMoedaCompacta} />
                                                     <Tooltip formatter={(v) => [formatarMoeda(v), "Resultado"]} />
                                                     <Bar dataKey="valor" fill="#0891b2" radius={[8, 8, 0, 0]} />
@@ -1712,14 +1741,18 @@ export default function Dashboard() {
                                     {categoriaAtiva === "operacao" && (
                                         <>
                                     {/* grafico documentacao pendente */}
-                                    <ChartCard titulo="Documentação pendente" icon={FileWarning}>
+                                    <ChartCard titulo="Documentação pendente dos veículos à venda" subtitulo="Somente carros disponíveis para venda" icon={FileWarning}>
                                         {documentacao.length === 0 ? <EmptyChart /> : (
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
                                                 <BarChart data={documentacao}>
                                                     <CartesianGrid strokeDasharray="3 3" />
-                                                    <XAxis dataKey="nome" tickMargin={10} />
+                                                    <XAxis dataKey="nome" {...EIXO_X_LABELS_ROTACIONADOS} />
                                                     <YAxis width={58} tickFormatter={formatarNumeroCompacto} />
-                                                    <Tooltip formatter={(v) => [formatarNumero(v), "Pendências"]} />
+                                                    <Tooltip formatter={(v, _nome, props) => {
+                                                        const capital = numero(props?.payload?.capital);
+                                                        const detalheCapital = capital > 0 ? ` - ${formatarMoeda(capital)}` : "";
+                                                        return [`${formatarNumero(v)}${detalheCapital}`, "Pendências"];
+                                                    }} />
                                                     <Bar dataKey="valor" fill="#dc2626" radius={[8, 8, 0, 0]} />
                                                 </BarChart>
                                             </ResponsiveContainer>
@@ -1732,7 +1765,7 @@ export default function Dashboard() {
                                             <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
                                                 <BarChart data={curvaAbc}>
                                                     <CartesianGrid strokeDasharray="3 3" />
-                                                    <XAxis dataKey="nome" tickFormatter={formatarRotuloCurto} tickMargin={10} />
+                                                    <XAxis dataKey="nome" tickFormatter={formatarRotuloCurto} {...EIXO_X_LABELS_ROTACIONADOS} />
                                                     <YAxis width={78} tickFormatter={formatarMoedaCompacta} />
                                                     <Tooltip formatter={(v) => [formatarMoeda(v), "Valor em estoque"]} />
                                                     <Bar dataKey="valor" fill="#2563eb" radius={[8, 8, 0, 0]} />

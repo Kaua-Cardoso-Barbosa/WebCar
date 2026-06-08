@@ -663,6 +663,7 @@
     align-items: center;
     justify-content: center;
     padding: 24px;
+    overflow-y: auto;
     background: rgba(15, 23, 42, .45);
 }
 
@@ -685,6 +686,11 @@
     justify-content: space-between;
     gap: 18px;
     margin-bottom: 18px;
+    min-width: 0;
+}
+
+.modalHeader > div {
+    min-width: 0;
 }
 
 .modalHeader h2 {
@@ -692,15 +698,18 @@
     color: var(--cor-texto-dashboard);
     font-size: 20px;
     font-weight: 850;
+    overflow-wrap: anywhere;
 }
 
 .modalHeader p {
     margin: 5px 0 0;
     color: var(--cor-texto-muted-forte);
     font-size: 13px;
+    overflow-wrap: anywhere;
 }
 
 .modalClose {
+    flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -751,6 +760,7 @@
 }
 
 .modalResumoGrid div {
+    min-width: 0;
     padding: 14px;
     border: 1px solid var(--cor-borda-painel);
     border-radius: 10px;
@@ -770,6 +780,7 @@
     color: var(--cor-texto-dashboard);
     font-size: 18px;
     font-weight: 850;
+    overflow-wrap: anywhere;
 }
 
 .modalChart {
@@ -782,13 +793,15 @@
 }
 
 .modalConteudo .tableWrap {
-    overflow-x: hidden;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
 }
 
 .modalConteudo .tableWrap table {
     width: 100%;
-    min-width: 0;
-    table-layout: fixed;
+    min-width: 680px;
+    table-layout: auto;
 }
 
 .modalConteudo .tableWrap th,
@@ -940,7 +953,6 @@
 
     .modalOverlay {
         align-items: flex-start;
-        overflow: hidden;
         padding: 12px;
     }
 
@@ -959,8 +971,75 @@
         font-size: 18px;
     }
 
+    .modalConteudo {
+        gap: 14px;
+    }
+
+    .modalConteudo .tableCard {
+        box-shadow: none;
+    }
+
     .modalConteudo .tableWrap {
-        overflow-x: hidden;
+        overflow: visible;
+    }
+
+    .modalConteudo .tableWrap table,
+    .modalConteudo .tableWrap thead,
+    .modalConteudo .tableWrap tbody,
+    .modalConteudo .tableWrap tfoot,
+    .modalConteudo .tableWrap tr,
+    .modalConteudo .tableWrap th,
+    .modalConteudo .tableWrap td {
+        display: block;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .modalConteudo .tableWrap table {
+        border-spacing: 0;
+    }
+
+    .modalConteudo .tableWrap thead {
+        display: none;
+    }
+
+    .modalConteudo .tableWrap tbody {
+        display: grid;
+        gap: 10px;
+    }
+
+    .modalConteudo .tableWrap tbody tr {
+        padding: 10px;
+        border: 1px solid var(--cor-divisor);
+        border-radius: 8px;
+        background: var(--cor-superficie);
+    }
+
+    .modalConteudo .tableWrap tbody td {
+        display: grid;
+        grid-template-columns: minmax(96px, 38%) minmax(0, 1fr);
+        align-items: start;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--cor-divisor);
+        text-align: right;
+    }
+
+    .modalConteudo .tableWrap tbody td::before {
+        content: attr(data-label);
+        color: var(--cor-texto-muted-forte);
+        font-weight: 850;
+        text-align: left;
+    }
+
+    .modalConteudo .tableWrap tbody td:last-child {
+        border-bottom: 0;
+    }
+
+    .modalConteudo .tableWrap tfoot tr,
+    .modalConteudo .tableWrap tfoot td {
+        border: 0;
+        padding: 0;
     }
 }
 
@@ -1000,6 +1079,48 @@
 
     .paginacaoTabela {
         padding-inline: 10px;
+    }
+
+    .modalOverlay {
+        padding: 8px;
+    }
+
+    .modalBox {
+        max-height: calc(100dvh - 16px);
+        padding: 12px;
+        border-radius: 10px;
+    }
+
+    .modalHeader {
+        align-items: flex-start;
+    }
+
+    .modalClose {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+    }
+
+    .modalHeader h2 {
+        font-size: 16px;
+    }
+
+    .modalResumoGrid div {
+        padding: 12px;
+    }
+
+    .modalResumoGrid strong {
+        font-size: 16px;
+    }
+
+    .modalConteudo .tableTitle {
+        gap: 8px;
+    }
+
+    .modalConteudo .tableWrap tbody td {
+        grid-template-columns: 1fr;
+        gap: 4px;
+        text-align: left;
     }
 }
 
