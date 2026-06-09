@@ -3,7 +3,8 @@ import Footer from "../components/Footer/Footer.jsx";
 import Banner from "../components/Banner/Banner.jsx";
 import css from "./Home.module.css";
 import Card from "../components/Cards/Card.jsx";
-import { Link } from "react-router-dom";
+import AuthModal from "../components/AuthModal/AuthModal.jsx";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { API_URL } from "../App";
 
@@ -47,10 +48,42 @@ function normalizarDescontoAVista(data = {}) {
     return Number.isFinite(numero) && numero > 0 ? numero : 0;
 }
 
-export default function Home() {
+const comentariosClientes = [
+    {
+        nome: "Cliente WebCar",
+        texto: "Consegui comparar os carros com calma e entender o valor antes de falar com a equipe.",
+        detalhe: "Compra com Pix",
+    },
+    {
+        nome: "Cliente WebCar",
+        texto: "As fotos e os dados do veiculo ajudaram bastante na decisao. A experiencia ficou bem direta.",
+        detalhe: "Catalogo online",
+    },
+    {
+        nome: "Cliente WebCar",
+        texto: "Gostei de acompanhar as informacoes da compra e das parcelas em um lugar so.",
+        detalhe: "Area do cliente",
+    },
+];
+
+export default function Home({ authModalInicial = "" }) {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [carros, setCarros] = useState([]);
     const [erro, setErro] = useState("");
     const [descontoAVista, setDescontoAVista] = useState(0);
+    const [comentarioAtivo, setComentarioAtivo] = useState(0);
+    const auth = searchParams.get("auth");
+    const authModal = auth === "login" || auth === "cadastro" ? auth : authModalInicial;
+
+    useEffect(() => {
+        const intervalo = setInterval(() => {
+            setComentarioAtivo((atual) => (atual + 1) % comentariosClientes.length);
+        }, 5200);
+
+        return () => clearInterval(intervalo);
+    }, []);
 
     useEffect(() => {
         async function buscarDados() {
@@ -105,7 +138,7 @@ export default function Home() {
                         <div>
                             <span className={css.kicker}>Selecionados para você</span>
                             <h2>Veículos em destaque</h2>
-                            <p>Confira opções com fotos, dados essenciais e agendamento direto para visita.</p>
+                            <p>Confira opcoes com fotos, dados essenciais e informacoes claras para decidir com calma.</p>
                         </div>
 
                         <Link to="/catalogo" className={css.linkCatalogo}>
@@ -137,12 +170,48 @@ export default function Home() {
                     </div>
                 </section>
 
+                <section className={css.comentarios}>
+                    <div className={css.comentariosTexto}>
+                        <span className={css.kicker}>Experiencia WebCar</span>
+                        <h2>Mais confianca antes de escolher seu proximo carro.</h2>
+                        <p>
+                            Um espaco para destacar comentarios reais dos seus clientes e reforcar o atendimento da loja.
+                        </p>
+                    </div>
+
+                    <div className={css.carrosselComentarios}>
+                        {comentariosClientes.map((comentario, index) => (
+                            <article
+                                className={`${css.comentarioCard} ${index === comentarioAtivo ? css.comentarioAtivo : ""}`}
+                                key={`${comentario.nome}-${comentario.detalhe}`}
+                                aria-hidden={index !== comentarioAtivo}
+                            >
+                                <span>{comentario.detalhe}</span>
+                                <p>"{comentario.texto}"</p>
+                                <strong>{comentario.nome}</strong>
+                            </article>
+                        ))}
+
+                        <div className={css.controlesComentarios} aria-label="Selecionar comentario">
+                            {comentariosClientes.map((comentario, index) => (
+                                <button
+                                    type="button"
+                                    className={index === comentarioAtivo ? css.indicadorAtivo : ""}
+                                    onClick={() => setComentarioAtivo(index)}
+                                    aria-label={`Mostrar comentario ${index + 1}`}
+                                    key={comentario.detalhe}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
                 <section className={css.confianca}>
                     <div className={css.confiancaTexto}>
                         <span className={css.kickerClaro}>Por que comprar pela WebCar</span>
                         <h2>Uma experiência pensada para comprar sem pressa e sem dúvida.</h2>
                         <p>
-                            Veja informações importantes antes da visita, compare os veículos com calma e fale com a equipe para confirmar disponibilidade, condições e próximos passos.
+                            Veja informacoes importantes, compare os veiculos com calma e fale com a equipe para confirmar disponibilidade, condicoes e proximos passos.
                         </p>
 
                         <Link to="/catalogo" className={css.botaoClaro}>
@@ -156,8 +225,8 @@ export default function Home() {
                             <span>Anúncios com imagem e dados do estoque.</span>
                         </div>
                         <div>
-                            <strong>Visita marcada</strong>
-                            <span>Agende antes de ir até a loja.</span>
+                            <strong>Atendimento claro</strong>
+                            <span>Fale com a equipe para confirmar disponibilidade e proximos passos.</span>
                         </div>
                         <div>
                             <strong>Compra assistida</strong>
@@ -170,6 +239,15 @@ export default function Home() {
                     </div>
                 </section>
             </main>
+
+            <AuthModal
+                aberto={Boolean(authModal)}
+                modoInicial={authModal || "login"}
+                voltarPara={location.state?.voltarPara}
+                onClose={() => {
+                    navigate("/", { replace: true });
+                }}
+            />
 
             <Footer />
         </>

@@ -16,6 +16,7 @@ export default function AgendarSuaVisita() {
         try {
             const response = await fetch(`${API_URL}/agendar_visita`, {
                 method: "POST",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -37,7 +38,7 @@ export default function AgendarSuaVisita() {
             setNome("");
             setCelular("");
             setDataHora("");
-        } catch (error) {
+        } catch {
             setMensagem("Erro ao conectar com o servidor");
         }
     }

@@ -7,12 +7,24 @@ export function salvarSessaoUsuario(data) {
     localStorage.setItem("usuario_email", usuario.email);
     localStorage.setItem("usuario_tipo", usuario.tipo);
 
+    const imagemUsuario = usuario.imagem || usuario.imagem_google || usuario.foto_google;
+
+    if (imagemUsuario) {
+        localStorage.setItem("usuario_imagem", imagemUsuario);
+    } else {
+        localStorage.removeItem("usuario_imagem");
+    }
+
     if (usuario.telefone) {
         localStorage.setItem("usuario_telefone", usuario.telefone);
+    } else {
+        localStorage.removeItem("usuario_telefone");
     }
 
     if (usuario.cpf) {
         localStorage.setItem("usuario_cpf", usuario.cpf);
+    } else {
+        localStorage.removeItem("usuario_cpf");
     }
 
     if (data.token) {
@@ -31,4 +43,15 @@ export function rotaDepoisLogin(usuario, voltarPara) {
     if (tipo === 2) return voltarPara || "/catalogo";
 
     return "/login";
+}
+
+export function authHeaders(headers = {}) {
+    const token = localStorage.getItem("token");
+
+    if (!token) return headers;
+
+    return {
+        ...headers,
+        Authorization: `Bearer ${token}`,
+    };
 }

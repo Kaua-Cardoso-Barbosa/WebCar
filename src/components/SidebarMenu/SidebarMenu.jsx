@@ -9,6 +9,7 @@ const AUTH_KEYS = [
     "usuario_email",
     "usuario_telefone",
     "usuario_cpf",
+    "usuario_imagem",
     "usuario_tipo",
     "token",
 ];
@@ -30,7 +31,6 @@ export default function SidebarMenu() {
             if (!nome) return;
 
             document.cookie = `${nome}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-            document.cookie = `${nome}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=localhost`;
         });
 
         window.dispatchEvent(new CustomEvent("webcar:auth", { detail: { logado: false } }));

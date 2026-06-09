@@ -1,12 +1,11 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from "react";
 
-export const API_URL = "http://localhost:5000";
+// eslint-disable-next-line react-refresh/only-export-components
+export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 import EditarServico from "./pages/EditarServico.jsx";
 import Home from "./pages/Home.jsx";
-import Login from "./pages/Login.jsx";
-import Cadastro from "./pages/Cadastro.jsx";
 import RecuperarSenhaEmail from "./pages/RecuperarSenhaEmail.jsx";
 import VerificarEmailSenha from "./pages/VerificarEmailSenha.jsx";
 import TrocarSenha from "./pages/TrocarSenha.jsx";
@@ -211,8 +210,8 @@ export default function App() {
             <Routes>
 
                 <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/cadastro" element={<Cadastro />} />
+                <Route path="/login" element={<Home authModalInicial="login" />} />
+                <Route path="/cadastro" element={<Home authModalInicial="cadastro" />} />
                 <Route path="/recuperarSenhaEmail" element={<RecuperarSenhaEmail />} />
                 <Route path="/verificarEmailSenha" element={<VerificarEmailSenha />} />
                 <Route path="/trocarSenha" element={<TrocarSenha />} />

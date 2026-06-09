@@ -3,15 +3,12 @@ import Header from "../components/Header/Header.jsx";
 import Footer from "../components/Footer/Footer.jsx";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Sucesso from "../components/Sucesso/Sucesso.jsx";
 import { API_URL } from "../App";
 
 export default function RecuperarSenhaEmail() {
 
     const [email, setEmail] = useState("");
     const [erro, setErro] = useState("");
-    const [mostrarPopup, setMostrarPopup] = useState(false);
-    const [mensagemSucesso, setMensagemSucesso] = useState("");
 
     const navigate = useNavigate();
 
@@ -27,6 +24,7 @@ export default function RecuperarSenhaEmail() {
         try {
             const response = await fetch(`${API_URL}/esqueci_senha`, {
                 method: "POST",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -44,15 +42,13 @@ export default function RecuperarSenhaEmail() {
             localStorage.setItem("tipoVerificacao", "recuperacao");
 
 
-            setMensagemSucesso("Código enviado para seu e-mail!");
-            setMostrarPopup(true);
 
 
             setTimeout(() => {
                 navigate("/verificarEmailSenha");
             }, 2000);
 
-        } catch (error) {
+        } catch {
             setErro("Erro ao conectar com o servidor");
         }
     }

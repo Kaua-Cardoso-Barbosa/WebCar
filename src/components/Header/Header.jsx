@@ -12,6 +12,7 @@ const AUTH_KEYS = [
     "usuario_email",
     "usuario_telefone",
     "usuario_cpf",
+    "usuario_imagem",
     "usuario_tipo",
     "token",
 ];
@@ -147,7 +148,6 @@ export default function Header({ busca = "", setBusca = null }) {
             if (!nome) return;
 
             document.cookie = `${nome}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-            document.cookie = `${nome}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=localhost`;
         });
 
         setAuth({ usuarioId: null, tipoUsuario: null });
@@ -197,9 +197,10 @@ export default function Header({ busca = "", setBusca = null }) {
             cpf: formatarCpf(localStorage.getItem("usuario_cpf") || ""),
             senha: "",
         };
+        const imagemLocal = localStorage.getItem("usuario_imagem");
 
         setDadosCliente(dadosLocais);
-        setPreviewCliente(idUsuario ? `${API_URL}/uploads/Usuarios/${idUsuario}.jpg?v=${Date.now()}` : IMAGEM_USUARIO_PADRAO);
+        setPreviewCliente(imagemLocal || (idUsuario ? `${API_URL}/uploads/Usuarios/${idUsuario}.jpg?v=${Date.now()}` : IMAGEM_USUARIO_PADRAO));
         setFotoCliente(null);
         setMensagemCliente("");
         setErroCliente("");
@@ -228,7 +229,8 @@ export default function Header({ busca = "", setBusca = null }) {
                 cpf: formatarCpf(usuario.cpf || dadosLocais.cpf),
                 senha: "",
             });
-            setPreviewCliente(usuario.imagem ? `${usuario.imagem}?v=${Date.now()}` : `${API_URL}/uploads/Usuarios/${idUsuario}.jpg?v=${Date.now()}`);
+            const imagemUsuario = usuario.imagem || usuario.imagem_google || imagemLocal;
+            setPreviewCliente(imagemUsuario ? `${imagemUsuario}?v=${Date.now()}` : `${API_URL}/uploads/Usuarios/${idUsuario}.jpg?v=${Date.now()}`);
         } catch {
             // Cliente pode nao ter permissao para /buscar_usuario; nesse caso usamos localStorage.
         }
@@ -320,6 +322,7 @@ export default function Header({ busca = "", setBusca = null }) {
             localStorage.setItem("usuario_email", dadosCliente.email);
             localStorage.setItem("usuario_telefone", apenasNumeros(dadosCliente.telefone));
             localStorage.setItem("usuario_cpf", apenasNumeros(dadosCliente.cpf));
+            localStorage.removeItem("usuario_imagem");
             setDadosCliente((dados) => ({ ...dados, senha: "" }));
             setFotoCliente(null);
             setPreviewCliente(`${API_URL}/uploads/Usuarios/${idUsuario}.jpg?v=${Date.now()}`);
@@ -505,11 +508,11 @@ export default function Header({ busca = "", setBusca = null }) {
                                         {!estaLogado ? (
                                             <>
                                                 <li className="nav-item">
-                                                    <Link className="nav-link" to="/login">Entrar</Link>
+                                                    <Link className="nav-link" to="/?auth=login">Entrar</Link>
                                                 </li>
 
                                                 <li className="nav-item">
-                                                    <Link className={"btn btn-primary " + css.corFundo} to="/cadastro">
+                                                    <Link className={"btn btn-primary " + css.corFundo} to="/?auth=cadastro">
                                                         Cadastrar
                                                     </Link>
                                                 </li>
@@ -569,8 +572,8 @@ export default function Header({ busca = "", setBusca = null }) {
 
                             {!estaLogado ? (
                                 <>
-                                    <Link className="nav-link" to="/login">Entrar</Link>
-                                    <Link className={"btn btn-primary " + css.corFundo} to="/cadastro">Cadastrar</Link>
+                                    <Link className="nav-link" to="/?auth=login">Entrar</Link>
+                                    <Link className={"btn btn-primary " + css.corFundo} to="/?auth=cadastro">Cadastrar</Link>
                                 </>
                             ) : (
                                 <button className={"btn btn-primary " + css.corFundo} onClick={handleLogout}>

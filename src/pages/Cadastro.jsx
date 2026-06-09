@@ -117,6 +117,7 @@ export default function Cadastro() {
         try {
             const response = await fetch(`${API_URL}/adicionar_usuario`, {
                 method: "POST",
+                credentials: "include",
                 body: formData
             });
 

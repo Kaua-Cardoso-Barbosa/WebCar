@@ -478,6 +478,10 @@
     margin-bottom: 16px;
 }
 
+.formDadosCompra {
+    margin-top: 16px;
+}
+
 .campoVenda {
     display: grid;
     gap: 7px;

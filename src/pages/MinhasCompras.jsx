@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header/Header.jsx";
 import Footer from "../components/Footer/Footer.jsx";
 import { API_URL } from "../App";
+import { authHeaders } from "../utils/authSession";
 import css from "./MinhasCompras.module.css";
 
 const IMAGEM_PADRAO = `data:image/svg+xml;utf8,${encodeURIComponent(`
@@ -160,6 +161,7 @@ function calcularValorAPagarCompra(compra) {
     }
 
     const totalParcelas = compra.parcelas.reduce((total, parcela) => {
+        if (parcelaQuitada(parcela)) return total;
         return total + valorParcela(parcela);
     }, 0);
 
@@ -168,6 +170,22 @@ function calcularValorAPagarCompra(compra) {
     }
 
     return compra.financiamento.valorFinanciado || compra.valorVenda;
+}
+
+function saldoDevedorCompra(compra, saldosDevedores) {
+    const saldoFinanciamento = Number(compra.financiamento.saldoDevedor || 0);
+
+    if (saldoFinanciamento > 0) {
+        return saldoFinanciamento;
+    }
+
+    const idFinanciamento = compra.financiamento.idFinanciamento;
+
+    if (Object.prototype.hasOwnProperty.call(saldosDevedores, idFinanciamento)) {
+        return saldosDevedores[idFinanciamento];
+    }
+
+    return calcularSaldoDevedor(compra.parcelas, compra.financiamento);
 }
 
 function textoStatusParcela(parcela) {
@@ -259,6 +277,7 @@ export default function MinhasCompras() {
             try {
                 const response = await fetch(`${API_URL}/saldo_devedor/${idFinanciamento}?_=${Date.now()}`, {
                     method: "GET",
+                    headers: authHeaders(),
                     credentials: "include",
                     cache: "no-store",
                 });
@@ -285,6 +304,7 @@ export default function MinhasCompras() {
 
             const response = await fetch(`${API_URL}/minhas_compras?_=${Date.now()}`, {
                 method: "GET",
+                headers: authHeaders(),
                 credentials: "include",
                 cache: "no-store",
             });
@@ -388,9 +408,9 @@ export default function MinhasCompras() {
 
             const response = await fetch(`${API_URL}/adicionar_baixa/${pagamentoAtual.idFinanciamento}`, {
                 method: "PUT",
-                headers: {
+                headers: authHeaders({
                     "Content-Type": "application/json",
-                },
+                }),
                 credentials: "include",
                 body: JSON.stringify({
                     parcela: Number(pagamentoAtual.numero),
@@ -490,9 +510,9 @@ export default function MinhasCompras() {
             // chamada da rota de amortizacao
             const response = await fetch(`${API_URL}/amortizar/${amortizacao.idFinanciamento}`, {
                 method: "PUT",
-                headers: {
+                headers: authHeaders({
                     "Content-Type": "application/json",
-                },
+                }),
                 credentials: "include",
                 body: JSON.stringify({
                     tipo_amortizacao: Number(amortizacao.tipo),
@@ -577,10 +597,7 @@ export default function MinhasCompras() {
                         const parcelasVisiveis = Boolean(parcelasAbertas[compra.idVenda]);
                         const parcelasPagas = compra.parcelas.filter(parcelaQuitada).length;
                         const parcelasEmAberto = Math.max(0, compra.parcelas.length - parcelasPagas);
-                        const idFinanciamento = compra.financiamento.idFinanciamento;
-                        const saldoDevedor = Object.prototype.hasOwnProperty.call(saldosDevedores, idFinanciamento)
-                            ? saldosDevedores[idFinanciamento]
-                            : calcularSaldoDevedor(compra.parcelas, compra.financiamento);
+                        const saldoDevedor = saldoDevedorCompra(compra, saldosDevedores);
                         const valorAPagar = calcularValorAPagarCompra(compra);
 
                         return (

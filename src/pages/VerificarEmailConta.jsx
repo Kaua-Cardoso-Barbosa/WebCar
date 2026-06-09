@@ -35,6 +35,7 @@ export default function VerificarEmailConta() {
         try {
             const response = await fetch(`${API_URL}/verificar_email`, {
                 method: "POST",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -60,7 +61,7 @@ export default function VerificarEmailConta() {
                 navigate("/login");
             }, 2000);
 
-        } catch (error) {
+        } catch {
             setErro("Erro ao conectar com o servidor");
         }
     }

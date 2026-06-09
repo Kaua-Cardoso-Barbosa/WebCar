@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { API_URL } from "../../App";
+import { authHeaders } from "../../utils/authSession";
 import css from "./VisualizarCarro.module.css";
 
 const IMAGEM_PADRAO = `data:image/svg+xml;utf8,${encodeURIComponent(`
@@ -91,6 +92,33 @@ function formatarCpf(valor) {
     if (numeros.length <= 9) return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6)}`;
 
     return `${numeros.slice(0, 3)}.${numeros.slice(3, 6)}.${numeros.slice(6, 9)}-${numeros.slice(9)}`;
+}
+
+function cpfValido(valor) {
+    const cpf = apenasNumeros(valor);
+
+    if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+
+    let soma = 0;
+
+    for (let i = 0; i < 9; i += 1) {
+        soma += Number(cpf[i]) * (10 - i);
+    }
+
+    let digito = (soma * 10) % 11;
+    if (digito === 10) digito = 0;
+    if (digito !== Number(cpf[9])) return false;
+
+    soma = 0;
+
+    for (let i = 0; i < 10; i += 1) {
+        soma += Number(cpf[i]) * (11 - i);
+    }
+
+    digito = (soma * 10) % 11;
+    if (digito === 10) digito = 0;
+
+    return digito === Number(cpf[10]);
 }
 
 function formatarTelefone(valor) {
@@ -204,6 +232,13 @@ export default function VisualizarCarro({ modoVendedor = false }) {
     const [mensagemVenda, setMensagemVenda] = useState("");
     const [mensagemSucessoPagina, setMensagemSucessoPagina] = useState("");
     const [modalCadastroClienteAberta, setModalCadastroClienteAberta] = useState(false);
+    const [modalDadosCompraAberta, setModalDadosCompraAberta] = useState(false);
+    const [salvandoDadosCompra, setSalvandoDadosCompra] = useState(false);
+    const [erroDadosCompra, setErroDadosCompra] = useState("");
+    const [dadosCompraCliente, setDadosCompraCliente] = useState({
+        telefone: "",
+        cpf: "",
+    });
     const [etapaCadastroCliente, setEtapaCadastroCliente] = useState("cadastro");
     const [salvandoCadastroCliente, setSalvandoCadastroCliente] = useState(false);
     const [erroCadastroCliente, setErroCadastroCliente] = useState("");
@@ -268,9 +303,9 @@ export default function VisualizarCarro({ modoVendedor = false }) {
 
                 const response = await fetch(`${API_URL}/buscar_veiculo`, {
                     method: "POST",
-                    headers: {
+                    headers: authHeaders({
                         "Content-Type": "application/json",
-                    },
+                    }),
                     credentials: "include",
                     body: JSON.stringify({ id_veiculo: id }),
                 });
@@ -313,6 +348,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
             for (const rota of rotas) {
                 const responseDesconto = await fetch(`${API_URL}${rota}`, {
                     method: "GET",
+                    headers: authHeaders(),
                     credentials: "include",
                 });
 
@@ -344,6 +380,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
             for (const rota of rotas) {
                 const responseEmpresa = await fetch(`${API_URL}${rota}`, {
                     method: "GET",
+                    headers: authHeaders(),
                     credentials: "include",
                 });
 
@@ -419,6 +456,8 @@ export default function VisualizarCarro({ modoVendedor = false }) {
 
         const usuarioId = localStorage.getItem("usuario_id");
         const usuarioTipo = Number(localStorage.getItem("usuario_tipo"));
+        const telefoneUsuario = apenasNumeros(localStorage.getItem("usuario_telefone"));
+        const cpfUsuario = apenasNumeros(localStorage.getItem("usuario_cpf"));
 
         if (!usuarioId || usuarioTipo !== 2) {
             if (qrCodeUrl) {
@@ -430,6 +469,11 @@ export default function VisualizarCarro({ modoVendedor = false }) {
             setGerandoQrCode(false);
             setTempoQrCode(60);
             navigate("/login", { state: { voltarPara: `/Visualizar/${carro.ID_VEICULO}` } });
+            return;
+        }
+
+        if (telefoneUsuario.length < 10 || !cpfValido(cpfUsuario)) {
+            abrirDadosCompraCliente();
             return;
         }
 
@@ -447,9 +491,9 @@ export default function VisualizarCarro({ modoVendedor = false }) {
 
             const response = await fetch(`${API_URL}/adicionar_venda`, {
                 method: "POST",
-                headers: {
+                headers: authHeaders({
                     "Content-Type": "application/json",
-                },
+                }),
                 credentials: "include",
                 body: JSON.stringify({
                     id_veiculo: carro.ID_VEICULO,
@@ -500,6 +544,93 @@ export default function VisualizarCarro({ modoVendedor = false }) {
         setTempoQrCode(60);
     }
 
+    function abrirDadosCompraCliente() {
+        setDadosCompraCliente({
+            telefone: formatarTelefone(localStorage.getItem("usuario_telefone") || ""),
+            cpf: formatarCpf(localStorage.getItem("usuario_cpf") || ""),
+        });
+        setErroDadosCompra("");
+        setModalDadosCompraAberta(true);
+    }
+
+    function fecharDadosCompraCliente() {
+        setModalDadosCompraAberta(false);
+        setErroDadosCompra("");
+        setSalvandoDadosCompra(false);
+    }
+
+    function atualizarDadosCompraCliente(campo, valor) {
+        const normalizadores = {
+            telefone: formatarTelefone,
+            cpf: formatarCpf,
+        };
+
+        setErroDadosCompra("");
+        setDadosCompraCliente((dados) => ({
+            ...dados,
+            [campo]: normalizadores[campo](valor),
+        }));
+    }
+
+    async function salvarDadosCompraCliente(e) {
+        e.preventDefault();
+
+        const idUsuario = localStorage.getItem("usuario_id");
+        const telefone = apenasNumeros(dadosCompraCliente.telefone);
+        const cpf = apenasNumeros(dadosCompraCliente.cpf);
+
+        if (!idUsuario) {
+            setErroDadosCompra("Usuario nao encontrado. Faca login novamente.");
+            return;
+        }
+
+        if (telefone.length < 10 || telefone.length > 11) {
+            setErroDadosCompra("Informe um telefone valido.");
+            return;
+        }
+
+        if (!cpfValido(cpf)) {
+            setErroDadosCompra("Informe um CPF valido.");
+            return;
+        }
+
+        try {
+            setSalvandoDadosCompra(true);
+            setErroDadosCompra("");
+
+            const formData = new FormData();
+            formData.append("nome", localStorage.getItem("usuario_nome") || "");
+            formData.append("email", localStorage.getItem("usuario_email") || "");
+            formData.append("telefone", telefone);
+            formData.append("cpf", cpf);
+
+            const response = await fetch(`${API_URL}/edicao_usuario/${idUsuario}`, {
+                method: "PUT",
+                headers: authHeaders(),
+                credentials: "include",
+                body: formData,
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                setErroDadosCompra(data.mensagem || "Nao foi possivel salvar seus dados.");
+                return;
+            }
+
+            localStorage.setItem("usuario_telefone", telefone);
+            localStorage.setItem("usuario_cpf", cpf);
+            window.dispatchEvent(new CustomEvent("webcar:auth", { detail: { logado: true } }));
+
+            fecharDadosCompraCliente();
+            await abrirCompra();
+        } catch {
+            setErroDadosCompra("Erro ao conectar com o servidor.");
+        } finally {
+            setSalvandoDadosCompra(false);
+        }
+    }
+
     function finalizarCompraPix() {
         setModalCompraAberta(false);
         setErroCompra("");
@@ -522,8 +653,8 @@ export default function VisualizarCarro({ modoVendedor = false }) {
     async function executarVenda(cpfVenda, permitirCadastro = true) {
         if (!carro?.ID_VEICULO || gerandoQrCode) return;
 
-        if (apenasNumeros(cpfVenda).length !== 11) {
-            setErroCompra("Informe o CPF do cliente para registrar a venda.");
+        if (!cpfValido(cpfVenda)) {
+            setErroCompra("Informe um CPF valido para registrar a venda.");
             return;
         }
 
@@ -561,9 +692,9 @@ export default function VisualizarCarro({ modoVendedor = false }) {
 
             const response = await fetch(`${API_URL}/adicionar_venda`, {
                 method: "POST",
-                headers: {
+                headers: authHeaders({
                     "Content-Type": "application/json",
-                },
+                }),
                 credentials: "include",
                 body: JSON.stringify(payload),
             });
@@ -652,7 +783,7 @@ export default function VisualizarCarro({ modoVendedor = false }) {
             return;
         }
 
-        if (apenasNumeros(cadastroClienteVenda.cpf).length !== 11) {
+        if (!cpfValido(cadastroClienteVenda.cpf)) {
             setErroCadastroCliente("Informe um CPF valido.");
             return;
         }
@@ -677,6 +808,8 @@ export default function VisualizarCarro({ modoVendedor = false }) {
 
             const response = await fetch(`${API_URL}/adicionar_usuario`, {
                 method: "POST",
+                headers: authHeaders(),
+                credentials: "include",
                 body: formData,
             });
 
@@ -709,9 +842,10 @@ export default function VisualizarCarro({ modoVendedor = false }) {
 
             const response = await fetch(`${API_URL}/verificar_email`, {
                 method: "POST",
-                headers: {
+                credentials: "include",
+                headers: authHeaders({
                     "Content-Type": "application/json",
-                },
+                }),
                 body: JSON.stringify({
                     email: cadastroClienteVenda.email,
                     codigo: cadastroClienteVenda.codigo,
@@ -951,6 +1085,71 @@ export default function VisualizarCarro({ modoVendedor = false }) {
                                 Sim, comprar
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {modalDadosCompraAberta && (
+                <div className={css.modalFundo}>
+                    <div className={`${css.modalCompra} ${css.modalConfirmacao}`}>
+                        <div className={css.modalTopo}>
+                            <div>
+                                <span className={css.etiquetaEscura}>Dados do cliente</span>
+                                <h3>Complete seus dados</h3>
+                            </div>
+                            <button
+                                type="button"
+                                className={css.fecharIcone}
+                                onClick={fecharDadosCompraCliente}
+                                aria-label="Fechar modal"
+                            >
+                                x
+                            </button>
+                        </div>
+
+                        <p className={css.textoModal}>
+                            Para finalizar sua primeira compra, informe CPF e telefone.
+                        </p>
+
+                        <form className={`${css.formaPagamento} ${css.formDadosCompra}`} onSubmit={salvarDadosCompraCliente}>
+                            <label className={css.campoVenda}>
+                                <span>Telefone</span>
+                                <input
+                                    value={dadosCompraCliente.telefone}
+                                    onChange={(e) => atualizarDadosCompraCliente("telefone", e.target.value)}
+                                    placeholder="(11) 99999-9999"
+                                    inputMode="numeric"
+                                    maxLength={15}
+                                />
+                            </label>
+
+                            <label className={css.campoVenda}>
+                                <span>CPF</span>
+                                <input
+                                    value={dadosCompraCliente.cpf}
+                                    onChange={(e) => atualizarDadosCompraCliente("cpf", e.target.value)}
+                                    placeholder="000.000.000-00"
+                                    inputMode="numeric"
+                                    maxLength={14}
+                                />
+                            </label>
+
+                            {erroDadosCompra && <p className={css.erroCompra}>{erroDadosCompra}</p>}
+
+                            <div className={css.modalAcoes}>
+                                <button
+                                    type="button"
+                                    className={css.botaoFechar}
+                                    onClick={fecharDadosCompraCliente}
+                                    disabled={salvandoDadosCompra}
+                                >
+                                    Cancelar
+                                </button>
+                                <button type="submit" className={css.botaoConcluir} disabled={salvandoDadosCompra}>
+                                    {salvandoDadosCompra ? "Salvando..." : "Salvar e continuar"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

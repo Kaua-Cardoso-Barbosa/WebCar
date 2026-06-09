@@ -54,6 +54,7 @@ export default function CadastrarMarca() {
         try {
             const response = await fetch(`${API_URL}/adicionar_marca`, {
                 method: "POST",
+                credentials: "include",
                 body: formData
             });
 
@@ -66,7 +67,7 @@ export default function CadastrarMarca() {
 
             navigate("/dashboard");
 
-        } catch (error) {
+        } catch {
             setErro("Não foi possível salvar as alterações.");
         }
     }

@@ -135,7 +135,7 @@ export default function Banner() {
                             Ver catálogo
                         </Link>
                         {!logado && (
-                            <Link to="/Login" className={css.secundario}>
+                            <Link to="/?auth=login" className={css.secundario}>
                                 Entrar
                             </Link>
                         )}

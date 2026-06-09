@@ -1,11 +1,44 @@
 .home {
+    position: relative;
+    overflow: hidden;
     background: var(--cor-fundo-publico);
     color: var(--cor-texto-titulo-escuro);
     padding-bottom: 56px;
 }
 
+.home::before,
+.home::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: 999px;
+    opacity: 0.42;
+}
+
+.home::before {
+    width: 320px;
+    height: 320px;
+    top: 520px;
+    right: -130px;
+    background: color-mix(in srgb, var(--cor-primaria) 14%, transparent);
+    animation: flutuarFundo 11s ease-in-out infinite;
+}
+
+.home::after {
+    width: 260px;
+    height: 260px;
+    left: -120px;
+    bottom: 220px;
+    border: 1px solid color-mix(in srgb, var(--cor-secundaria) 22%, transparent);
+    animation: flutuarFundo 13s ease-in-out infinite reverse;
+}
+
 .destaques,
+.comentarios,
 .confianca {
+    position: relative;
+    z-index: 1;
     width: min(1180px, calc(100% - 32px));
     margin: 0 auto;
 }
@@ -83,6 +116,123 @@
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 20px;
+}
+
+.comentarios {
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(360px, 1.08fr);
+    gap: 28px;
+    align-items: center;
+    padding: 20px 0 54px;
+}
+
+.comentariosTexto h2 {
+    margin: 14px 0 10px;
+    color: var(--cor-texto-titulo-escuro);
+    font-size: clamp(28px, 3vw, 38px);
+    line-height: 1.08;
+    font-weight: 900;
+}
+
+.comentariosTexto p {
+    margin: 0;
+    max-width: 520px;
+    color: var(--cor-texto-muted);
+    font-size: 16px;
+    line-height: 1.65;
+    font-weight: 600;
+}
+
+.carrosselComentarios {
+    position: relative;
+    min-height: 254px;
+    border-radius: 8px;
+    border: 1px solid var(--cor-borda-moderna);
+    background:
+        linear-gradient(135deg, var(--cor-superficie), color-mix(in srgb, var(--cor-azul-fundo-claro) 56%, var(--cor-superficie))),
+        radial-gradient(circle at top right, color-mix(in srgb, var(--cor-primaria) 12%, transparent), transparent 52%);
+    box-shadow: 0 20px 44px var(--sombra-escura-10);
+    overflow: hidden;
+}
+
+.carrosselComentarios::before {
+    content: "";
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    right: -70px;
+    top: -70px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--cor-primaria) 13%, transparent);
+    animation: pulsoComentario 4.8s ease-in-out infinite;
+}
+
+.comentarioCard {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    padding: 30px;
+    opacity: 0;
+    transform: translateX(22px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.comentarioAtivo {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.comentarioCard span {
+    width: fit-content;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: var(--cor-azul-fundo);
+    color: var(--cor-azul-acao);
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.comentarioCard p {
+    margin: 0;
+    color: var(--cor-texto-principal);
+    font-size: clamp(20px, 2.3vw, 28px);
+    line-height: 1.25;
+    font-weight: 900;
+}
+
+.comentarioCard strong {
+    color: var(--cor-texto-muted);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.controlesComentarios {
+    position: absolute;
+    left: 30px;
+    bottom: 22px;
+    display: flex;
+    gap: 8px;
+}
+
+.controlesComentarios button {
+    width: 26px;
+    height: 8px;
+    border: none;
+    border-radius: 999px;
+    background: var(--cor-borda-suave);
+    cursor: pointer;
+}
+
+.controlesComentarios .indicadorAtivo {
+    width: 42px;
+    background: var(--cor-azul-acao);
 }
 
 .erro,
@@ -182,6 +332,7 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .comentarios,
     .confianca {
         grid-template-columns: 1fr;
     }
@@ -189,6 +340,7 @@
 
 @media (max-width: 680px) {
     .destaques,
+    .comentarios,
     .confianca {
         width: min(100% - 20px, 1180px);
     }
@@ -209,6 +361,23 @@
     .gridDestaques,
     .metricas {
         grid-template-columns: 1fr;
+    }
+
+    .comentarios {
+        padding: 8px 0 36px;
+    }
+
+    .carrosselComentarios {
+        min-height: 310px;
+    }
+
+    .comentarioCard {
+        padding: 24px 20px 58px;
+    }
+
+    .controlesComentarios {
+        left: 20px;
+        bottom: 20px;
     }
 
     .confianca {
@@ -233,5 +402,29 @@
 
     .metricas div {
         min-height: auto;
+    }
+}
+
+@keyframes flutuarFundo {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+        transform: translate3d(18px, -18px, 0);
+    }
+}
+
+@keyframes pulsoComentario {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+
+    50% {
+        transform: scale(1.08);
+        opacity: 1;
     }
 }

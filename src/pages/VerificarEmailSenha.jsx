@@ -34,6 +34,7 @@ export default function VerificarEmailSenha() {
         try {
             const response = await fetch(`${API_URL}/verificar_codigo`, { // 👈 corrigido
                 method: "POST",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -59,7 +60,7 @@ export default function VerificarEmailSenha() {
                 navigate("/trocarSenha");
             }, 2000);
 
-        } catch (error) {
+        } catch {
             setErro("Erro ao conectar com o servidor");
         }
     }

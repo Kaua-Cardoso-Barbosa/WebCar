@@ -30,6 +30,7 @@ export default function TrocarSenha() {
         try {
             const response = await fetch(`${API_URL}/trocar_senha`, {
                 method: "POST",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -57,7 +58,7 @@ export default function TrocarSenha() {
                 navigate("/login");
             }, 2000);
 
-        } catch (error) {
+        } catch {
             setErro("Erro ao conectar com o servidor");
         }
     }
