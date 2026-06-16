@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from "react";
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+export const API_URL = import.meta.env.VITE_API_URL || "https://teste-backend-webcar.zbbquj.easypanel.host";
 
 import EditarServico from "./pages/EditarServico.jsx";
 import Home from "./pages/Home.jsx";
