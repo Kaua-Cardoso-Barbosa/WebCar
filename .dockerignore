@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.gitignore
+Dockerfile
+README.md
+*.iml
+workspace.xml
+modules.xml
+WEBCAR.FDB
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
